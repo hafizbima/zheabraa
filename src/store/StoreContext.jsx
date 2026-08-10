@@ -187,8 +187,8 @@ export function StoreProvider({ children }) {
 
   const updateCategory = useCallback(
     (mId, categoryId, patch) => {
-      if (!user) return
-      backend.updateCategory(user.uid, mId, categoryId, patch).catch(console.error)
+      if (!user) return Promise.resolve()
+      return backend.updateCategory(user.uid, mId, categoryId, patch).catch(console.error)
     },
     [user],
   )

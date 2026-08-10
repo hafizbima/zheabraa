@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Modal from './Modal.jsx'
 import Confirm from './Confirm.jsx'
 import { useStore } from '../store/StoreContext.jsx'
@@ -29,10 +29,54 @@ export default function CategoryManager({ onClose }) {
   const [budget, setBudget] = useState('')
   const [color, setColor] = useState(CATEGORY_COLORS[0])
   const [confirmId, setConfirmId] = useState(null)
+  const [drafts, setDrafts] = useState({})
+  const [saving, setSaving] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
 
+  const cats = month?.categories || []
   const txs = month?.transactions || []
   const input =
     'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200'
+
+  useEffect(() => {
+    setDrafts((prev) => {
+      const next = {}
+      for (const cat of cats) {
+        next[cat.id] =
+          prev[cat.id] || { id: cat.id, name: cat.name, budgetAmount: cat.budgetAmount, color: cat.color }
+      }
+      return next
+    })
+  }, [cats])
+
+  const dirtyCount = useMemo(() => {
+    let n = 0
+    for (const cat of cats) {
+      const d = drafts[cat.id]
+      if (d && (d.name !== cat.name || d.budgetAmount !== cat.budgetAmount || d.color !== cat.color)) n += 1
+    }
+    return n
+  }, [cats, drafts])
+
+  const updateDraft = (id, patch) => {
+    setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }))
+    setJustSaved(false)
+  }
+
+  const saveAll = async () => {
+    setSaving(true)
+    try {
+      for (const cat of cats) {
+        const d = drafts[cat.id]
+        if (d && (d.name !== cat.name || d.budgetAmount !== cat.budgetAmount || d.color !== cat.color)) {
+          await updateCategory(currentMonthId, cat.id, { name: d.name, budgetAmount: d.budgetAmount, color: d.color })
+        }
+      }
+      setJustSaved(true)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const submitNew = (e) => {
     e.preventDefault()
@@ -52,9 +96,18 @@ export default function CategoryManager({ onClose }) {
       onClose={onClose}
       wide
       footer={
-        <p className="text-xs text-slate-400">
-          Kategori berlaku per bulan. Saat mulai bulan baru, kategori disalin dengan budget 0.
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-slate-400">
+            Perubahan hanya tersimpan saat menekan "Simpan Perubahan".
+          </p>
+          <button
+            onClick={saveAll}
+            disabled={saving || dirtyCount === 0}
+            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+          >
+            {saving ? 'Menyimpan…' : dirtyCount > 0 ? `Simpan Perubahan (${dirtyCount})` : justSaved ? 'Tersimpan' : 'Simpan Perubahan'}
+          </button>
+        </div>
       }
     >
       <form onSubmit={submitNew} className="rounded-xl border border-brand-100 bg-brand-50/40 p-4">
@@ -72,29 +125,30 @@ export default function CategoryManager({ onClose }) {
       </form>
 
       <div className="mt-4 space-y-2">
-        {(month?.categories || []).map((cat) => {
-          const { used, budget: b } = categoryStatus(cat, txs)
+        {cats.map((cat) => {
+          const d = drafts[cat.id] || cat
+          const { used } = categoryStatus(cat, txs)
           return (
             <div key={cat.id} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3">
               <input
                 type="color"
-                value={cat.color}
-                onChange={(e) => updateCategory(currentMonthId, cat.id, { color: e.target.value })}
+                value={d.color}
+                onChange={(e) => updateDraft(cat.id, { color: e.target.value })}
                 className="h-8 w-8 shrink-0 cursor-pointer rounded border-0 bg-transparent p-0"
                 aria-label="Warna"
               />
               <input
                 className={input + ' flex-1'}
-                value={cat.name}
-                onChange={(e) => updateCategory(currentMonthId, cat.id, { name: e.target.value })}
+                value={d.name}
+                onChange={(e) => updateDraft(cat.id, { name: e.target.value })}
               />
               <div className="w-32 shrink-0">
                 <input
                   className={input + ' text-right'}
                   type="number"
                   min="0"
-                  value={cat.budgetAmount}
-                  onChange={(e) => updateCategory(currentMonthId, cat.id, { budgetAmount: toInt(e.target.value) })}
+                  value={d.budgetAmount}
+                  onChange={(e) => updateDraft(cat.id, { budgetAmount: toInt(e.target.value) })}
                   aria-label="Budget"
                 />
               </div>
@@ -111,7 +165,7 @@ export default function CategoryManager({ onClose }) {
             </div>
           )
         })}
-        {(month?.categories || []).length === 0 && (
+        {cats.length === 0 && (
           <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
             Belum ada kategori.
           </p>
