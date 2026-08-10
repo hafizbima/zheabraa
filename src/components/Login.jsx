@@ -29,10 +29,12 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-brand-700 px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center text-white">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 text-3xl">
-            💸
-          </div>
-          <h1 className="text-2xl font-bold">Gimme Money</h1>
+          <img
+            src="/logo.png"
+            alt="Gimme Money"
+            className="mx-auto mb-3 h-20 w-20 rounded-2xl object-cover"
+          />
+          <h1 className="text-2xl font-bold">Zheabraa</h1>
           <p className="mt-1 text-sm text-brand-200">Sistem pocket budgeting untuk keuangan pribadimu</p>
         </div>
 

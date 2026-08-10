@@ -22,7 +22,12 @@ function Root() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-brand-700">
         <div className="text-center text-white">
-          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+          <img
+            src="/logo.png"
+            alt="Gimme Money"
+            className="mx-auto mb-4 h-14 w-14 rounded-2xl bg-white/15 object-cover"
+          />
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-white/20 border-t-white" />
           <p className="text-sm text-brand-200">Memuat data…</p>
         </div>
       </div>

@@ -26,7 +26,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
       <div className="mx-auto max-w-3xl px-4">
         <div className="flex items-center justify-between py-3">
           <div className="flex items-center gap-2">
-            {/* <span className="text-xl">💸</span> */}
+            <img src="/logo.png" alt="" className="h-12 w-12 rounded-lg object-cover" />
             <span className="font-bold tracking-tight">Zheabraa</span>
           </div>
           <div className="flex items-center gap-1">
