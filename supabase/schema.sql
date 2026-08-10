@@ -13,7 +13,7 @@ create table if not exists public.wallets (
   opening_balance integer not null default 0,
   sort_order integer not null default 0,
   deleted boolean not null default false,
-  created_at timestamptz not null default now(),
+  created_at bigint not null default 0,
   primary key (id, user_id)
 );
 
@@ -37,7 +37,7 @@ create table if not exists public.months (
   label text not null,
   carry_over integer not null default 0,
   incomes jsonb not null default '[]'::jsonb,
-  created_at timestamptz not null default now(),
+  created_at bigint not null default 0,
   primary key (id, user_id)
 );
 
@@ -63,7 +63,7 @@ create table if not exists public.categories (
   budget_amount integer not null default 0,
   color text not null default '#8B5CF6',
   sort_order integer not null default 0,
-  created_at timestamptz not null default now(),
+  created_at bigint not null default 0,
   primary key (id, user_id)
 );
 

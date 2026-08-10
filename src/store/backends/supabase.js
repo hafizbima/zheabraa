@@ -105,51 +105,59 @@ export async function signOut() {
 
 export async function ensureSeeded(uid) {
   needClient()
-  const { count, error } = await supabase
-    .from('wallets')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', uid)
-  if (error) throw error
-  if (count > 0) return
-
   const mId = monthIdOf(new Date())
   const blank = createBlankMonth(mId)
   const now = Date.now()
-  const wallets = defaultWallets().map((w) => ({
-    id: w.id,
-    user_id: uid,
-    name: w.name,
-    color: w.color,
-    opening_balance: w.openingBalance,
-    sort_order: w.order,
-    deleted: false,
-  }))
-  const categories = blank.categories.map((c) => ({
-    id: c.id,
-    user_id: uid,
-    month_id: mId,
-    name: c.name,
-    budget_amount: c.budgetAmount,
-    color: c.color,
-    sort_order: c.order,
-  }))
-  const month = {
-    id: blank.id,
-    user_id: uid,
-    label: blank.label,
-    carry_over: 0,
-    incomes: blank.incomes,
-    created_at: blank.createdAt || now,
-  }
-  const res = await supabase
+
+  const { count: walletCount, error: wErr } = await supabase
     .from('wallets')
-    .upsert(wallets)
-    .select()
-  if (res.error) throw res.error
-  const res2 = await supabase.from('months').upsert(month).select()
-  if (res2.error) throw res2.error
-  const res3 = await supabase.from('categories').upsert(categories).select()
-  if (res3.error) throw res3.error
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', uid)
+  if (wErr) throw wErr
+
+  const { count: monthCount, error: mErr } = await supabase
+    .from('months')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', uid)
+  if (mErr) throw mErr
+
+  if (walletCount === 0) {
+    const wallets = defaultWallets().map((w) => ({
+      id: w.id,
+      user_id: uid,
+      name: w.name,
+      color: w.color,
+      opening_balance: w.openingBalance,
+      sort_order: w.order,
+      deleted: false,
+    }))
+    const res = await supabase.from('wallets').upsert(wallets).select()
+    if (res.error) throw res.error
+  }
+
+  if (monthCount === 0) {
+    const month = {
+      id: blank.id,
+      user_id: uid,
+      label: blank.label,
+      carry_over: 0,
+      incomes: blank.incomes,
+      created_at: blank.createdAt || now,
+    }
+    const categories = blank.categories.map((c) => ({
+      id: c.id,
+      user_id: uid,
+      month_id: mId,
+      name: c.name,
+      budget_amount: c.budgetAmount,
+      color: c.color,
+      sort_order: c.order,
+    }))
+    const res = await supabase.from('months').upsert(month).select()
+    if (res.error) throw res.error
+    const res2 = await supabase.from('categories').upsert(categories)
+    if (res2.error) throw res2.error
+  }
 }
 
 // --- subscriptions ---
