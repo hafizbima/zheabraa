@@ -161,7 +161,11 @@ export async function ensureSeeded(uid) {
 }
 
 // --- subscriptions ---
-function onTableChange(uid, table, cb) {
+export function channelName(table, uid, scope = '') {
+  return `gmm-${table}-${uid}${scope ? '-' + scope : ''}`
+}
+
+function onTableChange(uid, table, cb, scope = '') {
   needClient()
   let alive = true
   const refresh = () => {
@@ -169,7 +173,7 @@ function onTableChange(uid, table, cb) {
   }
   refresh()
   const channel = supabase
-    .channel(`gmm-${table}-${uid}`)
+    .channel(channelName(table, uid, scope))
     .on('postgres_changes', { event: '*', schema: 'public', table }, refresh)
     .subscribe()
   return () => {
@@ -222,8 +226,8 @@ export function subscribeMonthDetail(uid, mId, cb) {
     txs = (t.data || []).map(mapTransaction)
     emit()
   }
-  const unC = onTableChange(uid, 'categories', load)
-  const unT = onTableChange(uid, 'transactions', load)
+  const unC = onTableChange(uid, 'categories', load, mId)
+  const unT = onTableChange(uid, 'transactions', load, mId)
   return () => {
     alive = false
     unC()
