@@ -1,0 +1,160 @@
+import { useState } from 'react'
+import Modal from './Modal.jsx'
+import { useStore } from '../store/StoreContext.jsx'
+import { formatRupiah, toInt } from '../lib/money.js'
+import { todayISO } from '../lib/dates.js'
+
+export default function TransactionForm({ monthId, transaction, prefill, onClose }) {
+  const { currentMonth: month, wallets, addTransaction, updateTransaction } = useStore()
+
+  const [date, setDate] = useState(transaction?.date || todayISO())
+  const [type, setType] = useState(transaction?.type || 'expense')
+  const [amount, setAmount] = useState(transaction ? String(transaction.amount || '') : '')
+  const [categoryId, setCategoryId] = useState(
+    transaction ? transaction.categoryId || 'free' : prefill?.categoryId || 'free',
+  )
+  const [walletId, setWalletId] = useState(transaction?.walletId || '')
+  const [description, setDescription] = useState(transaction?.description || '')
+  const [error, setError] = useState('')
+
+  const isFree = categoryId === 'free'
+  const input =
+    'w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200'
+
+  const submit = (e) => {
+    e.preventDefault()
+    const amt = toInt(amount)
+    if (amt <= 0) return setError('Nominal harus lebih dari 0')
+    if (!date) return setError('Tanggal wajib diisi')
+    if (isFree && !description.trim()) return setError('Keterangan wajib diisi untuk Uang Bebas')
+
+    const payload = {
+      date,
+      type,
+      amount: amt,
+      categoryId: isFree ? null : categoryId,
+      walletId: walletId || null,
+      description: description.trim(),
+    }
+
+    if (transaction) updateTransaction(monthId, transaction.id, payload)
+    else addTransaction(monthId, payload)
+    onClose()
+  }
+
+  return (
+    <Modal
+      title={transaction ? 'Edit Transaksi' : 'Tambah Transaksi'}
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end gap-2">
+          <button onClick={onClose} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
+            Batal
+          </button>
+          <button
+            type="submit"
+            form="tx-form"
+            className="rounded-lg bg-brand-600 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+          >
+            {transaction ? 'Simpan Perubahan' : 'Simpan'}
+          </button>
+        </div>
+      }
+    >
+      <form id="tx-form" onSubmit={submit} className="space-y-4">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Tanggal</label>
+          <input type="date" className={input} value={date} onChange={(e) => setDate(e.target.value)} />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Tipe</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setType('expense')}
+              className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                type === 'expense'
+                  ? 'border-red-300 bg-red-50 text-red-600'
+                  : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+              }`}
+            >
+              Pengeluaran
+            </button>
+            <button
+              type="button"
+              onClick={() => setType('refund')}
+              className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                type === 'refund'
+                  ? 'border-emerald-300 bg-emerald-50 text-emerald-600'
+                  : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+              }`}
+            >
+              Refund / Koreksi
+            </button>
+          </div>
+          <p className="mt-1 text-[11px] text-slate-400">
+            {type === 'refund' ? 'Refund menambah sisa (uang kembali ke pocket/uang bebas).' : 'Pengeluaran mengurangi sisa pocket/uang bebas.'}
+          </p>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Nominal (Rp)</label>
+          <input
+            type="number"
+            min="0"
+            inputMode="numeric"
+            className={input}
+            placeholder="0"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            autoFocus
+          />
+          {amount && toInt(amount) > 0 && (
+            <p className="mt-1 text-xs text-slate-400">{formatRupiah(toInt(amount))}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Kategori / Pocket</label>
+          <select className={input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+            <option value="free">Uang Bebas (tidak dari pocket)</option>
+            {(month?.categories || []).map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">Dompet (opsional)</label>
+          <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
+            <option value="">— Tidak dilacak —</option>
+            {wallets.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">
+            Keterangan {isFree && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            className={input}
+            placeholder={isFree ? 'Wajib diisi untuk uang bebas' : 'Contoh: bensin, makan siang'}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+
+        {error && (
+          <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</div>
+        )}
+      </form>
+    </Modal>
+  )
+}
