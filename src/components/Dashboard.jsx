@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah } from '../lib/money.js'
 import { formatDate, todayISO } from '../lib/dates.js'
@@ -9,6 +9,7 @@ import {
   freeMoneySpent,
   freePool,
   categoryStatus,
+  categoryLeft,
   walletBalance,
   allTransactions,
 } from '../lib/calc.js'
@@ -45,6 +46,11 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
   const [editingIncome, setEditingIncome] = useState(null)
   const [incomeLabel, setIncomeLabel] = useState('')
   const [incomeAmount, setIncomeAmount] = useState('')
+  const [carryDraft, setCarryDraft] = useState('')
+
+  useEffect(() => {
+    setCarryDraft(month ? String(month.carryOver ?? 0) : '')
+  }, [month?.carryOver])
 
   if (!month) return null
 
@@ -75,6 +81,10 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
     setEditingIncome(inc)
     setIncomeLabel(inc.label)
     setIncomeAmount(String(inc.amount || ''))
+  }
+
+  const commitCarry = () => {
+    setCarryOver(currentMonthId, Math.round(Number(carryDraft) || 0))
   }
 
   const input =
@@ -133,9 +143,15 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
               <input
                 type="number"
                 min="0"
+                inputMode="numeric"
                 className={input + ' w-32 text-right'}
-                value={month.carryOver}
-                onChange={(e) => setCarryOver(currentMonthId, Math.round(Number(e.target.value) || 0))}
+                value={carryDraft}
+                onChange={(e) => setCarryDraft(e.target.value)}
+                onBlur={commitCarry}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') e.currentTarget.blur()
+                }}
+                aria-label="Carry-over"
               />
             </div>
           </div>
@@ -175,6 +191,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
         </div>
         {(month.categories || []).map((cat) => {
           const { used, budget, status, pct } = categoryStatus(cat, txs)
+          const left = categoryLeft(cat, txs)
           return (
             <button
               key={cat.id}
@@ -192,7 +209,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
                     {budget > 0 && <span className="font-normal text-slate-400"> / {formatRupiah(budget)}</span>}
                   </p>
                   <p className={`text-[11px] font-medium ${status === 'over' ? 'text-red-500' : status === 'warn' ? 'text-amber-500' : 'text-slate-400'}`}>
-                    sisa {formatRupiah(budget - used)}
+                    sisa {formatRupiah(left)}
                   </p>
                 </div>
               </div>

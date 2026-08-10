@@ -22,9 +22,7 @@ function Root() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-brand-700">
         <div className="text-center text-white">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 text-3xl">
-            💸
-          </div>
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-white" />
           <p className="text-sm text-brand-200">Memuat data…</p>
         </div>
       </div>

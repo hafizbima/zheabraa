@@ -20,8 +20,7 @@ beforeEach(() => {
 })
 
 describe('Gimme Money smoke', () => {
-  it('login -> dashboard -> add transaction -> history -> wallets', async () => {
-    const user = userEvent.setup()
+  it('login -> dashboard -> add transaction -> history -> wallets', async () => {    const user = userEvent.setup()
     const { getByText, getByPlaceholderText, getByRole, getAllByText, findByText } = render(<App />)
 
     // Login screen
@@ -55,5 +54,32 @@ describe('Gimme Money smoke', () => {
     await user.click(getByRole('button', { name: 'Dompet' }))
     await findByText('Kelola Dompet')
     expect(getAllByText('Cash').length).toBeGreaterThan(0)
+  })
+
+  it('history filter "Uang Bebas" shows free-money transactions', async () => {
+    const user = userEvent.setup()
+    const { getByText, getByPlaceholderText, getByRole, getAllByRole, findByText } = render(<App />)
+
+    // Login
+    await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
+    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.click(getByRole('button', { name: 'Masuk' }))
+    await findByText('Total Pemasukan')
+
+    // Add a free-money transaction via FAB
+    await user.click(getByRole('button', { name: 'Tambah transaksi' }))
+    await findByText('Tambah Transaksi')
+    await user.type(getByPlaceholderText('0'), '25000')
+    await user.type(getByPlaceholderText('Wajib diisi untuk uang bebas'), 'jajan pasar')
+    await user.click(getByRole('button', { name: 'Simpan' }))
+
+    // History view
+    await user.click(getByRole('button', { name: 'Riwayat' }))
+    expect(getByPlaceholderText('Cari keterangan…')).toBeInTheDocument()
+
+    // Filter by Uang Bebas -> free-money tx must appear (regression: was empty)
+    const [catSelect] = getAllByRole('combobox')
+    await user.selectOptions(catSelect, 'free')
+    expect(await findByText('jajan pasar')).toBeInTheDocument()
   })
 })

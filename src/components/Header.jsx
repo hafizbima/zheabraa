@@ -26,7 +26,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
       <div className="mx-auto max-w-3xl px-4">
         <div className="flex items-center justify-between py-3">
           <div className="flex items-center gap-2">
-            <span className="text-xl">💸</span>
+            {/* <span className="text-xl">💸</span> */}
             <span className="font-bold tracking-tight">Zheabraa</span>
           </div>
           <div className="flex items-center gap-1">
@@ -39,10 +39,14 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
             </button>
             <button
               onClick={() => setMenuOpen((v) => !v)}
+              aria-expanded={menuOpen}
+              aria-haspopup="listbox"
               className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-sm font-semibold hover:bg-white/20"
             >
               {labelOf(currentMonthId)}
-              <span className="text-xs">▾</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </button>
             <button
               onClick={() => switchMonth(addMonths(currentMonthId, 1))}

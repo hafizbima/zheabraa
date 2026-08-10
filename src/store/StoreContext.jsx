@@ -168,6 +168,38 @@ export function StoreProvider({ children }) {
     [user, monthMeta],
   )
 
+  // --- wallets ---
+  const addWallet = useCallback(
+    (data) => {
+      if (!user) return
+      const w = {
+        id: uid(),
+        name: data.name || 'Dompet',
+        color: data.color,
+        openingBalance: data.openingBalance || 0,
+        order: wallets.length,
+      }
+      backend.setWallet(user.uid, w).catch(console.error)
+    },
+    [user, wallets],
+  )
+
+  const updateWallet = useCallback(
+    (id, patch) => {
+      if (!user) return
+      backend.updateWallet(user.uid, id, patch).catch(console.error)
+    },
+    [user],
+  )
+
+  const deleteWallet = useCallback(
+    (id) => {
+      if (!user) return
+      backend.removeWallet(user.uid, id).catch(console.error)
+    },
+    [user],
+  )
+
   // --- categories ---
   const addCategory = useCallback(
     (mId, data) => {
@@ -242,6 +274,9 @@ export function StoreProvider({ children }) {
       logout,
       switchMonth,
       startNewMonth,
+      addWallet,
+      updateWallet,
+      deleteWallet,
       addIncome,
       updateIncome,
       removeIncome,
@@ -256,6 +291,7 @@ export function StoreProvider({ children }) {
     [
       user, authReady, ready, wallets, months, currentMonthId, currentMonth,
       login, signup, logout, switchMonth, startNewMonth,
+      addWallet, updateWallet, deleteWallet,
       addIncome, updateIncome, removeIncome, setCarryOver,
       addCategory, updateCategory, removeCategory,
       addTransaction, updateTransaction, removeTransaction,

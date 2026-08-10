@@ -1,7 +1,12 @@
 export function categoryUsed(categoryId, transactions) {
-  return transactions
-    .filter((t) => t.categoryId === categoryId && t.type === 'expense')
-    .reduce((a, t) => a + (t.amount || 0), 0)
+  let expense = 0
+  let refund = 0
+  for (const t of transactions) {
+    if (t.categoryId !== categoryId) continue
+    if (t.type === 'refund') refund += t.amount || 0
+    else expense += t.amount || 0
+  }
+  return expense - refund
 }
 
 export function categoryLeft(category, transactions) {
@@ -21,9 +26,14 @@ export function totalAllocated(month) {
 }
 
 export function freeMoneySpent(transactions) {
-  return transactions
-    .filter((t) => t.categoryId == null && t.type === 'expense')
-    .reduce((a, t) => a + (t.amount || 0), 0)
+  let expense = 0
+  let refund = 0
+  for (const t of transactions) {
+    if (t.categoryId != null) continue
+    if (t.type === 'refund') refund += t.amount || 0
+    else expense += t.amount || 0
+  }
+  return expense - refund
 }
 
 export function freePool(month) {
@@ -66,9 +76,9 @@ export function allTransactions(months) {
 
 export function categoryStatus(category, transactions) {
   const budget = category.budgetAmount || 0
-  const used = categoryUsed(category.id, transactions)
+  const used = Math.max(0, categoryUsed(category.id, transactions))
   if (budget <= 0) return { used, budget, status: 'none', pct: 0 }
-  const pct = Math.min(100, Math.round((used / budget) * 100))
+  const pct = Math.max(0, Math.min(100, Math.round((used / budget) * 100)))
   const status = used > budget ? 'over' : used >= budget * 0.8 ? 'warn' : 'ok'
   return { used, budget, status, pct }
 }

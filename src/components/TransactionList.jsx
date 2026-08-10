@@ -22,12 +22,29 @@ export default function TransactionList({ onEditTx }) {
   const catColor = (id) => (id == null ? '#64748b' : categories.find((c) => c.id === id)?.color || '#64748b')
   const walletName = (id) => (id ? wallets.find((w) => w.id === id)?.name || '—' : null)
 
+  const hasFilter =
+    filterCategory !== 'all' ||
+    filterWallet !== 'all' ||
+    !!fromDate ||
+    !!toDate ||
+    search.trim() !== ''
+
+  const resetFilters = () => {
+    setSearch('')
+    setFilterCategory('all')
+    setFilterWallet('all')
+    setFromDate('')
+    setToDate('')
+  }
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return txs
       .filter((t) => {
-        if (filterCategory !== 'all' && t.categoryId !== filterCategory) return false
-        if (filterWallet !== 'all' && t.walletId !== filterWallet) return false
+        if (filterCategory === 'free' ? t.categoryId != null : filterCategory !== 'all' && t.categoryId !== filterCategory) {
+          return false
+        }
+        if (filterWallet === '' ? t.walletId != null : filterWallet !== 'all' && t.walletId !== filterWallet) return false
         if (fromDate && t.date < fromDate) return false
         if (toDate && t.date > toDate) return false
         if (q && !(t.description || '').toLowerCase().includes(q)) return false
@@ -101,9 +118,19 @@ export default function TransactionList({ onEditTx }) {
 
       {/* List */}
       {filtered.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center text-sm text-slate-400">
-          Tidak ada transaksi.
-        </p>
+        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center">
+          <p className="text-sm text-slate-400">
+            {hasFilter ? 'Tidak ada transaksi yang cocok dengan filter.' : 'Belum ada transaksi di bulan ini.'}
+          </p>
+          {hasFilter && (
+            <button
+              onClick={resetFilters}
+              className="mt-3 rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-50"
+            >
+              Reset filter
+            </button>
+          )}
+        </div>
       ) : (
         Object.entries(group).map(([date, items]) => (
           <section key={date}>
