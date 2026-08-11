@@ -18,8 +18,18 @@ export default function TransactionList({ onEditTx }) {
   const categories = month?.categories || []
   const { wallets } = useStore()
 
-  const catName = (id) => (id == null ? 'Uang Bebas' : categories.find((c) => c.id === id)?.name || '—')
-  const catColor = (id) => (id == null ? '#64748b' : categories.find((c) => c.id === id)?.color || '#64748b')
+  const catName = (t) =>
+    t.type === 'transfer'
+      ? 'Transfer Dompet'
+      : t.categoryId == null
+        ? 'Uang Bebas'
+        : categories.find((c) => c.id === t.categoryId)?.name || '—'
+  const catColor = (t) =>
+    t.type === 'transfer'
+      ? '#0ea5e9'
+      : t.categoryId == null
+        ? '#64748b'
+        : categories.find((c) => c.id === t.categoryId)?.color || '#64748b'
   const walletName = (id) => (id ? wallets.find((w) => w.id === id)?.name || '—' : null)
 
   const hasFilter =
@@ -41,10 +51,19 @@ export default function TransactionList({ onEditTx }) {
     const q = search.trim().toLowerCase()
     return txs
       .filter((t) => {
-        if (filterCategory === 'free' ? t.categoryId != null : filterCategory !== 'all' && t.categoryId !== filterCategory) {
+        if (
+          filterCategory === 'free'
+            ? t.categoryId != null || t.type === 'transfer'
+            : filterCategory !== 'all' && t.categoryId !== filterCategory
+        ) {
           return false
         }
-        if (filterWallet === '' ? t.walletId != null : filterWallet !== 'all' && t.walletId !== filterWallet) return false
+        if (
+          filterWallet === ''
+            ? t.walletId != null
+            : filterWallet !== 'all' && t.walletId !== filterWallet && t.toWalletId !== filterWallet
+        )
+          return false
         if (fromDate && t.date < fromDate) return false
         if (toDate && t.date > toDate) return false
         if (q && !(t.description || '').toLowerCase().includes(q)) return false
@@ -138,34 +157,38 @@ export default function TransactionList({ onEditTx }) {
               {formatDate(date)}
             </p>
             <div className="space-y-2">
-              {items.map((t) => (
-                <div
-                  key={t.id}
-                  className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3 shadow-sm"
-                >
-                  <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: catColor(t.categoryId) }} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-800">{catName(t.categoryId)}</p>
-                    <p className="truncate text-xs text-slate-400">
-                      {t.description || '—'}
-                      {walletName(t.walletId) && ` • ${walletName(t.walletId)}`}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-sm font-semibold ${t.type === 'refund' ? 'text-emerald-600' : 'text-red-500'}`}>
-                      {t.type === 'refund' ? '+' : '−'}{formatRupiah(t.amount)}
-                    </p>
-                    <div className="mt-0.5 flex justify-end gap-1">
-                      <button onClick={() => onEditTx(currentMonthId, t)} className="text-xs text-brand-600 hover:underline">
-                        Ubah
-                      </button>
-                      <button onClick={() => setConfirmId(t.id)} className="text-xs text-red-500 hover:underline">
-                        Hapus
-                      </button>
+              {items.map((t) => {
+                const isTransfer = t.type === 'transfer'
+                return (
+                  <div
+                    key={t.id}
+                    className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3 shadow-sm"
+                  >
+                    <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: catColor(t) }} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-slate-800">{catName(t)}</p>
+                      <p className="truncate text-xs text-slate-400">
+                        {isTransfer
+                          ? `${walletName(t.walletId) || '—'} → ${walletName(t.toWalletId) || '—'}${t.description ? ` • ${t.description}` : ''}`
+                          : `${t.description || '—'}${walletName(t.walletId) ? ` • ${walletName(t.walletId)}` : ''}`}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-sm font-semibold ${isTransfer ? 'text-slate-600' : t.type === 'refund' ? 'text-emerald-600' : 'text-red-500'}`}>
+                        {isTransfer ? '⇄ ' : t.type === 'refund' ? '+' : '−'}{formatRupiah(t.amount)}
+                      </p>
+                      <div className="mt-0.5 flex justify-end gap-1">
+                        <button onClick={() => onEditTx(currentMonthId, t)} className="text-xs text-brand-600 hover:underline">
+                          Ubah
+                        </button>
+                        <button onClick={() => setConfirmId(t.id)} className="text-xs text-red-500 hover:underline">
+                          Hapus
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </section>
         ))

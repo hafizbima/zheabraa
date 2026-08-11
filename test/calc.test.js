@@ -100,4 +100,29 @@ describe('calc', () => {
     expect(walletBalance(walletA, txs)).toBe(100000)
     expect(walletBalance(walletB, txs)).toBe(65000)
   })
+
+  it('transfer moves money between wallets (source out, dest in)', () => {
+    const txs = [
+      { walletId: 'w1', toWalletId: 'w2', type: 'transfer', amount: 30000 },
+      { walletId: 'w1', type: 'expense', amount: 10000 },
+    ]
+    expect(walletBalance(walletA, txs)).toBe(100000 - 30000 - 10000)
+    expect(walletBalance(walletB, txs)).toBe(50000 + 30000)
+  })
+
+  it('transfer does not affect pocket or free money', () => {
+    const month = {
+      incomes: [{ id: 'i1', amount: 100000 }],
+      carryOver: 0,
+      categories: [{ id: 'c1', budgetAmount: 50000 }],
+      transactions: [
+        { categoryId: null, type: 'transfer', amount: 30000, walletId: 'w1', toWalletId: 'w2' },
+      ],
+    }
+    expect(freeMoneySpent(month.transactions)).toBe(0)
+    expect(freeLeft(month)).toBe(50000)
+    expect(categoryUsed('c1', month.transactions)).toBe(0)
+    expect(categoryLeft({ id: 'c1', budgetAmount: 50000 }, month.transactions)).toBe(50000)
+    expect(monthLeftTotal(month)).toBe(100000)
+  })
 })

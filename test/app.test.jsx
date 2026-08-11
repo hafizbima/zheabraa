@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, cleanup } from '@testing-library/react'
+import { render, cleanup, within } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import localBackend from '../src/store/backends/local.js'
@@ -81,5 +81,36 @@ describe('Gimme Money smoke', () => {
     const [catSelect] = getAllByRole('combobox')
     await user.selectOptions(catSelect, 'free')
     expect(await findByText('jajan pasar')).toBeInTheDocument()
+  })
+
+  it('transfer between wallets is recorded in history and updates balances', async () => {
+    const user = userEvent.setup()
+    const { getByText, getByPlaceholderText, getByRole, getAllByRole, findByText } = render(<App />)
+
+    // Login
+    await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
+    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.click(getByRole('button', { name: 'Masuk' }))
+    await findByText('Total Pemasukan')
+
+    // Open form via FAB, choose Transfer, fill amount
+    await user.click(getByRole('button', { name: 'Tambah transaksi' }))
+    await findByText('Tambah Transaksi')
+    await user.click(getByText('Transfer Dompet'))
+    await user.type(getByPlaceholderText('0'), '75000')
+
+    // Pick source & destination wallets
+    const [source, dest] = getAllByRole('combobox')
+    await user.selectOptions(source, within(source).getByRole('option', { name: 'Cash' }))
+    await user.selectOptions(dest, within(dest).getByRole('option', { name: 'Bank' }))
+    await user.click(getByRole('button', { name: 'Simpan' }))
+
+    // Dashboard wallet summary reflects the transfer (Bank +75k)
+    expect(await findByText('Rp 75.000')).toBeInTheDocument()
+
+    // History records the transfer with source -> destination
+    await user.click(getByRole('button', { name: 'Riwayat' }))
+    expect(await findByText('Transfer Dompet')).toBeInTheDocument()
+    expect(getByText('Cash → Bank')).toBeInTheDocument()
   })
 })

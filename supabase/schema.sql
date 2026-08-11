@@ -90,6 +90,7 @@ create table if not exists public.transactions (
   type text not null default 'expense',
   category_id text,
   wallet_id text,
+  to_wallet_id text,
   description text not null default '',
   created_at bigint not null default 0,
   primary key (id, user_id)

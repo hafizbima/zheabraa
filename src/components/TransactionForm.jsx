@@ -14,10 +14,12 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
     transaction ? transaction.categoryId || 'free' : prefill?.categoryId || 'free',
   )
   const [walletId, setWalletId] = useState(transaction?.walletId || '')
+  const [toWalletId, setToWalletId] = useState(transaction?.toWalletId || '')
   const [description, setDescription] = useState(transaction?.description || '')
   const [error, setError] = useState('')
 
-  const isFree = categoryId === 'free'
+  const isTransfer = type === 'transfer'
+  const isFree = !isTransfer && categoryId === 'free'
   const input =
     'w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200'
 
@@ -26,14 +28,21 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
     const amt = toInt(amount)
     if (amt <= 0) return setError('Nominal harus lebih dari 0')
     if (!date) return setError('Tanggal wajib diisi')
-    if (isFree && !description.trim()) return setError('Keterangan wajib diisi untuk Uang Bebas')
+    if (isTransfer) {
+      if (!walletId) return setError('Pilih dompet asal')
+      if (!toWalletId) return setError('Pilih dompet tujuan')
+      if (walletId === toWalletId) return setError('Dompet asal dan tujuan tidak boleh sama')
+    } else if (isFree && !description.trim()) {
+      return setError('Keterangan wajib diisi untuk Uang Bebas')
+    }
 
     const payload = {
       date,
       type,
       amount: amt,
-      categoryId: isFree ? null : categoryId,
-      walletId: walletId || null,
+      categoryId: isTransfer ? null : isFree ? null : categoryId,
+      walletId: isTransfer ? walletId : walletId || null,
+      toWalletId: isTransfer ? toWalletId : null,
       description: description.trim(),
     }
 
@@ -41,6 +50,24 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
     else addTransaction(monthId, payload)
     onClose()
   }
+
+  const typeButton = (key, label, active) => (
+    <button
+      type="button"
+      onClick={() => setType(key)}
+      className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+        active
+          ? key === 'expense'
+            ? 'border-red-300 bg-red-50 text-red-600'
+            : key === 'refund'
+              ? 'border-emerald-300 bg-emerald-50 text-emerald-600'
+              : 'border-brand-300 bg-brand-50 text-brand-700'
+          : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+      }`}
+    >
+      {key === 'transfer' ? 'Transfer Dompet' : key === 'refund' ? 'Refund / Koreksi' : 'Pengeluaran'}
+    </button>
+  )
 
   return (
     <Modal
@@ -69,32 +96,17 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
 
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500">Tipe</label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setType('expense')}
-              className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
-                type === 'expense'
-                  ? 'border-red-300 bg-red-50 text-red-600'
-                  : 'border-slate-200 text-slate-500 hover:bg-slate-50'
-              }`}
-            >
-              Pengeluaran
-            </button>
-            <button
-              type="button"
-              onClick={() => setType('refund')}
-              className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
-                type === 'refund'
-                  ? 'border-emerald-300 bg-emerald-50 text-emerald-600'
-                  : 'border-slate-200 text-slate-500 hover:bg-slate-50'
-              }`}
-            >
-              Refund / Koreksi
-            </button>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {typeButton('expense', 'Pengeluaran', type === 'expense')}
+            {typeButton('refund', 'Refund / Koreksi', type === 'refund')}
+            {typeButton('transfer', 'Transfer Dompet', type === 'transfer')}
           </div>
           <p className="mt-1 text-[11px] text-slate-400">
-            {type === 'refund' ? 'Refund menambah sisa (uang kembali ke pocket/uang bebas).' : 'Pengeluaran mengurangi sisa pocket/uang bebas.'}
+            {isTransfer
+              ? 'Transfer memindahkan uang antar dompet tanpa memengaruhi pocket/uang bebas.'
+              : type === 'refund'
+                ? 'Refund menambah sisa (uang kembali ke pocket/uang bebas).'
+                : 'Pengeluaran mengurangi sisa pocket/uang bebas.'}
           </p>
         </div>
 
@@ -115,29 +127,58 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
           )}
         </div>
 
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Kategori / Pocket</label>
-          <select className={input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-            <option value="free">Uang Bebas (tidak dari pocket)</option>
-            {(month?.categories || []).map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        {isTransfer ? (
+          <>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500">Dompet asal</label>
+              <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
+                <option value="">— Pilih dompet —</option>
+                {wallets.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500">Dompet tujuan</label>
+              <select className={input} value={toWalletId} onChange={(e) => setToWalletId(e.target.value)}>
+                <option value="">— Pilih dompet —</option>
+                {wallets.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </>
+        ) : (
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-500">Kategori / Pocket</label>
+            <select className={input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+              <option value="free">Uang Bebas (tidak dari pocket)</option>
+              {(month?.categories || []).map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Dompet (opsional)</label>
-          <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
-            <option value="">— Tidak dilacak —</option>
-            {wallets.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        {!isTransfer && (
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-500">Dompet (opsional)</label>
+            <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
+              <option value="">— Tidak dilacak —</option>
+              {wallets.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500">
@@ -145,7 +186,13 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
           </label>
           <input
             className={input}
-            placeholder={isFree ? 'Wajib diisi untuk uang bebas' : 'Contoh: bensin, makan siang'}
+            placeholder={
+              isTransfer
+                ? 'Opsional, mis. pindah saldo ke rekening'
+                : isFree
+                  ? 'Wajib diisi untuk uang bebas'
+                  : 'Contoh: bensin, makan siang'
+            }
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />

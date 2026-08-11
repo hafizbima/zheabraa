@@ -10,7 +10,7 @@ function needClient() {
 const WALLET_FIELDS = { name: 'name', color: 'color', openingBalance: 'opening_balance', order: 'sort_order', deleted: 'deleted' }
 const MONTH_FIELDS = { label: 'label', carryOver: 'carry_over', incomes: 'incomes', createdAt: 'created_at' }
 const CAT_FIELDS = { name: 'name', budgetAmount: 'budget_amount', color: 'color', order: 'sort_order' }
-const TX_FIELDS = { date: 'date', amount: 'amount', type: 'type', categoryId: 'category_id', walletId: 'wallet_id', description: 'description', createdAt: 'created_at' }
+const TX_FIELDS = { date: 'date', amount: 'amount', type: 'type', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', createdAt: 'created_at' }
 
 function mapWallet(r) {
   return { id: r.id, name: r.name, color: r.color, openingBalance: r.opening_balance, order: r.sort_order }
@@ -35,6 +35,7 @@ function mapTransaction(r) {
     type: r.type,
     categoryId: r.category_id,
     walletId: r.wallet_id,
+    toWalletId: r.to_wallet_id,
     description: r.description,
     createdAt: Number(r.created_at) || 0,
   }
@@ -44,7 +45,7 @@ function toSnake(fields) {
   return (row) => {
     const out = {}
     for (const [k, col] of Object.entries(fields)) {
-      if (row[k] !== undefined && row[k] !== null) out[col] = row[k]
+      if (row[k] !== undefined) out[col] = row[k]
     }
     return out
   }

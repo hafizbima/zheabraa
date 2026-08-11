@@ -4,7 +4,7 @@ export function categoryUsed(categoryId, transactions) {
   for (const t of transactions) {
     if (t.categoryId !== categoryId) continue
     if (t.type === 'refund') refund += t.amount || 0
-    else expense += t.amount || 0
+    else if (t.type === 'expense') expense += t.amount || 0
   }
   return expense - refund
 }
@@ -31,7 +31,7 @@ export function freeMoneySpent(transactions) {
   for (const t of transactions) {
     if (t.categoryId != null) continue
     if (t.type === 'refund') refund += t.amount || 0
-    else expense += t.amount || 0
+    else if (t.type === 'expense') expense += t.amount || 0
   }
   return expense - refund
 }
@@ -63,6 +63,11 @@ export function walletBalance(wallet, allTransactions) {
   let inflow = 0
   let outflow = 0
   for (const tx of allTransactions) {
+    if (tx.type === 'transfer') {
+      if (tx.walletId === wallet.id) outflow += tx.amount || 0
+      if (tx.toWalletId === wallet.id) inflow += tx.amount || 0
+      continue
+    }
     if (tx.walletId !== wallet.id) continue
     if (tx.type === 'refund') inflow += tx.amount || 0
     else outflow += tx.amount || 0
