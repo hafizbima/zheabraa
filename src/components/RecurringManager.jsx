@@ -127,8 +127,8 @@ export default function RecurringManager({ onClose }) {
       <form onSubmit={submitNew} className="rounded-xl border border-brand-100 bg-brand-50/40 p-4 dark:border-brand-500/30 dark:bg-brand-500/10">
         <h4 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">Tambah template</h4>
         <div className="grid gap-2 sm:grid-cols-4">
-          <input className={input} type="number" min="1" max="28" placeholder="Tanggal" value={day} onChange={(e) => setDay(e.target.value)} aria-label="Tanggal" />
-          <input className={input} type="number" min="0" placeholder="Nominal (Rp)" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Nominal" />
+          <input className={input} type="text" inputMode="numeric" placeholder="Tanggal" value={day} onChange={(e) => setDay(e.target.value)} aria-label="Tanggal" />
+          <input className={input} type="text" inputMode="numeric" placeholder="Nominal (Rp)" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Nominal" />
           <input className={input + ' sm:col-span-2'} placeholder="Keterangan (mis. Bayar Kos)" value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -178,17 +178,16 @@ export default function RecurringManager({ onClose }) {
               </label>
               <input
                 className={input + ' w-16'}
-                type="number"
-                min="1"
-                max="28"
+                type="text"
+                inputMode="numeric"
                 value={d.dayOfMonth}
                 onChange={(e) => updateDraft(t.id, { dayOfMonth: toInt(e.target.value) || 1 })}
                 aria-label="Tanggal"
               />
               <input
                 className={input + ' w-32'}
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
                 value={d.amount}
                 onChange={(e) => updateDraft(t.id, { amount: toInt(e.target.value) })}
                 aria-label="Nominal"

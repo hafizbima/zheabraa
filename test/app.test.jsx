@@ -94,17 +94,16 @@ describe('Gimme Money smoke', () => {
     await user.click(getByRole('button', { name: 'Masuk' }))
     await findByText('Total Pemasukan')
 
-    // Open form via FAB, choose Transfer, fill amount
-    await user.click(getByRole('button', { name: 'Tambah transaksi' }))
-    await findByText('Tambah Transaksi')
-    await user.click(getByText('Transfer Dompet'))
+    // Open dedicated transfer via dashboard wallet summary
+    await user.click(getByRole('button', { name: 'Transfer' }))
+    await findByText('Transfer Antar Dompet')
     await user.type(getByPlaceholderText('0'), '75000')
 
     // Pick source & destination wallets
     const [source, dest] = getAllByRole('combobox')
     await user.selectOptions(source, within(source).getByRole('option', { name: 'Cash' }))
     await user.selectOptions(dest, within(dest).getByRole('option', { name: 'Bank' }))
-    await user.click(getByRole('button', { name: 'Simpan' }))
+    await user.click(getByRole('button', { name: 'Simpan Transfer' }))
 
     // Dashboard wallet summary reflects the transfer (Bank +75k)
     expect(await findByText('Rp 75.000')).toBeInTheDocument()

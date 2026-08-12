@@ -19,7 +19,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const [description, setDescription] = useState(transaction?.description || '')
   const [error, setError] = useState('')
 
-  const isTransfer = type === 'transfer'
+  const isTransfer = transaction?.type === 'transfer' || type === 'transfer'
   const isFree = !isTransfer && categoryId === 'free'
   const input =
     'w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/30'
@@ -58,15 +58,13 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
       onClick={() => setType(key)}
       className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
         active
-          ? key === 'expense'
-            ? 'border-red-300 bg-red-50 text-red-600'
-            : key === 'refund'
-              ? 'border-emerald-300 bg-emerald-50 text-emerald-600'
-              : 'border-brand-300 bg-brand-50 text-brand-700'
+          ? key === 'refund'
+            ? 'border-emerald-300 bg-emerald-50 text-emerald-600'
+            : 'border-red-300 bg-red-50 text-red-600'
           : 'border-slate-200 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
       }`}
     >
-      {key === 'transfer' ? 'Transfer Dompet' : key === 'refund' ? 'Refund / Koreksi' : 'Pengeluaran'}
+      {key === 'refund' ? 'Refund / Koreksi' : 'Pengeluaran'}
     </button>
   )
 
@@ -97,25 +95,29 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
 
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Tipe</label>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            {typeButton('expense', 'Pengeluaran', type === 'expense')}
-            {typeButton('refund', 'Refund / Koreksi', type === 'refund')}
-            {typeButton('transfer', 'Transfer Dompet', type === 'transfer')}
-          </div>
-          <p className="mt-1 text-[11px] text-slate-400">
-            {isTransfer
-              ? 'Transfer memindahkan uang antar dompet tanpa memengaruhi pocket/uang bebas.'
-              : type === 'refund'
-                ? 'Refund menambah sisa (uang kembali ke pocket/uang bebas).'
-                : 'Pengeluaran mengurangi sisa pocket/uang bebas.'}
-          </p>
+          {isTransfer ? (
+            <p className="rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
+              Ini transaksi transfer antar dompet. Edit dari sini tidak disarankan — gunakan menu "Transfer".&nbsp; Nominal tidak mengubah pocket/uang bebas.
+            </p>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {typeButton('expense', 'Pengeluaran', type === 'expense')}
+                {typeButton('refund', 'Refund / Koreksi', type === 'refund')}
+              </div>
+              <p className="mt-1 text-[11px] text-slate-400">
+                {type === 'refund'
+                  ? 'Refund menambah sisa (uang kembali ke pocket/uang bebas).'
+                  : 'Pengeluaran mengurangi sisa pocket/uang bebas.'}
+              </p>
+            </>
+          )}
         </div>
 
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Nominal (Rp)</label>
           <input
-            type="number"
-            min="0"
+            type="text"
             inputMode="numeric"
             className={input}
             placeholder="0"

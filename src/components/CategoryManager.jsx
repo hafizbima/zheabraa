@@ -181,8 +181,8 @@ export default function CategoryManager({ onClose }) {
                 <p className="mb-1 text-xs text-slate-400">Budget/bulan</p>
                 <input
                   className={input + ' text-right'}
-                  // type="number"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
                   value={d.budgetAmount}
                   onChange={(e) => updateDraft(cat.id, { budgetAmount: toInt(e.target.value) })}
                   aria-label="Budget"
@@ -192,8 +192,8 @@ export default function CategoryManager({ onClose }) {
                 <p className="mb-1 text-xs text-slate-400">Target</p>
                 <input
                   className={input + ' text-right'}
-                  // type="number"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
                   value={d.goalAmount || 0}
                   onChange={(e) => updateDraft(cat.id, { goalAmount: toInt(e.target.value) })}
                   aria-label="Target tabungan"

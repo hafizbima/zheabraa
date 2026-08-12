@@ -9,6 +9,7 @@ import Stats from './components/Stats.jsx'
 import CategoryManager from './components/CategoryManager.jsx'
 import WalletManager from './components/WalletManager.jsx'
 import RecurringManager from './components/RecurringManager.jsx'
+import TransferForm from './components/TransferForm.jsx'
 
 export default function App() {
   return (
@@ -48,6 +49,7 @@ function Shell() {
   const [catOpen, setCatOpen] = useState(false)
   const [walletOpen, setWalletOpen] = useState(false)
   const [recurrOpen, setRecurrOpen] = useState(false)
+  const [transferOpen, setTransferOpen] = useState(false)
 
   const openNewTx = (prefillData) => {
     setEditing(null)
@@ -76,6 +78,7 @@ function Shell() {
             onEditTx={openEditTx}
             onManageCategories={() => setCatOpen(true)}
             onManageRecurring={() => setRecurrOpen(true)}
+            onTransfer={() => setTransferOpen(true)}
           />
         ) : view === 'stats' ? (
           <Stats />
@@ -104,6 +107,7 @@ function Shell() {
       {catOpen && <CategoryManager onClose={() => setCatOpen(false)} />}
       {walletOpen && <WalletManager onClose={() => setWalletOpen(false)} />}
       {recurrOpen && <RecurringManager onClose={() => setRecurrOpen(false)} />}
+      {transferOpen && <TransferForm monthId={currentMonthId} onClose={() => setTransferOpen(false)} />}
     </div>
   )
 }

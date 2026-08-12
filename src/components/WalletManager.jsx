@@ -92,7 +92,7 @@ export default function WalletManager({ onClose }) {
         <h4 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">Tambah dompet</h4>
         <div className="grid gap-2 sm:grid-cols-3">
           <input className={input} placeholder="Nama (mis. GoPay)" value={name} onChange={(e) => setName(e.target.value)} required />
-          <input className={input} type="number" min="0" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(e.target.value)} />
+          <input className={input} type="text" inputMode="numeric" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(e.target.value)} />
           <div className="flex flex-wrap items-center gap-1.5">
             {WALLET_COLORS.map((c) => (
               <button
@@ -135,8 +135,8 @@ export default function WalletManager({ onClose }) {
               <div className="w-32 shrink-0">
                 <input
                   className={input + ' text-right'}
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
                   value={d.openingBalance}
                   onChange={(e) => updateDraft(w.id, { openingBalance: toInt(e.target.value) })}
                   aria-label="Saldo awal"

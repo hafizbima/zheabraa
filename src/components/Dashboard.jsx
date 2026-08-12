@@ -32,7 +32,7 @@ function statusStyles(status) {
   return 'bg-brand-500'
 }
 
-export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onManageRecurring }) {
+export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onManageRecurring, onTransfer }) {
   const {
     currentMonth: month,
     currentMonthId,
@@ -182,7 +182,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             <div className="rounded-lg border border-brand-100 bg-white dark:bg-slate-900 p-3">
               <div className="flex gap-2">
                 <input className={input + ' flex-1'} value={incomeLabel} onChange={(e) => setIncomeLabel(e.target.value)} placeholder="Label (mis. Gaji, Bonus)" />
-                <input className={input + ' w-36'} type="number" min="0" value={incomeAmount} onChange={(e) => setIncomeAmount(e.target.value)} placeholder="Nominal" />
+                <input className={input + ' w-36'} type="text" inputMode="numeric" value={incomeAmount} onChange={(e) => setIncomeAmount(e.target.value)} placeholder="Nominal" />
               </div>
               <div className="mt-2 flex justify-end gap-2">
                 <button onClick={() => setEditingIncome(null)} className={btn.neutral}>Batal</button>
@@ -323,7 +323,12 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
       {/* Wallet ringkasan */}
       <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-800 dark:text-slate-100">Dompet</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Dompet</h3>
+          <button onClick={onTransfer} className={btn.subtle}>
+            Transfer
+          </button>
+        </div>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {wallets.map((w) => (
             <div key={w.id} className="rounded-lg border border-slate-100 dark:border-slate-800 p-3">
