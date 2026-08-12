@@ -7,7 +7,11 @@ html {
 }
 
 body {
-  @apply bg-brand-50 text-slate-800 antialiased;
+  @apply bg-brand-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100;
+}
+
+.dark {
+  color-scheme: dark;
 }
 
 input[type='color'] {

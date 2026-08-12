@@ -23,7 +23,7 @@ export default function Login() {
   }
 
   const input =
-    'w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200'
+    'w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/30'
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-brand-700 px-4">
@@ -38,13 +38,13 @@ export default function Login() {
           <p className="mt-1 text-sm text-brand-200">Sistem pocket budgeting untuk keuangan pribadimu</p>
         </div>
 
-        <form onSubmit={submit} className="rounded-2xl bg-white p-6 shadow-xl">
-          <h2 className="mb-4 text-lg font-semibold text-slate-800">
+        <form onSubmit={submit} className="rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 dark:shadow-2xl">
+          <h2 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-100">
             {mode === 'login' ? 'Masuk' : 'Buat akun'}
           </h2>
           {mode === 'signup' && (
             <div className="mb-3">
-              <label className="mb-1 block text-xs font-medium text-slate-500">Nama</label>
+              <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Nama</label>
               <input
                 className={input}
                 value={displayName}
@@ -54,7 +54,7 @@ export default function Login() {
             </div>
           )}
           <div className="mb-3">
-            <label className="mb-1 block text-xs font-medium text-slate-500">Email</label>
+            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Email</label>
             <input
               className={input}
               type="email"
@@ -65,7 +65,7 @@ export default function Login() {
             />
           </div>
           <div className="mb-4">
-            <label className="mb-1 block text-xs font-medium text-slate-500">Password</label>
+            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Password</label>
             <input
               className={input}
               type="password"
@@ -77,18 +77,18 @@ export default function Login() {
           </div>
 
           {error && (
-            <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</div>
+            <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">{error}</div>
           )}
 
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-lg bg-brand-600 py-2.5 font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+            className="w-full rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 py-2.5 font-semibold text-white shadow-sm shadow-brand-600/40 transition hover:from-brand-500 hover:to-brand-800 hover:shadow-md active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {busy ? '…' : mode === 'login' ? 'Masuk' : 'Daftar'}
           </button>
 
-          <p className="mt-4 text-center text-sm text-slate-500">
+          <p className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">
             {mode === 'login' ? 'Belum punya akun?' : 'Sudah punya akun?'}{' '}
             <button
               type="button"

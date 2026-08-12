@@ -3,6 +3,7 @@ import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah } from '../lib/money.js'
 import { formatDate } from '../lib/dates.js'
 import Confirm from './Confirm.jsx'
+import { btn } from '../lib/buttons.js'
 
 export default function TransactionList({ onEditTx }) {
   const { currentMonth: month, currentMonthId, removeTransaction } = useStore()
@@ -80,7 +81,7 @@ export default function TransactionList({ onEditTx }) {
     .reduce((a, t) => a + t.amount, 0)
 
   const input =
-    'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200'
+    'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:focus:ring-brand-500/30'
 
   const group = {}
   for (const t of filtered) {
@@ -90,7 +91,7 @@ export default function TransactionList({ onEditTx }) {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <section className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
+      <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <input
             className={input}
@@ -123,28 +124,28 @@ export default function TransactionList({ onEditTx }) {
         </div>
 
         <div className="mt-3 flex flex-wrap gap-3 text-sm">
-          <span className="text-slate-500">
+          <span className="text-slate-500 dark:text-slate-400">
             <span className="font-semibold text-red-500">{formatRupiah(spent)}</span> keluar
           </span>
-          <span className="text-slate-500">
+          <span className="text-slate-500 dark:text-slate-400">
             <span className="font-semibold text-emerald-600">{formatRupiah(refunded)}</span> refund
           </span>
-          <span className="text-slate-500">
-            <span className="font-semibold text-slate-800">{filtered.length}</span> transaksi
+          <span className="text-slate-500 dark:text-slate-400">
+            <span className="font-semibold text-slate-800 dark:text-slate-100">{filtered.length}</span> transaksi
           </span>
         </div>
       </section>
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center">
+        <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-8 text-center">
           <p className="text-sm text-slate-400">
             {hasFilter ? 'Tidak ada transaksi yang cocok dengan filter.' : 'Belum ada transaksi di bulan ini.'}
           </p>
           {hasFilter && (
             <button
               onClick={resetFilters}
-              className="mt-3 rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-50"
+              className={`${btn.ghost} mt-3`}
             >
               Reset filter
             </button>
@@ -162,11 +163,11 @@ export default function TransactionList({ onEditTx }) {
                 return (
                   <div
                     key={t.id}
-                    className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3 shadow-sm"
+                    className="flex items-center gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-sm"
                   >
                     <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: catColor(t) }} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-slate-800">{catName(t)}</p>
+                      <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">{catName(t)}</p>
                       <p className="truncate text-xs text-slate-400">
                         {isTransfer
                           ? `${walletName(t.walletId) || '—'} → ${walletName(t.toWalletId) || '—'}${t.description ? ` • ${t.description}` : ''}`
@@ -174,14 +175,14 @@ export default function TransactionList({ onEditTx }) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-sm font-semibold ${isTransfer ? 'text-slate-600' : t.type === 'refund' ? 'text-emerald-600' : 'text-red-500'}`}>
+                      <p className={`text-sm font-semibold ${isTransfer ? 'text-slate-600 dark:text-slate-300' : t.type === 'refund' ? 'text-emerald-600' : 'text-red-500'}`}>
                         {isTransfer ? '⇄ ' : t.type === 'refund' ? '+' : '−'}{formatRupiah(t.amount)}
                       </p>
                       <div className="mt-0.5 flex justify-end gap-1">
-                        <button onClick={() => onEditTx(currentMonthId, t)} className="text-xs text-brand-600 hover:underline">
+                        <button onClick={() => onEditTx(currentMonthId, t)} className={btn.subtle}>
                           Ubah
                         </button>
-                        <button onClick={() => setConfirmId(t.id)} className="text-xs text-red-500 hover:underline">
+                        <button onClick={() => setConfirmId(t.id)} className={btn.subtleDanger}>
                           Hapus
                         </button>
                       </div>

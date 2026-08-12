@@ -3,6 +3,7 @@ import Modal from './Modal.jsx'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah, toInt } from '../lib/money.js'
 import { todayISO } from '../lib/dates.js'
+import { btn } from '../lib/buttons.js'
 
 export default function TransactionForm({ monthId, transaction, prefill, onClose }) {
   const { currentMonth: month, wallets, addTransaction, updateTransaction } = useStore()
@@ -21,7 +22,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const isTransfer = type === 'transfer'
   const isFree = !isTransfer && categoryId === 'free'
   const input =
-    'w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200'
+    'w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/30'
 
   const submit = (e) => {
     e.preventDefault()
@@ -62,7 +63,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
             : key === 'refund'
               ? 'border-emerald-300 bg-emerald-50 text-emerald-600'
               : 'border-brand-300 bg-brand-50 text-brand-700'
-          : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+          : 'border-slate-200 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
       }`}
     >
       {key === 'transfer' ? 'Transfer Dompet' : key === 'refund' ? 'Refund / Koreksi' : 'Pengeluaran'}
@@ -75,13 +76,13 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
+          <button onClick={onClose} className={btn.neutral}>
             Batal
           </button>
           <button
             type="submit"
             form="tx-form"
-            className="rounded-lg bg-brand-600 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+            className={btn.primary}
           >
             {transaction ? 'Simpan Perubahan' : 'Simpan'}
           </button>
@@ -90,12 +91,12 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
     >
       <form id="tx-form" onSubmit={submit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Tanggal</label>
+          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Tanggal</label>
           <input type="date" className={input} value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Tipe</label>
+          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Tipe</label>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {typeButton('expense', 'Pengeluaran', type === 'expense')}
             {typeButton('refund', 'Refund / Koreksi', type === 'refund')}
@@ -111,7 +112,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">Nominal (Rp)</label>
+          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Nominal (Rp)</label>
           <input
             type="number"
             min="0"
@@ -130,7 +131,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         {isTransfer ? (
           <>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-500">Dompet asal</label>
+              <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dompet asal</label>
               <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
                 <option value="">— Pilih dompet —</option>
                 {wallets.map((w) => (
@@ -141,7 +142,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-500">Dompet tujuan</label>
+              <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dompet tujuan</label>
               <select className={input} value={toWalletId} onChange={(e) => setToWalletId(e.target.value)}>
                 <option value="">— Pilih dompet —</option>
                 {wallets.map((w) => (
@@ -154,7 +155,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
           </>
         ) : (
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500">Kategori / Pocket</label>
+            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Kategori / Pocket</label>
             <select className={input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
               <option value="free">Uang Bebas (tidak dari pocket)</option>
               {(month?.categories || []).map((c) => (
@@ -168,7 +169,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
 
         {!isTransfer && (
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500">Dompet (opsional)</label>
+            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dompet (opsional)</label>
             <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
               <option value="">— Tidak dilacak —</option>
               {wallets.map((w) => (
@@ -181,7 +182,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         )}
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">
+          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
             Keterangan {isFree && <span className="text-red-500">*</span>}
           </label>
           <input
@@ -199,7 +200,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         </div>
 
         {error && (
-          <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</div>
+          <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">{error}</div>
         )}
       </form>
     </Modal>

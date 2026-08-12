@@ -13,6 +13,7 @@ export function StoreProvider({ children }) {
   const [wallets, setWallets] = useState([])
   const [walletsReceived, setWalletsReceived] = useState(false)
   const [months, setMonths] = useState({})
+  const [templates, setTemplates] = useState([])
   const [currentMonthId, setCurrentMonthId] = useState(() => monthIdOf(new Date()))
 
   useEffect(() => {
@@ -52,6 +53,23 @@ export function StoreProvider({ children }) {
   }, [user])
 
   const monthIdsKey = useMemo(() => Object.keys(months).sort().join(','), [months])
+
+  useEffect(() => {
+    if (!user) {
+      setTemplates([])
+      return
+    }
+    let alive = true
+    backend
+      .listTemplates(user.uid)
+      .then((list) => {
+        if (alive) setTemplates(list)
+      })
+      .catch(console.error)
+    return () => {
+      alive = false
+    }
+  }, [user])
 
   useEffect(() => {
     if (!user) return
@@ -103,6 +121,7 @@ export function StoreProvider({ children }) {
         label: m?.label || labelOf(mId),
         carryOver: m?.carryOver || 0,
         incomes: m?.incomes || [],
+        note: m?.note || '',
         createdAt: m?.createdAt || Date.now(),
       }
     },
@@ -168,6 +187,14 @@ export function StoreProvider({ children }) {
     [user, monthMeta],
   )
 
+  const setMonthNote = useCallback(
+    (mId, note) => {
+      if (!user) return
+      backend.setMonth(user.uid, { ...monthMeta(mId), note: note || '' }).catch(console.error)
+    },
+    [user, monthMeta],
+  )
+
   // --- wallets ---
   const addWallet = useCallback(
     (data) => {
@@ -209,6 +236,7 @@ export function StoreProvider({ children }) {
         id: uid(),
         name: data.name,
         budgetAmount: data.budgetAmount || 0,
+        goalAmount: data.goalAmount || 0,
         color: data.color,
         order: cats.length,
       }
@@ -259,6 +287,57 @@ export function StoreProvider({ children }) {
     [user],
   )
 
+  // --- recurring templates ---
+  const refreshTemplates = useCallback(() => {
+    if (!user) return
+    backend
+      .listTemplates(user.uid)
+      .then((list) => setTemplates(list))
+      .catch(console.error)
+  }, [user])
+
+  const addTemplate = useCallback(
+    (data) => {
+      if (!user) return
+      const t = {
+        id: uid(),
+        dayOfMonth: data.dayOfMonth || 1,
+        amount: data.amount || 0,
+        categoryId: data.categoryId || null,
+        walletId: data.walletId || null,
+        description: data.description || '',
+        active: data.active !== false,
+        createdAt: Date.now(),
+      }
+      backend
+        .addTemplate(user.uid, t)
+        .then(() => backend.applyRecurring(user.uid, currentMonthId))
+        .catch(console.error)
+        .finally(refreshTemplates)
+    },
+    [user, currentMonthId, refreshTemplates],
+  )
+
+  const updateTemplate = useCallback(
+    (id, patch) => {
+      if (!user) return
+      backend
+        .updateTemplate(user.uid, id, patch)
+        .then(() => backend.applyRecurring(user.uid, currentMonthId))
+        .catch(console.error)
+        .finally(refreshTemplates)
+    },
+    [user, currentMonthId, refreshTemplates],
+  )
+
+  const removeTemplate = useCallback(
+    (id) => {
+      if (!user) return
+      backend.removeTemplate(user.uid, id).then(refreshTemplates).catch(console.error)
+    },
+    [user, refreshTemplates],
+  )
+
   const value = useMemo(
     () => ({
       backendMode: backend.mode,
@@ -281,20 +360,26 @@ export function StoreProvider({ children }) {
       updateIncome,
       removeIncome,
       setCarryOver,
+      setMonthNote,
       addCategory,
       updateCategory,
       removeCategory,
       addTransaction,
       updateTransaction,
       removeTransaction,
+      templates,
+      addTemplate,
+      updateTemplate,
+      removeTemplate,
     }),
     [
       user, authReady, ready, wallets, months, currentMonthId, currentMonth,
       login, signup, logout, switchMonth, startNewMonth,
       addWallet, updateWallet, deleteWallet,
-      addIncome, updateIncome, removeIncome, setCarryOver,
+      addIncome, updateIncome, removeIncome, setCarryOver, setMonthNote,
       addCategory, updateCategory, removeCategory,
       addTransaction, updateTransaction, removeTransaction,
+      templates, addTemplate, updateTemplate, removeTemplate,
     ],
   )
 

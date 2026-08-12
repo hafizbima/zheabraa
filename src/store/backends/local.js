@@ -10,6 +10,7 @@ const store = {
   months: {}, // id -> { id, label, carryOver, incomes, createdAt }
   categories: {}, // id -> []
   transactions: {}, // id -> []
+  templates: [], // recurring templates
   subs: { auth: [], wallets: [], months: [], detail: {} },
 }
 
@@ -44,7 +45,7 @@ function migrate(raw) {
     if (Array.isArray(m.categories)) categories[id] = m.categories
     if (Array.isArray(m.transactions)) transactions[id] = m.transactions
   }
-  return { wallets: raw.wallets || [], months, categories, transactions }
+  return { wallets: raw.wallets || [], months, categories, transactions, templates: raw.templates || [] }
 }
 
 function persist() {
@@ -54,6 +55,7 @@ function persist() {
     months: store.months,
     categories: store.categories,
     transactions: store.transactions,
+    templates: store.templates,
   })
 }
 
@@ -76,6 +78,7 @@ function load(uid) {
     store.months = migrated.months
     store.categories = migrated.categories
     store.transactions = migrated.transactions
+    store.templates = migrated.templates
   } else {
     seed()
   }
@@ -116,6 +119,7 @@ export function reset() {
   store.months = {}
   store.categories = {}
   store.transactions = {}
+  store.templates = []
   store.subs = { auth: [], wallets: [], months: [], detail: {} }
   saveJSON(AUTH_KEY, null)
 }
@@ -176,6 +180,7 @@ export function subscribeMonths(uid, cb) {
 export function subscribeMonthDetail(uid, mId, cb) {
   store.subs.detail[mId] = store.subs.detail[mId] || []
   store.subs.detail[mId].push(cb)
+  generateRecurring(uid, mId)
   emitDetail(mId)
   return () => {
     store.subs.detail[mId] = store.subs.detail[mId].filter((f) => f !== cb)
@@ -208,6 +213,42 @@ export function removeWallet(uid, id) {
 }
 
 // --- months ---
+function pad2(n) {
+  return String(n).padStart(2, '0')
+}
+
+function generateRecurring(uid, mId) {
+  const now = new Date()
+  const curMonth = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`
+  const todayDay = now.getDate()
+  if (mId < curMonth) return
+  store.transactions[mId] = store.transactions[mId] || []
+  let changed = false
+  for (const t of store.templates) {
+    if (!t.active) continue
+    const day = Math.min(28, Math.max(1, t.dayOfMonth || 1))
+    if (mId === curMonth && day > todayDay) continue
+    const id = `recur-${t.id}-${mId}-${pad2(day)}`
+    if (store.transactions[mId].some((x) => x.id === id)) continue
+    store.transactions[mId].unshift({
+      id,
+      date: `${mId}-${pad2(day)}`,
+      amount: t.amount || 0,
+      type: 'expense',
+      categoryId: t.categoryId || null,
+      walletId: t.walletId || null,
+      toWalletId: null,
+      description: t.description || 'Transaksi berulang',
+      createdAt: Date.now(),
+    })
+    changed = true
+  }
+  if (changed) {
+    persist()
+    emitDetail(mId)
+  }
+}
+
 export function setMonth(uid, month) {
   store.months[month.id] = { ...(store.months[month.id] || {}), ...month }
   persist()
@@ -222,10 +263,13 @@ export function ensureMonth(uid, mId) {
     label: blank.label,
     carryOver: 0,
     incomes: blank.incomes,
+    note: '',
     createdAt: blank.createdAt,
   }
   store.categories[mId] = blank.categories
   store.transactions[mId] = []
+  generateRecurring(uid, mId)
+  if (!store.transactions[mId]) store.transactions[mId] = []
   persist()
   emitMonths()
   emitDetail(mId)
@@ -239,10 +283,13 @@ export function createNextMonth(uid, mId, carryOver, cats) {
     label: blank.label,
     carryOver: carryOver || 0,
     incomes: blank.incomes,
+    note: '',
     createdAt: blank.createdAt,
   }
   store.categories[mId] = cats && cats.length ? cats.map((c) => ({ ...c })) : blank.categories
   store.transactions[mId] = []
+  generateRecurring(uid, mId)
+  if (!store.transactions[mId]) store.transactions[mId] = []
   persist()
   emitMonths()
   emitDetail(mId)
@@ -306,6 +353,35 @@ export function removeTransaction(uid, mId, id) {
   return Promise.resolve()
 }
 
+// --- recurring templates ---
+export function listTemplates(uid) {
+  return Promise.resolve([...store.templates])
+}
+export function addTemplate(uid, t) {
+  const i = store.templates.findIndex((x) => x.id === t.id)
+  if (i >= 0) store.templates[i] = { ...store.templates[i], ...t }
+  else store.templates.push(t)
+  persist()
+  return Promise.resolve()
+}
+export function updateTemplate(uid, id, patch) {
+  const i = store.templates.findIndex((x) => x.id === id)
+  if (i >= 0) {
+    store.templates[i] = { ...store.templates[i], ...patch }
+    persist()
+  }
+  return Promise.resolve()
+}
+export function removeTemplate(uid, id) {
+  store.templates = store.templates.filter((x) => x.id !== id)
+  persist()
+  return Promise.resolve()
+}
+export function applyRecurring(uid, mId) {
+  generateRecurring(uid, mId)
+  return Promise.resolve()
+}
+
 init()
 
 export default {
@@ -331,4 +407,9 @@ export default {
   setTransaction,
   updateTransaction,
   removeTransaction,
+  listTemplates,
+  addTemplate,
+  updateTemplate,
+  removeTemplate,
+  applyRecurring,
 }

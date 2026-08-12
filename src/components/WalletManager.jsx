@@ -5,6 +5,7 @@ import { useStore } from '../store/StoreContext.jsx'
 import { WALLET_COLORS } from '../lib/palette.js'
 import { formatRupiah, toInt } from '../lib/money.js'
 import { walletBalance, allTransactions } from '../lib/calc.js'
+import { btn } from '../lib/buttons.js'
 
 export default function WalletManager({ onClose }) {
   const { wallets, months, addWallet, updateWallet, deleteWallet } = useStore()
@@ -18,7 +19,7 @@ export default function WalletManager({ onClose }) {
 
   const allTx = allTransactions(months)
   const input =
-    'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200'
+    'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/30'
 
   useEffect(() => {
     setDrafts((prev) => {
@@ -80,15 +81,15 @@ export default function WalletManager({ onClose }) {
           <button
             onClick={saveAll}
             disabled={saving || dirtyCount === 0}
-            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+            className={btn.primary}
           >
             {saving ? 'Menyimpan…' : dirtyCount > 0 ? `Simpan Perubahan (${dirtyCount})` : justSaved ? 'Tersimpan' : 'Simpan Perubahan'}
           </button>
         </div>
       }
     >
-      <form onSubmit={submitNew} className="rounded-xl border border-brand-100 bg-brand-50/40 p-4">
-        <h4 className="mb-3 text-sm font-semibold text-slate-700">Tambah dompet</h4>
+      <form onSubmit={submitNew} className="rounded-xl border border-brand-100 bg-brand-50/40 p-4 dark:border-brand-500/30 dark:bg-brand-500/10">
+        <h4 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">Tambah dompet</h4>
         <div className="grid gap-2 sm:grid-cols-3">
           <input className={input} placeholder="Nama (mis. GoPay)" value={name} onChange={(e) => setName(e.target.value)} required />
           <input className={input} type="number" min="0" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(e.target.value)} />
@@ -106,7 +107,7 @@ export default function WalletManager({ onClose }) {
           </div>
         </div>
         <div className="mt-3 flex justify-end">
-          <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+          <button type="submit" className={btn.primary}>
             + Tambah
           </button>
         </div>
@@ -118,7 +119,7 @@ export default function WalletManager({ onClose }) {
           const bal = walletBalance({ ...w, openingBalance: d.openingBalance }, allTx)
           const dirty = d.name !== w.name || d.color !== w.color || d.openingBalance !== w.openingBalance
           return (
-            <div key={w.id} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3">
+            <div key={w.id} className="flex items-center gap-3 rounded-xl border border-slate-100 dark:border-slate-800 p-3">
               <input
                 type="color"
                 value={d.color}
@@ -144,16 +145,16 @@ export default function WalletManager({ onClose }) {
               </div>
               <div className="w-28 shrink-0 text-right">
                 <p className="text-xs text-slate-400">saldo saat ini</p>
-                <p className={`text-sm font-semibold ${bal < 0 ? 'text-red-500' : 'text-slate-800'}`}>{formatRupiah(bal)}</p>
+                <p className={`text-sm font-semibold ${bal < 0 ? 'text-red-500' : 'text-slate-800 dark:text-slate-100'}`}>{formatRupiah(bal)}</p>
               </div>
               <button
                 onClick={() => setConfirmId(w.id)}
-                className="shrink-0 rounded-lg px-2 py-1 text-xs text-red-500 hover:bg-red-50"
+                className={btn.subtleDanger + ' shrink-0'}
               >
                 Hapus
               </button>
               {dirty && (
-                <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
                   belum disimpan
                 </span>
               )}
@@ -161,7 +162,7 @@ export default function WalletManager({ onClose }) {
           )
         })}
         {wallets.length === 0 && (
-          <p className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
+          <p className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 p-6 text-center text-sm text-slate-400">
             Belum ada dompet.
           </p>
         )}

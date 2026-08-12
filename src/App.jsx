@@ -5,8 +5,10 @@ import Header from './components/Header.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import TransactionList from './components/TransactionList.jsx'
 import TransactionForm from './components/TransactionForm.jsx'
+import Stats from './components/Stats.jsx'
 import CategoryManager from './components/CategoryManager.jsx'
 import WalletManager from './components/WalletManager.jsx'
+import RecurringManager from './components/RecurringManager.jsx'
 
 export default function App() {
   return (
@@ -45,6 +47,7 @@ function Shell() {
   const [prefill, setPrefill] = useState(null)
   const [catOpen, setCatOpen] = useState(false)
   const [walletOpen, setWalletOpen] = useState(false)
+  const [recurrOpen, setRecurrOpen] = useState(false)
 
   const openNewTx = (prefillData) => {
     setEditing(null)
@@ -59,7 +62,7 @@ function Shell() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-50">
+    <div className="min-h-screen bg-brand-50 dark:bg-slate-950">
       <Header
         view={view}
         onViewChange={setView}
@@ -72,7 +75,10 @@ function Shell() {
             onNewTx={openNewTx}
             onEditTx={openEditTx}
             onManageCategories={() => setCatOpen(true)}
+            onManageRecurring={() => setRecurrOpen(true)}
           />
+        ) : view === 'stats' ? (
+          <Stats />
         ) : (
           <TransactionList onEditTx={openEditTx} />
         )}
@@ -81,7 +87,7 @@ function Shell() {
       {/* FAB */}
       <button
         onClick={() => openNewTx(null)}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-2xl text-white shadow-lg shadow-brand-600/40 transition hover:bg-brand-700 active:scale-95"
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-2xl text-white shadow-lg shadow-brand-600/40 transition hover:from-brand-500 hover:to-brand-800 hover:shadow-xl active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2"
         aria-label="Tambah transaksi"
       >
         +
@@ -97,6 +103,7 @@ function Shell() {
       )}
       {catOpen && <CategoryManager onClose={() => setCatOpen(false)} />}
       {walletOpen && <WalletManager onClose={() => setWalletOpen(false)} />}
+      {recurrOpen && <RecurringManager onClose={() => setRecurrOpen(false)} />}
     </div>
   )
 }

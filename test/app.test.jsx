@@ -16,6 +16,7 @@ const { default: App } = await import('../src/App.jsx')
 beforeEach(() => {
   localStorage.clear()
   localBackend.reset()
+  document.documentElement.classList.remove('dark')
   cleanup()
 })
 
@@ -112,5 +113,21 @@ describe('Gimme Money smoke', () => {
     await user.click(getByRole('button', { name: 'Riwayat' }))
     expect(await findByText('Transfer Dompet')).toBeInTheDocument()
     expect(getByText('Cash → Bank')).toBeInTheDocument()
+  })
+
+  it('dark mode toggle adds "dark" class to the document root', async () => {
+    const user = userEvent.setup()
+    const { getByPlaceholderText, getByRole, findByText } = render(<App />)
+
+    await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
+    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.click(getByRole('button', { name: 'Masuk' }))
+    await findByText('Total Pemasukan')
+
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
+    await user.click(getByRole('button', { name: 'Mode gelap' }))
+    expect(document.documentElement.classList.contains('dark')).toBe(true)
+    await user.click(getByRole('button', { name: 'Mode terang' }))
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
   })
 })

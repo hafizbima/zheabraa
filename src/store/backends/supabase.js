@@ -8,9 +8,10 @@ function needClient() {
 
 // --- row <-> shape mapping ---
 const WALLET_FIELDS = { name: 'name', color: 'color', openingBalance: 'opening_balance', order: 'sort_order', deleted: 'deleted' }
-const MONTH_FIELDS = { label: 'label', carryOver: 'carry_over', incomes: 'incomes', createdAt: 'created_at' }
-const CAT_FIELDS = { name: 'name', budgetAmount: 'budget_amount', color: 'color', order: 'sort_order' }
+const MONTH_FIELDS = { label: 'label', carryOver: 'carry_over', incomes: 'incomes', note: 'note', createdAt: 'created_at' }
+const CAT_FIELDS = { name: 'name', budgetAmount: 'budget_amount', goalAmount: 'goal_amount', color: 'color', order: 'sort_order' }
 const TX_FIELDS = { date: 'date', amount: 'amount', type: 'type', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', createdAt: 'created_at' }
+const TEMPLATE_FIELDS = { dayOfMonth: 'day_of_month', amount: 'amount', categoryId: 'category_id', walletId: 'wallet_id', description: 'description', active: 'active', createdAt: 'created_at' }
 
 function mapWallet(r) {
   return { id: r.id, name: r.name, color: r.color, openingBalance: r.opening_balance, order: r.sort_order }
@@ -21,11 +22,12 @@ function mapMonth(r) {
     label: r.label,
     carryOver: r.carry_over,
     incomes: Array.isArray(r.incomes) ? r.incomes : [],
+    note: r.note || '',
     createdAt: Number(r.created_at) || Date.now(),
   }
 }
 function mapCategory(r) {
-  return { id: r.id, name: r.name, budgetAmount: r.budget_amount, color: r.color, order: r.sort_order }
+  return { id: r.id, name: r.name, budgetAmount: r.budget_amount, goalAmount: Number(r.goal_amount) || 0, color: r.color, order: r.sort_order }
 }
 function mapTransaction(r) {
   return {
@@ -54,10 +56,87 @@ const walletRow = toSnake(WALLET_FIELDS)
 const monthRow = toSnake(MONTH_FIELDS)
 const categoryRow = toSnake(CAT_FIELDS)
 const txRow = toSnake(TX_FIELDS)
+const templateRow = toSnake(TEMPLATE_FIELDS)
 
 function throwIfError(r) {
   if (r.error) throw r.error
   return r.data
+}
+
+function isMissingTable(err) {
+  return !!err && (err.code === 'PGRST205' || /Could not find the table/i.test(err.message || ''))
+}
+
+function mapTemplate(r) {
+  return {
+    id: r.id,
+    dayOfMonth: r.day_of_month,
+    amount: r.amount,
+    categoryId: r.category_id,
+    walletId: r.wallet_id,
+    description: r.description,
+    active: r.active !== false,
+    createdAt: Number(r.created_at) || 0,
+  }
+}
+
+function pad2(n) {
+  return String(n).padStart(2, '0')
+}
+
+async function applyRecurringForMonth(uid, mId) {
+  const { data, error } = await supabase
+    .from('recurring_templates')
+    .select('*')
+    .eq('user_id', uid)
+    .eq('active', true)
+  if (error) throw error
+  const now = new Date()
+  const curMonth = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`
+  const todayDay = now.getDate()
+  const rows = (data || []).flatMap((t) => {
+    const day = Math.min(28, Math.max(1, t.day_of_month))
+    if (mId < curMonth) return []
+    if (mId === curMonth && day > todayDay) return []
+    return [
+      {
+        id: `recur-${t.id}-${mId}-${pad2(day)}`,
+        user_id: uid,
+        month_id: mId,
+        date: `${mId}-${pad2(day)}`,
+        amount: t.amount || 0,
+        type: 'expense',
+        category_id: t.category_id || null,
+        wallet_id: t.wallet_id || null,
+        description: t.description || 'Transaksi berulang',
+        created_at: Date.now(),
+      },
+    ]
+  })
+  if (!rows.length) return false
+  const res = await supabase.from('transactions').upsert(rows)
+  if (res.error) throw res.error
+  return true
+}
+
+const recurringGenerated = new Set()
+
+async function applyRecurringQuiet(uid, mId) {
+  const key = `${uid}|${mId}`
+  if (recurringGenerated.has(key)) return false
+  recurringGenerated.add(key)
+  try {
+    return await applyRecurringForMonth(uid, mId)
+  } catch (e) {
+    recurringGenerated.delete(key)
+    if (!isMissingTable(e)) console.error('applyRecurring', e)
+    return false
+  }
+}
+
+export async function applyRecurring(uid, mId) {
+  needClient()
+  await applyRecurringForMonth(uid, mId)
 }
 
 // --- auth ---
@@ -158,6 +237,7 @@ export async function ensureSeeded(uid) {
     if (res.error) throw res.error
     const res2 = await supabase.from('categories').upsert(categories)
     if (res2.error) throw res2.error
+    await applyRecurringQuiet(uid, mId)
   }
 }
 
@@ -226,6 +306,18 @@ export function subscribeMonthDetail(uid, mId, cb) {
     cats = (c.data || []).map(mapCategory)
     txs = (t.data || []).map(mapTransaction)
     emit()
+    const generated = await applyRecurringQuiet(uid, mId)
+    if (generated && alive) {
+      const t2 = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', uid)
+        .eq('month_id', mId)
+        .order('created_at', { ascending: false })
+      if (t2.error) return console.error(t2.error)
+      txs = (t2.data || []).map(mapTransaction)
+      emit()
+    }
   }
   const unC = onTableChange(uid, 'categories', load, mId)
   const unT = onTableChange(uid, 'transactions', load, mId)
@@ -289,6 +381,7 @@ export async function ensureMonth(uid, mId) {
   }))
   const res2 = await supabase.from('categories').upsert(cats)
   if (res2.error) throw res2.error
+  await applyRecurringQuiet(uid, mId)
 }
 export async function createNextMonth(uid, mId, carryOver, cats) {
   needClient()
@@ -317,6 +410,44 @@ export async function createNextMonth(uid, mId, carryOver, cats) {
   }))
   const res2 = await supabase.from('categories').upsert(rows)
   if (res2.error) throw res2.error
+  await applyRecurringQuiet(uid, mId)
+}
+
+// --- recurring templates ---
+export async function listTemplates(uid) {
+  needClient()
+  const { data, error } = await supabase
+    .from('recurring_templates')
+    .select('*')
+    .eq('user_id', uid)
+    .order('day_of_month', { ascending: true })
+  if (error) {
+    if (isMissingTable(error)) return []
+    throw error
+  }
+  return (data || []).map(mapTemplate)
+}
+export async function addTemplate(uid, t) {
+  needClient()
+  const res = await supabase.from('recurring_templates').upsert({ id: t.id, user_id: uid, ...templateRow(t) })
+  if (res.error && !isMissingTable(res.error)) throw res.error
+  return res.data
+}
+export async function updateTemplate(uid, id, patch) {
+  needClient()
+  const res = await supabase
+    .from('recurring_templates')
+    .update(templateRow(patch))
+    .eq('id', id)
+    .eq('user_id', uid)
+  if (res.error && !isMissingTable(res.error)) throw res.error
+  return res.data
+}
+export async function removeTemplate(uid, id) {
+  needClient()
+  const res = await supabase.from('recurring_templates').delete().eq('id', id).eq('user_id', uid)
+  if (res.error && !isMissingTable(res.error)) throw res.error
+  return res.data
 }
 
 // --- categories ---
@@ -416,4 +547,9 @@ export default {
   setTransaction,
   updateTransaction,
   removeTransaction,
+  listTemplates,
+  addTemplate,
+  updateTemplate,
+  removeTemplate,
+  applyRecurring,
 }

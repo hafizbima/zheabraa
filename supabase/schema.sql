@@ -37,6 +37,7 @@ create table if not exists public.months (
   label text not null,
   carry_over integer not null default 0,
   incomes jsonb not null default '[]'::jsonb,
+  note text not null default '',
   created_at bigint not null default 0,
   primary key (id, user_id)
 );
@@ -61,6 +62,7 @@ create table if not exists public.categories (
   month_id text not null,
   name text not null,
   budget_amount integer not null default 0,
+  goal_amount integer not null default 0,
   color text not null default '#8B5CF6',
   sort_order integer not null default 0,
   created_at bigint not null default 0,
@@ -107,6 +109,33 @@ create policy "transactions_insert" on public.transactions
 create policy "transactions_update" on public.transactions
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "transactions_delete" on public.transactions
+  for delete using (auth.uid() = user_id);
+
+-- ---------- recurring_templates ----------
+create table if not exists public.recurring_templates (
+  id text not null,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  day_of_month integer not null default 1,
+  amount integer not null default 0,
+  category_id text,
+  wallet_id text,
+  description text not null default '',
+  active boolean not null default true,
+  created_at bigint not null default 0,
+  primary key (id, user_id)
+);
+
+create index if not exists idx_templates_user on public.recurring_templates (user_id);
+
+alter table public.recurring_templates enable row level security;
+
+create policy "templates_select" on public.recurring_templates
+  for select using (auth.uid() = user_id);
+create policy "templates_insert" on public.recurring_templates
+  for insert with check (auth.uid() = user_id);
+create policy "templates_update" on public.recurring_templates
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "templates_delete" on public.recurring_templates
   for delete using (auth.uid() = user_id);
 
 -- ---------- realtime ----------

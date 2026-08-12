@@ -24,8 +24,8 @@ export default function DonutChart({ data, totalLabel }) {
         </PieChart>
       </ResponsiveContainer>
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xs text-slate-400">{totalLabel}</span>
-        <span className="text-lg font-bold text-slate-800">
+        <span className="text-xs text-slate-400 dark:text-slate-400">{totalLabel}</span>
+        <span className="text-lg font-bold text-slate-800 dark:text-slate-100">
           {total > 0 ? 'Rp ' + total.toLocaleString('id-ID') : '—'}
         </span>
       </div>

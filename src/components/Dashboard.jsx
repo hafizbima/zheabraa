@@ -14,12 +14,13 @@ import {
   allTransactions,
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
+import { btn } from '../lib/buttons.js'
 
 function Card({ label, value, sub, accent }) {
   return (
-    <div className="rounded-xl border border-slate-100 bg-white p-3.5 shadow-sm">
+    <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-sm">
       <p className="text-xs font-medium text-slate-400">{label}</p>
-      <p className={`mt-1 text-base font-bold ${accent || 'text-slate-800'}`}>{value}</p>
+      <p className={`mt-1 text-base font-bold ${accent || 'text-slate-800 dark:text-slate-100'}`}>{value}</p>
       {sub && <p className="mt-0.5 text-[11px] text-slate-400">{sub}</p>}
     </div>
   )
@@ -31,26 +32,33 @@ function statusStyles(status) {
   return 'bg-brand-500'
 }
 
-export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
+export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onManageRecurring }) {
   const {
     currentMonth: month,
     currentMonthId,
     wallets,
     months,
+    templates,
     addIncome,
     updateIncome,
     removeIncome,
     setCarryOver,
+    setMonthNote,
   } = useStore()
 
   const [editingIncome, setEditingIncome] = useState(null)
   const [incomeLabel, setIncomeLabel] = useState('')
   const [incomeAmount, setIncomeAmount] = useState('')
   const [carryDraft, setCarryDraft] = useState('')
+  const [noteDraft, setNoteDraft] = useState('')
 
   useEffect(() => {
     setCarryDraft(month ? String(month.carryOver ?? 0) : '')
   }, [month?.carryOver])
+
+  useEffect(() => {
+    setNoteDraft(month ? String(month.note ?? '') : '')
+  }, [month?.note])
 
   if (!month) return null
 
@@ -87,8 +95,22 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
     setCarryOver(currentMonthId, Math.round(Number(carryDraft) || 0))
   }
 
+  const commitNote = () => {
+    setMonthNote(currentMonthId, noteDraft.trim())
+  }
+
+  const goalSavedFor = (catId) => {
+    if (!catId) return 0
+    let total = 0
+    for (const mId of Object.keys(months)) {
+      const c = (months[mId]?.categories || []).find((x) => x.id === catId)
+      if (c) total += c.budgetAmount || 0
+    }
+    return total
+  }
+
   const input =
-    'rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200'
+    'rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:focus:ring-brand-500/30'
 
   return (
     <div className="space-y-5">
@@ -101,16 +123,16 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
       </section>
 
       {/* Pemasukan & carry-over */}
-      <section className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
+      <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-slate-800">Pemasukan & Carry-over</h3>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Pemasukan & Carry-over</h3>
           <button
             onClick={() => {
               setEditingIncome(null)
               setIncomeLabel('')
               setIncomeAmount('')
             }}
-            className="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-50"
+            className={btn.ghost}
           >
             + Tambah
           </button>
@@ -118,30 +140,30 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
 
         <div className="mt-3 space-y-2">
           {(month.incomes || []).map((inc) => (
-            <div key={inc.id} className="flex items-center justify-between rounded-lg bg-brand-50/60 px-3 py-2">
+            <div key={inc.id} className="flex items-center justify-between rounded-lg bg-brand-50/60 dark:bg-brand-500/10 px-3 py-2">
               <div>
-                <p className="text-sm font-medium text-slate-700">{inc.label}</p>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{inc.label}</p>
                 <p className="text-xs text-slate-400">{formatRupiah(inc.amount)}</p>
               </div>
               <div className="flex gap-1">
-                <button onClick={() => editIncome(inc)} className="rounded-md px-2 py-1 text-xs text-brand-600 hover:bg-brand-100">
+                <button onClick={() => editIncome(inc)} className={btn.subtle}>
                   Ubah
                 </button>
-                <button onClick={() => removeIncome(currentMonthId, inc.id)} className="rounded-md px-2 py-1 text-xs text-red-500 hover:bg-red-50">
+                <button onClick={() => removeIncome(currentMonthId, inc.id)} className={btn.subtleDanger}>
                   Hapus
                 </button>
               </div>
             </div>
           ))}
 
-          <div className="flex items-center justify-between rounded-lg bg-amber-50/70 px-3 py-2">
+          <div className="flex items-center justify-between rounded-lg bg-amber-50/70 dark:bg-amber-500/10 px-3 py-2">
             <div>
-              <p className="text-sm font-medium text-slate-700">Carry-over (sisa bulan lalu)</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Carry-over (sisa bulan lalu)</p>
               <p className="text-xs text-slate-400">otomatis dari bulan sebelumnya, bisa diubah</p>
             </div>
             <div className="flex items-center gap-2">
               <input
-                type="number"
+                // type="number"
                 min="0"
                 inputMode="numeric"
                 className={input + ' w-32 text-right'}
@@ -157,14 +179,14 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
           </div>
 
           {editingIncome && (
-            <div className="rounded-lg border border-brand-100 bg-white p-3">
+            <div className="rounded-lg border border-brand-100 bg-white dark:bg-slate-900 p-3">
               <div className="flex gap-2">
                 <input className={input + ' flex-1'} value={incomeLabel} onChange={(e) => setIncomeLabel(e.target.value)} placeholder="Label (mis. Gaji, Bonus)" />
                 <input className={input + ' w-36'} type="number" min="0" value={incomeAmount} onChange={(e) => setIncomeAmount(e.target.value)} placeholder="Nominal" />
               </div>
               <div className="mt-2 flex justify-end gap-2">
-                <button onClick={() => setEditingIncome(null)} className="rounded-lg px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-50">Batal</button>
-                <button onClick={saveIncome} className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700">
+                <button onClick={() => setEditingIncome(null)} className={btn.neutral}>Batal</button>
+                <button onClick={saveIncome} className={btn.primary}>
                   Simpan
                 </button>
               </div>
@@ -173,10 +195,23 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
         </div>
       </section>
 
+      {/* Catatan bulanan */}
+      <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+        <h3 className="font-semibold text-slate-800 dark:text-slate-100">Catatan Bulan Ini</h3>
+        <textarea
+          className={input + ' mt-2 min-h-20 w-full resize-y'}
+          placeholder="Tulis catatan keuangan bulan ini…"
+          value={noteDraft}
+          onChange={(e) => setNoteDraft(e.target.value)}
+          onBlur={commitNote}
+        />
+        <p className="mt-1 text-[11px] text-slate-400">Tersimpan otomatis saat keluar dari kolom.</p>
+      </section>
+
       {/* Alokasi chart */}
       {donutData.length > 0 && (
-        <section className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-800">Alokasi Pocket</h3>
+        <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Alokasi Pocket</h3>
           <DonutChart data={donutData} totalLabel="Teralokasi" />
         </section>
       )}
@@ -184,27 +219,41 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
       {/* Kategori progress */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-slate-800">Pocket</h3>
-          <button onClick={onManageCategories} className="text-sm font-medium text-brand-600 hover:underline">
-            Kelola Kategori
-          </button>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Pocket</h3>
+          <div className="flex gap-3">
+            <button onClick={onManageRecurring} className={btn.subtle}>
+              Transaksi Berulang
+            </button>
+            <button onClick={onManageCategories} className={btn.subtle}>
+              Kelola Kategori
+            </button>
+          </div>
         </div>
         {(month.categories || []).map((cat) => {
           const { used, budget, status, pct } = categoryStatus(cat, txs)
           const left = categoryLeft(cat, txs)
+          const goal = cat.goalAmount > 0 ? cat.goalAmount : 0
+          const goalSaved = goalSavedFor(cat.id)
+          const goalPct = goal ? Math.max(0, Math.min(100, Math.round((goalSaved / goal) * 100))) : 0
+          const goalDone = goal > 0 && goalSaved >= goal
           return (
             <button
               key={cat.id}
               onClick={() => onNewTx({ categoryId: cat.id })}
-              className="block w-full rounded-xl border border-slate-100 bg-white p-4 text-left shadow-sm transition hover:border-brand-200 hover:shadow"
+              className="block w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-left shadow-sm transition hover:border-brand-200 hover:shadow dark:hover:border-brand-500/50"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2.5">
                   <span className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
-                  <span className="truncate font-medium text-slate-800">{cat.name}</span>
+                  <span className="truncate font-medium text-slate-800 dark:text-slate-100">{cat.name}</span>
+                  {goal > 0 && (
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${goalDone ? 'bg-emerald-100 text-emerald-700' : 'bg-brand-50 text-brand-700'}`}>
+                      {goalDone ? 'Target Tercapai' : `Target ${formatRupiah(goal)}`}
+                    </span>
+                  )}
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-slate-700">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                     {formatRupiah(used)}
                     {budget > 0 && <span className="font-normal text-slate-400"> / {formatRupiah(budget)}</span>}
                   </p>
@@ -214,31 +263,75 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories }) {
                 </div>
               </div>
               {budget > 0 && (
-                <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                   <div className={`h-full rounded-full ${statusStyles(status)} transition-all`} style={{ width: `${pct}%` }} />
+                </div>
+              )}
+              {goal > 0 && (
+                <div className="mt-2.5">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <span>Terkumpul {formatRupiah(goalSaved)}</span>
+                    <span>{goalPct}%</span>
+                  </div>
+                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+                    <div className={`h-full rounded-full ${goalDone ? 'bg-emerald-500' : 'bg-brand-500'} transition-all`} style={{ width: `${goalPct}%` }} />
+                  </div>
                 </div>
               )}
             </button>
           )
         })}
         {(month.categories || []).length === 0 && (
-          <p className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-400">
+          <p className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 text-center text-sm text-slate-400">
             Belum ada kategori. Kelola Kategori untuk menambahkan pocket.
           </p>
         )}
       </section>
 
+      {/* Transaksi berulang */}
+      <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Transaksi Berulang</h3>
+            <button onClick={onManageRecurring} className={btn.subtle}>
+              Kelola
+            </button>
+        </div>
+        <div className="mt-3 space-y-2">
+          {templates.length === 0 && (
+            <p className="text-sm text-slate-400">Belum ada template. Tambahkan via "Kelola" agar otomatis tercatat tiap bulan.</p>
+          )}
+          {templates.map((t) => {
+            const cat = (month.categories || []).find((c) => c.id === t.categoryId)
+            const wal = wallets.find((w) => w.id === t.walletId)
+            return (
+              <div key={t.id} className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2 ${t.active !== false ? 'bg-brand-50/60 dark:bg-brand-500/10' : 'bg-slate-50 opacity-60 dark:bg-slate-800'}`}>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Hari {Math.min(28, Math.max(1, t.dayOfMonth || 1))} — {t.description || 'Transaksi berulang'}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {cat ? cat.name : 'Uang Bebas'}
+                    {wal ? ` · ${wal.name}` : ''}
+                  </p>
+                </div>
+                <p className="shrink-0 text-sm font-semibold text-slate-700 dark:text-slate-200">{formatRupiah(t.amount)}</p>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
       {/* Wallet ringkasan */}
-      <section className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-800">Dompet</h3>
+      <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+        <h3 className="font-semibold text-slate-800 dark:text-slate-100">Dompet</h3>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {wallets.map((w) => (
-            <div key={w.id} className="rounded-lg border border-slate-100 p-3">
+            <div key={w.id} className="rounded-lg border border-slate-100 dark:border-slate-800 p-3">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full" style={{ backgroundColor: w.color }} />
-                <span className="truncate text-sm font-medium text-slate-700">{w.name}</span>
+                <span className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">{w.name}</span>
               </div>
-              <p className="mt-1.5 text-sm font-semibold text-slate-800">
+              <p className="mt-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100">
                 {formatRupiah(walletBalance(w, allTransactions(months)))}
               </p>
               <p className="text-[11px] text-slate-400">saldo saat ini</p>
