@@ -19,7 +19,7 @@ export default function RecurringManager({ onClose }) {
 
   const cats = month?.categories || []
   const input =
-    'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/30'
+    'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
   const catName = (id) => (id ? cats.find((c) => c.id === id)?.name : null)
   const walletName = (id) => (id ? wallets.find((w) => w.id === id)?.name : '—')
@@ -124,8 +124,8 @@ export default function RecurringManager({ onClose }) {
         </div>
       }
     >
-      <form onSubmit={submitNew} className="rounded-xl border border-brand-100 bg-brand-50/40 p-4 dark:border-brand-500/30 dark:bg-brand-500/10">
-        <h4 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">Tambah template</h4>
+      <form onSubmit={submitNew} className="rounded-2xl border-2 border-carbon bg-mint/30 p-4 dark:border-white/20 dark:bg-white/5">
+        <h4 className="mb-3 text-sm font-semibold text-carbon dark:text-white">Tambah template</h4>
         <div className="grid gap-2 sm:grid-cols-4">
           <input className={input} type="text" inputMode="numeric" placeholder="Tanggal" value={day} onChange={(e) => setDay(e.target.value)} aria-label="Tanggal" />
           <input className={input} type="text" inputMode="numeric" placeholder="Nominal (Rp)" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Nominal" />
@@ -158,20 +158,20 @@ export default function RecurringManager({ onClose }) {
 
       <div className="mt-4 space-y-2">
         {templates.length === 0 && (
-          <p className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 p-6 text-center text-sm text-slate-400">
+          <p className="rounded-2xl border-2 border-dashed border-black/30 p-6 text-center text-sm text-slate-400 dark:border-white/20">
             Belum ada template transaksi berulang.
           </p>
         )}
         {templates.map((t) => {
           const d = drafts[t.id] || t
           return (
-            <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-100 dark:border-slate-800 p-3">
+            <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
               <label className="flex items-center gap-1.5 text-xs text-slate-500">
                 <input
                   type="checkbox"
                   checked={d.active !== false}
                   onChange={(e) => updateDraft(t.id, { active: e.target.checked })}
-                  className="h-4 w-4 accent-brand-600"
+                  className="h-4 w-4 accent-carbon"
                   aria-label="Aktif"
                 />
                 Aktif

@@ -23,23 +23,21 @@ export default function Login() {
   }
 
   const input =
-    'w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/30'
+    'w-full rounded-xl border border-carbon bg-paper px-3 py-2.5 text-carbon outline-none focus:ring-2 focus:ring-black/20 dark:border-white/30 dark:bg-slate-800 dark:text-white'
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-brand-700 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-sky px-4 dark:bg-[#131a33]">
       <div className="w-full max-w-sm">
-        <div className="mb-6 text-center text-white">
-          <img
-            src="/logo.png"
-            alt="Gimme Money"
-            className="mx-auto mb-3 h-20 w-20 rounded-2xl object-cover"
-          />
-          <h1 className="text-2xl font-bold">Zheabraa</h1>
-          <p className="mt-1 text-sm text-brand-200">Sistem pocket budgeting untuk keuangan pribadimu</p>
+        <div className="mb-6 text-center text-carbon dark:text-white">
+          <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-2 border-carbon bg-paper dark:border-white/50">
+            <img src="/logo.png" alt="Gimme Money" className="h-full w-full rounded-full object-cover" />
+          </div>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Zheabraa</h1>
+          <p className="mt-1 text-sm opacity-70">Sistem pocket budgeting untuk keuangan pribadimu</p>
         </div>
 
-        <form onSubmit={submit} className="rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900 dark:shadow-2xl">
-          <h2 className="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-100">
+        <form onSubmit={submit} className="rounded-3xl border-2 border-carbon bg-paper p-6 dark:border-white/30 dark:bg-slate-900">
+          <h2 className="mb-4 text-lg font-bold text-carbon dark:text-white">
             {mode === 'login' ? 'Masuk' : 'Buat akun'}
           </h2>
           {mode === 'signup' && (
@@ -77,13 +75,13 @@ export default function Login() {
           </div>
 
           {error && (
-            <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">{error}</div>
+            <div className="mb-3 rounded-xl border border-ember/40 bg-ember/10 px-3 py-2 text-sm text-ember">{error}</div>
           )}
 
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 py-2.5 font-semibold text-white shadow-sm shadow-brand-600/40 transition hover:from-brand-500 hover:to-brand-800 hover:shadow-md active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-full border border-carbon bg-carbon py-2.5 font-semibold text-white transition hover:bg-[#1a1a1a] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-black/20 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {busy ? '…' : mode === 'login' ? 'Masuk' : 'Daftar'}
           </button>
@@ -96,14 +94,14 @@ export default function Login() {
                 setMode(mode === 'login' ? 'signup' : 'login')
                 setError('')
               }}
-              className="font-medium text-brand-600 hover:underline"
+              className="font-medium text-carbon underline underline-offset-2"
             >
               {mode === 'login' ? 'Buat akun' : 'Masuk'}
             </button>
           </p>
         </form>
 
-        <p className="mt-4 text-center text-xs text-brand-200">
+        <p className="mt-4 text-center text-xs text-carbon/60 dark:text-white/60">
           {backendMode === 'local'
             ? 'Data tersimpan di perangkat ini (mode lokal).'
             : 'Data tersinkron ke Supabase — bisa diakses dari HP/laptop mana saja.'}

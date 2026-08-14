@@ -63,12 +63,12 @@ export default function Stats() {
   }, [ranged, months])
 
   const input =
-    'rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:focus:ring-brand-500/30'
+    'rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
   return (
     <div className="space-y-5">
       <section className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Statistik</h2>
+        <h2 className="font-display text-lg font-bold text-carbon dark:text-white">Statistik</h2>
         <select className={input} value={rangeKey} onChange={(e) => setRangeKey(e.target.value)} aria-label="Rentang bulan">
           <option value="3">3 bulan terakhir</option>
           <option value="6">6 bulan terakhir</option>
@@ -78,35 +78,35 @@ export default function Stats() {
       </section>
 
       <section className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-sm">
-          <p className="text-xs font-medium text-slate-400">Total Pemasukan</p>
-          <p className="mt-1 text-base font-bold text-slate-800 dark:text-slate-100">{formatRupiah(data.income)}</p>
+        <div className="rounded-2xl border-2 border-carbon bg-mint/40 p-3.5 dark:border-white/30 dark:bg-slate-900">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-300">Total Pemasukan</p>
+          <p className="mt-1 text-base font-bold text-carbon dark:text-white">{formatRupiah(data.income)}</p>
         </div>
-        <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-sm">
-          <p className="text-xs font-medium text-slate-400">Total Dialokasikan</p>
-          <p className="mt-1 text-base font-bold text-brand-700">{formatRupiah(data.allocated)}</p>
+        <div className="rounded-2xl border-2 border-carbon bg-lavender/60 p-3.5 dark:border-white/30 dark:bg-slate-900">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-300">Total Dialokasikan</p>
+          <p className="mt-1 text-base font-bold text-violet dark:text-lavender">{formatRupiah(data.allocated)}</p>
         </div>
-        <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-sm">
-          <p className="text-xs font-medium text-slate-400">Total Belanja (net)</p>
-          <p className="mt-1 text-base font-bold text-slate-800 dark:text-slate-100">{formatRupiah(data.spent)}</p>
+        <div className="rounded-2xl border-2 border-carbon bg-sky/60 p-3.5 dark:border-white/30 dark:bg-slate-900">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-300">Total Belanja (net)</p>
+          <p className="mt-1 text-base font-bold text-carbon dark:text-white">{formatRupiah(data.spent)}</p>
         </div>
-        <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-sm">
-          <p className="text-xs font-medium text-slate-400">Sisa Akhir Bulan</p>
-          <p className={`mt-1 text-base font-bold ${data.left < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+        <div className="rounded-2xl border-2 border-carbon bg-sunburst/40 p-3.5 dark:border-white/30 dark:bg-slate-900">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-300">Sisa Akhir Bulan</p>
+          <p className={`mt-1 text-base font-bold ${data.left < 0 ? 'text-ember' : 'text-carbon dark:text-white'}`}>
             {formatRupiah(data.left)}
           </p>
         </div>
       </section>
 
       {data.cats.length > 0 && (
-        <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Belanja per Kategori</h3>
+        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+          <h3 className="font-semibold text-carbon dark:text-white">Belanja per Kategori</h3>
           <DonutChart data={data.cats} totalLabel="Total Belanja" />
         </section>
       )}
 
-      <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-800 dark:text-slate-100">Per Bulan</h3>
+      <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+        <h3 className="font-semibold text-carbon dark:text-white">Per Bulan</h3>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -120,12 +120,12 @@ export default function Stats() {
             </thead>
             <tbody>
               {data.rows.map((r) => (
-                <tr key={r.mId} className="border-t border-slate-100 dark:border-slate-800">
-                  <td className="py-2.5 pr-3 font-medium text-slate-700 dark:text-slate-200">{r.label}</td>
-                  <td className="py-2.5 pr-3 text-right text-slate-700 dark:text-slate-200">{formatRupiah(r.income)}</td>
-                  <td className="py-2.5 pr-3 text-right text-brand-700">{formatRupiah(r.allocated)}</td>
-                  <td className="py-2.5 pr-3 text-right text-slate-700 dark:text-slate-200">{formatRupiah(r.spent)}</td>
-                  <td className={`py-2.5 text-right ${r.left < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                <tr key={r.mId} className="border-t border-black/20 dark:border-white/20">
+                  <td className="py-2.5 pr-3 font-medium text-carbon dark:text-white">{r.label}</td>
+                  <td className="py-2.5 pr-3 text-right text-carbon dark:text-white">{formatRupiah(r.income)}</td>
+                  <td className="py-2.5 pr-3 text-right text-violet dark:text-lavender">{formatRupiah(r.allocated)}</td>
+                  <td className="py-2.5 pr-3 text-right text-carbon dark:text-white">{formatRupiah(r.spent)}</td>
+                  <td className={`py-2.5 text-right ${r.left < 0 ? 'text-ember' : 'text-carbon dark:text-white'}`}>
                     {formatRupiah(r.left)}
                   </td>
                 </tr>

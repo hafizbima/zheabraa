@@ -16,20 +16,24 @@ import {
 import DonutChart from './DonutChart.jsx'
 import { btn } from '../lib/buttons.js'
 
-function Card({ label, value, sub, accent }) {
+function Card({ label, value, sub, accent, tint }) {
   return (
-    <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-sm">
-      <p className="text-xs font-medium text-slate-400">{label}</p>
-      <p className={`mt-1 text-base font-bold ${accent || 'text-slate-800 dark:text-slate-100'}`}>{value}</p>
-      {sub && <p className="mt-0.5 text-[11px] text-slate-400">{sub}</p>}
+    <div
+      className={`rounded-2xl border-2 border-carbon p-3.5 dark:border-white/30 ${
+        tint || 'bg-paper dark:bg-slate-900'
+      }`}
+    >
+      <p className="text-xs font-medium text-slate-500 dark:text-slate-300">{label}</p>
+      <p className={`mt-1 text-base font-bold ${accent || 'text-carbon dark:text-white'}`}>{value}</p>
+      {sub && <p className="mt-0.5 text-[11px] text-slate-400 dark:text-slate-300">{sub}</p>}
     </div>
   )
 }
 
 function statusStyles(status) {
-  if (status === 'over') return 'bg-red-500'
-  if (status === 'warn') return 'bg-amber-400'
-  return 'bg-brand-500'
+  if (status === 'over') return 'bg-ember'
+  if (status === 'warn') return 'bg-sunburst'
+  return 'bg-violet'
 }
 
 export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onManageRecurring, onTransfer }) {
@@ -109,23 +113,23 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     return total
   }
 
-  const input =
-    'rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:focus:ring-brand-500/30'
+const input =
+    'rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
   return (
     <div className="space-y-5">
       {/* Summary */}
       <section className="grid grid-cols-2 gap-3">
-        <Card label="Total Pemasukan" value={formatRupiah(inflow)} />
-        <Card label="Teralokasi ke Pocket" value={formatRupiah(allocated)} sub={`uang bebas ${formatRupiah(pool)}`} accent="text-brand-700" />
-        <Card label="Uang Bebas (sisa)" value={formatRupiah(pool)} sub="sebelum dipakai" />
-        <Card label="Sisa Uang Bebas" value={formatRupiah(left)} sub={`terpakai ${formatRupiah(freeSpent)}`} accent={left < 0 ? 'text-red-600' : 'text-emerald-600'} />
+        <Card label="Total Pemasukan" value={formatRupiah(inflow)} tint="bg-mint/40 dark:bg-mint/10" />
+        <Card label="Teralokasi ke Pocket" value={formatRupiah(allocated)} sub={`uang bebas ${formatRupiah(pool)}`} accent="text-violet dark:text-lavender" tint="bg-lavender/60 dark:bg-lavender/10" />
+        <Card label="Uang Bebas (sisa)" value={formatRupiah(pool)} sub="sebelum dipakai" tint="bg-sky/60 dark:bg-sky/10" />
+        <Card label="Sisa Uang Bebas" value={formatRupiah(left)} sub={`terpakai ${formatRupiah(freeSpent)}`} accent={left < 0 ? 'text-ember' : 'text-carbon dark:text-white'} tint="bg-[#B8B8FF] dark:bg-white/5" />
       </section>
 
       {/* Pemasukan & carry-over */}
-      <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+      <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Pemasukan & Carry-over</h3>
+          <h3 className="font-semibold text-carbon dark:text-white">Pemasukan & Carry-over</h3>
           <button
             onClick={() => {
               setEditingIncome(null)
@@ -140,9 +144,9 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
         <div className="mt-3 space-y-2">
           {(month.incomes || []).map((inc) => (
-            <div key={inc.id} className="flex items-center justify-between rounded-lg bg-brand-50/60 dark:bg-brand-500/10 px-3 py-2">
+            <div key={inc.id} className="flex items-center justify-between rounded-xl border border-carbon bg-lavender/50 px-3 py-2 dark:border-white/20 dark:bg-white/5">
               <div>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{inc.label}</p>
+                <p className="text-sm font-medium text-carbon dark:text-white">{inc.label}</p>
                 <p className="text-xs text-slate-400">{formatRupiah(inc.amount)}</p>
               </div>
               <div className="flex gap-1">
@@ -156,9 +160,9 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             </div>
           ))}
 
-          <div className="flex items-center justify-between rounded-lg bg-amber-50/70 dark:bg-amber-500/10 px-3 py-2">
+          <div className="flex items-center justify-between rounded-xl border border-carbon bg-sunburst/30 px-3 py-2 dark:border-white/20 dark:bg-white/5">
             <div>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Carry-over (sisa bulan lalu)</p>
+              <p className="text-sm font-medium text-carbon dark:text-white">Carry-over (sisa bulan lalu)</p>
               <p className="text-xs text-slate-400">otomatis dari bulan sebelumnya, bisa diubah</p>
             </div>
             <div className="flex items-center gap-2">
@@ -179,7 +183,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
           </div>
 
           {editingIncome && (
-            <div className="rounded-lg border border-brand-100 bg-white dark:bg-slate-900 p-3">
+            <div className="rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
               <div className="flex gap-2">
                 <input className={input + ' flex-1'} value={incomeLabel} onChange={(e) => setIncomeLabel(e.target.value)} placeholder="Label (mis. Gaji, Bonus)" />
                 <input className={input + ' w-36'} type="text" inputMode="numeric" value={incomeAmount} onChange={(e) => setIncomeAmount(e.target.value)} placeholder="Nominal" />
@@ -196,8 +200,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       </section>
 
       {/* Catatan bulanan */}
-      <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-800 dark:text-slate-100">Catatan Bulan Ini</h3>
+      <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+        <h3 className="font-semibold text-carbon dark:text-white">Catatan Bulan Ini</h3>
         <textarea
           className={input + ' mt-2 min-h-20 w-full resize-y'}
           placeholder="Tulis catatan keuangan bulan ini…"
@@ -210,8 +214,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
       {/* Alokasi chart */}
       {donutData.length > 0 && (
-        <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Alokasi Pocket</h3>
+        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+          <h3 className="font-semibold text-carbon dark:text-white">Alokasi Pocket</h3>
           <DonutChart data={donutData} totalLabel="Teralokasi" />
         </section>
       )}
@@ -219,7 +223,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       {/* Kategori progress */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Pocket</h3>
+          <h3 className="font-semibold text-carbon dark:text-white">Pocket</h3>
           <div className="flex gap-3">
             <button onClick={onManageRecurring} className={btn.subtle}>
               Transaksi Berulang
@@ -240,30 +244,30 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             <button
               key={cat.id}
               onClick={() => onNewTx({ categoryId: cat.id })}
-              className="block w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-left shadow-sm transition hover:border-brand-200 hover:shadow dark:hover:border-brand-500/50"
+              className="block w-full rounded-2xl border-2 border-carbon bg-paper p-4 text-left transition-colors hover:bg-mist dark:border-white/30 dark:bg-slate-900 dark:hover:bg-slate-800"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2.5">
                   <span className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
-                  <span className="truncate font-medium text-slate-800 dark:text-slate-100">{cat.name}</span>
+                  <span className="truncate font-medium text-carbon dark:text-white">{cat.name}</span>
                   {goal > 0 && (
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${goalDone ? 'bg-emerald-100 text-emerald-700' : 'bg-brand-50 text-brand-700'}`}>
+                    <span className={`shrink-0 rounded-full border border-carbon px-2 py-0.5 text-[10px] font-semibold ${goalDone ? 'bg-mint/70 text-carbon' : 'bg-sky/70 text-carbon'}`}>
                       {goalDone ? 'Target Tercapai' : `Target ${formatRupiah(goal)}`}
                     </span>
                   )}
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  <p className="text-sm font-semibold text-carbon dark:text-white">
                     {formatRupiah(used)}
                     {budget > 0 && <span className="font-normal text-slate-400"> / {formatRupiah(budget)}</span>}
                   </p>
-                  <p className={`text-[11px] font-medium ${status === 'over' ? 'text-red-500' : status === 'warn' ? 'text-amber-500' : 'text-slate-400'}`}>
+                  <p className={`text-[11px] font-medium ${status === 'over' ? 'text-ember' : status === 'warn' ? 'text-brand-600' : 'text-slate-400'}`}>
                     sisa {formatRupiah(left)}
                   </p>
                 </div>
               </div>
               {budget > 0 && (
-                <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+                <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full border border-black/20 bg-black/5 dark:border-white/20 dark:bg-white/10">
                   <div className={`h-full rounded-full ${statusStyles(status)} transition-all`} style={{ width: `${pct}%` }} />
                 </div>
               )}
@@ -273,8 +277,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                     <span>Terkumpul {formatRupiah(goalSaved)}</span>
                     <span>{goalPct}%</span>
                   </div>
-                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-                    <div className={`h-full rounded-full ${goalDone ? 'bg-emerald-500' : 'bg-brand-500'} transition-all`} style={{ width: `${goalPct}%` }} />
+                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full border border-black/20 bg-black/5 dark:border-white/20 dark:bg-white/10">
+                    <div className={`h-full rounded-full ${goalDone ? 'bg-mint' : 'bg-violet'} transition-all`} style={{ width: `${goalPct}%` }} />
                   </div>
                 </div>
               )}
@@ -282,16 +286,16 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
           )
         })}
         {(month.categories || []).length === 0 && (
-          <p className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 text-center text-sm text-slate-400">
+          <p className="rounded-2xl border-2 border-dashed border-black/30 bg-paper p-6 text-center text-sm text-slate-400 dark:border-white/20 dark:bg-slate-900">
             Belum ada kategori. Kelola Kategori untuk menambahkan pocket.
           </p>
         )}
       </section>
 
       {/* Transaksi berulang */}
-      <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+      <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Transaksi Berulang</h3>
+          <h3 className="font-semibold text-carbon dark:text-white">Transaksi Berulang</h3>
             <button onClick={onManageRecurring} className={btn.subtle}>
               Kelola
             </button>
@@ -304,9 +308,9 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             const cat = (month.categories || []).find((c) => c.id === t.categoryId)
             const wal = wallets.find((w) => w.id === t.walletId)
             return (
-              <div key={t.id} className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2 ${t.active !== false ? 'bg-brand-50/60 dark:bg-brand-500/10' : 'bg-slate-50 opacity-60 dark:bg-slate-800'}`}>
+              <div key={t.id} className={`flex items-center justify-between gap-3 rounded-xl border border-carbon px-3 py-2 ${t.active !== false ? 'bg-mint/40 dark:bg-white/5' : 'bg-mist opacity-60 dark:bg-slate-800'}`}>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <p className="truncate text-sm font-medium text-carbon dark:text-white">
                     Hari {Math.min(28, Math.max(1, t.dayOfMonth || 1))} — {t.description || 'Transaksi berulang'}
                   </p>
                   <p className="text-xs text-slate-400">
@@ -314,7 +318,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                     {wal ? ` · ${wal.name}` : ''}
                   </p>
                 </div>
-                <p className="shrink-0 text-sm font-semibold text-slate-700 dark:text-slate-200">{formatRupiah(t.amount)}</p>
+                <p className="shrink-0 text-sm font-semibold text-carbon dark:text-white">{formatRupiah(t.amount)}</p>
               </div>
             )
           })}
@@ -322,21 +326,21 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       </section>
 
       {/* Wallet ringkasan */}
-      <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+      <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Dompet</h3>
+          <h3 className="font-semibold text-carbon dark:text-white">Dompet</h3>
           <button onClick={onTransfer} className={btn.subtle}>
             Transfer
           </button>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {wallets.map((w) => (
-            <div key={w.id} className="rounded-lg border border-slate-100 dark:border-slate-800 p-3">
+            <div key={w.id} className="rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full" style={{ backgroundColor: w.color }} />
-                <span className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">{w.name}</span>
+                <span className="truncate text-sm font-medium text-carbon dark:text-white">{w.name}</span>
               </div>
-              <p className="mt-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100">
+              <p className="mt-1.5 text-sm font-semibold text-carbon dark:text-white">
                 {formatRupiah(walletBalance(w, allTransactions(months)))}
               </p>
               <p className="text-[11px] text-slate-400">saldo saat ini</p>

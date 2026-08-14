@@ -38,7 +38,7 @@ export default function CategoryManager({ onClose }) {
   const cats = month?.categories || []
   const txs = month?.transactions || []
   const input =
-    'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/30'
+    'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
   useEffect(() => {
     setDrafts((prev) => {
@@ -127,8 +127,8 @@ export default function CategoryManager({ onClose }) {
         </div>
       }
     >
-      <form onSubmit={submitNew} className="rounded-xl border border-brand-100 bg-brand-50/40 dark:border-brand-500/30 dark:bg-brand-500/10 p-4">
-        <h4 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">Tambah kategori</h4>
+      <form onSubmit={submitNew} className="rounded-2xl border-2 border-carbon bg-lavender/40 p-4 dark:border-white/20 dark:bg-white/5">
+        <h4 className="mb-3 text-sm font-semibold text-carbon dark:text-white">Tambah kategori</h4>
         <div className="grid gap-2 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">Nama</p>
@@ -158,7 +158,7 @@ export default function CategoryManager({ onClose }) {
           const d = drafts[cat.id] || cat
           const { used } = categoryStatus(cat, txs)
           return (
-            <div key={cat.id} className="flex items-end gap-3 rounded-xl border border-slate-100 dark:border-slate-800 p-3">
+            <div key={cat.id} className="flex items-end gap-3 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
               <div className="w-8 shrink-0">
                 <p className="mb-1 text-xs text-slate-400">Warna</p>
                 <input
@@ -202,7 +202,7 @@ export default function CategoryManager({ onClose }) {
               </div>
               <div className="w-24 shrink-0 text-right">
                 <p className="mb-1 text-xs text-slate-400">terpakai</p>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{formatRupiah(used)}</p>
+                <p className="text-sm font-medium text-carbon dark:text-white">{formatRupiah(used)}</p>
               </div>
               <div className="shrink-0">
                 <p className="mb-1 text-xs text-slate-400">&nbsp;</p>
@@ -217,7 +217,7 @@ export default function CategoryManager({ onClose }) {
           )
         })}
         {cats.length === 0 && (
-          <p className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 p-6 text-center text-sm text-slate-400">
+          <p className="rounded-2xl border-2 border-dashed border-black/30 p-6 text-center text-sm text-slate-400 dark:border-white/20">
             Belum ada kategori.
           </p>
         )}

@@ -22,7 +22,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const isTransfer = transaction?.type === 'transfer' || type === 'transfer'
   const isFree = !isTransfer && categoryId === 'free'
   const input =
-    'w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/30'
+    'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2.5 text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
   const submit = (e) => {
     e.preventDefault()
@@ -56,12 +56,12 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
     <button
       type="button"
       onClick={() => setType(key)}
-      className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+      className={`rounded-xl border-2 px-3 py-2 text-sm font-medium transition ${
         active
           ? key === 'refund'
-            ? 'border-emerald-300 bg-emerald-50 text-emerald-600'
-            : 'border-red-300 bg-red-50 text-red-600'
-          : 'border-slate-200 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
+            ? 'border-carbon bg-mint/50 text-carbon'
+            : 'border-carbon bg-ember/15 text-ember'
+          : 'border-black/20 bg-paper text-slate-500 hover:bg-mist dark:border-white/20 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
       }`}
     >
       {key === 'refund' ? 'Refund / Koreksi' : 'Pengeluaran'}
@@ -96,7 +96,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Tipe</label>
           {isTransfer ? (
-            <p className="rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
+            <p className="rounded-xl border border-carbon bg-sky px-3 py-2 text-sm text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
               Ini transaksi transfer antar dompet. Edit dari sini tidak disarankan — gunakan menu "Transfer".&nbsp; Nominal tidak mengubah pocket/uang bebas.
             </p>
           ) : (
@@ -185,7 +185,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
 
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-            Keterangan {isFree && <span className="text-red-500">*</span>}
+            Keterangan {isFree && <span className="text-ember">*</span>}
           </label>
           <input
             className={input}
@@ -202,7 +202,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         </div>
 
         {error && (
-          <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">{error}</div>
+          <div className="rounded-xl border border-ember/40 bg-ember/10 px-3 py-2 text-sm text-ember">{error}</div>
         )}
       </form>
     </Modal>

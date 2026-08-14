@@ -13,13 +13,16 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
 
   const monthIds = Object.keys(months).sort().reverse()
 
+  const pill =
+    'rounded-full border transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-black/20 active:scale-[0.97]'
+
   const navTab = (key, label) => (
     <button
       onClick={() => onViewChange(key)}
-      className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+      className={`${pill} border-carbon px-4 py-1.5 text-sm font-semibold dark:border-white/50 ${
         view === key
-          ? 'bg-white text-brand-700 shadow-sm'
-          : 'text-brand-100 hover:bg-white/10 active:scale-95'
+          ? 'bg-carbon text-white dark:bg-white dark:text-carbon'
+          : 'bg-paper text-carbon hover:bg-mist dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800'
       }`}
     >
       {label}
@@ -27,17 +30,22 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
   )
 
   return (
-    <header className="sticky top-0 z-30 bg-brand-700 text-white shadow-lg">
+    <header className="sticky top-0 z-30 border-b-2 border-carbon bg-paper dark:border-white/30 dark:bg-slate-950">
+      <div className="bg-carbon text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white dark:bg-black">
+        Zheabraa • Pocket Budgeting • Catat Uangmu
+      </div>
       <div className="mx-auto max-w-3xl px-4">
-        <div className="flex items-center justify-between py-3">
+        <div className="flex items-center justify-between py-2">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="" className="h-12 w-12 rounded-lg object-cover" />
-            <span className="font-bold tracking-tight">Zheabraa</span>
+            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-carbon bg-paper dark:border-white/50">
+              <img src="/logo.png" alt="" className="h-full w-full rounded-full object-cover" />
+            </div>
+            <span className="font-display text-lg font-bold tracking-tight text-carbon dark:text-white">Zheabraa</span>
           </div>
           <div className="flex items-center gap-1">
             <button
               onClick={() => switchMonth(addMonths(currentMonthId, -1))}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-brand-100 transition hover:bg-white/10 active:scale-95"
+              className={`${pill} flex h-8 w-8 items-center justify-center border-carbon bg-paper text-carbon hover:bg-mist dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800`}
               aria-label="Bulan sebelumnya"
             >
               ‹
@@ -46,7 +54,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
               onClick={() => setMenuOpen((v) => !v)}
               aria-expanded={menuOpen}
               aria-haspopup="listbox"
-              className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-sm font-semibold transition hover:bg-white/20 active:scale-95"
+              className={`${pill} flex items-center gap-1 border-carbon bg-paper px-3 py-1.5 text-sm font-semibold text-carbon hover:bg-mist dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800`}
             >
               {labelOf(currentMonthId)}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -55,7 +63,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
             </button>
             <button
               onClick={() => switchMonth(addMonths(currentMonthId, 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-brand-100 transition hover:bg-white/10 active:scale-95"
+              className={`${pill} flex h-8 w-8 items-center justify-center border-carbon bg-paper text-carbon hover:bg-mist dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800`}
               aria-label="Bulan berikutnya"
             >
               ›
@@ -70,7 +78,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
           <div className="flex-1" />
           <button
             onClick={toggleTheme}
-            className="flex h-8 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-brand-100 transition hover:bg-white/10 active:scale-95"
+            className={`${pill} flex h-8 items-center gap-1.5 border-carbon bg-paper px-3 py-1.5 text-sm font-medium text-carbon hover:bg-mist dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800`}
             aria-label={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}
           >
             {theme === 'dark' ? (
@@ -85,17 +93,10 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
             )}
             <span className="hidden sm:inline">{theme === 'dark' ? 'Terang' : 'Gelap'}</span>
           </button>
-          <button
-            onClick={onOpenWallets}
-            className={btn.nav}
-          >
+          <button onClick={onOpenWallets} className="rounded-full border border-carbon bg-paper px-3 py-1.5 text-sm font-semibold text-carbon transition hover:bg-mist active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800">
             Dompet
           </button>
-          <button
-            onClick={logout}
-            className={btn.nav}
-            title={`Keluar (${user?.displayName || user?.email})`}
-          >
+          <button onClick={logout} className={btn.nav} title={`Keluar (${user?.displayName || user?.email})`}>
             Keluar
           </button>
         </div>
@@ -104,8 +105,8 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
       {menuOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-          <div className="absolute right-3 top-14 z-50 w-64 overflow-hidden rounded-xl bg-white shadow-xl dark:bg-slate-900 dark:shadow-2xl">
-            <p className="border-b border-slate-100 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:border-slate-800">
+          <div className="absolute right-3 top-16 z-50 w-64 overflow-hidden rounded-2xl border-2 border-carbon bg-paper dark:border-white/30 dark:bg-slate-900">
+            <p className="border-b-2 border-carbon px-4 py-2 text-xs font-bold uppercase tracking-wide text-carbon dark:border-white/20 dark:text-white">
               Pilih bulan
             </p>
             <div className="max-h-64 overflow-y-auto">
@@ -119,8 +120,8 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
                     switchMonth(m)
                     setMenuOpen(false)
                   }}
-                  className={`block w-full px-4 py-2.5 text-left text-sm hover:bg-brand-50 dark:hover:bg-slate-800 ${
-                    m === currentMonthId ? 'font-semibold text-brand-700 dark:text-brand-400' : 'text-slate-700 dark:text-slate-200'
+                  className={`block w-full px-4 py-2.5 text-left text-sm hover:bg-mist dark:hover:bg-slate-800 ${
+                    m === currentMonthId ? 'font-semibold text-carbon dark:text-white' : 'text-carbon/70 dark:text-white/70'
                   }`}
                 >
                   {labelOf(m)}
@@ -132,7 +133,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
                 setMenuOpen(false)
                 setConfirmNew(true)
               }}
-              className="block w-full border-t border-slate-100 px-4 py-3 text-left text-sm font-medium text-brand-700 hover:bg-brand-50 dark:border-slate-800 dark:text-brand-400 dark:hover:bg-slate-800"
+              className="block w-full border-t-2 border-carbon px-4 py-3 text-left text-sm font-medium text-carbon hover:bg-mist dark:border-white/20 dark:text-white dark:hover:bg-slate-800"
             >
               ➕ Mulai Bulan Baru
             </button>

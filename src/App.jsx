@@ -23,15 +23,15 @@ function Root() {
   const { user, ready } = useStore()
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-brand-700">
-        <div className="text-center text-white">
+      <div className="flex min-h-screen items-center justify-center bg-sky dark:bg-[#131a33]">
+        <div className="text-center text-carbon dark:text-white">
           <img
             src="/logo.png"
             alt="Gimme Money"
-            className="mx-auto mb-4 h-14 w-14 rounded-2xl bg-white/15 object-cover"
+            className="mx-auto mb-4 h-14 w-14 rounded-2xl border-2 border-carbon/20 object-cover"
           />
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-white/20 border-t-white" />
-          <p className="text-sm text-brand-200">Memuat data…</p>
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-carbon/20 border-t-carbon dark:border-white/20 dark:border-t-white" />
+          <p className="text-sm opacity-60">Memuat data…</p>
         </div>
       </div>
     )
@@ -64,7 +64,7 @@ function Shell() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-sky dark:bg-[#131a33]">
       <Header
         view={view}
         onViewChange={setView}
@@ -90,7 +90,7 @@ function Shell() {
       {/* FAB */}
       <button
         onClick={() => openNewTx(null)}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-2xl text-white shadow-lg shadow-brand-600/40 transition hover:from-brand-500 hover:to-brand-800 hover:shadow-xl active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2"
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border-2 border-carbon bg-paper text-2xl text-carbon transition hover:bg-mist active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
         aria-label="Tambah transaksi"
       >
         +

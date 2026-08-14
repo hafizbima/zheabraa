@@ -22,7 +22,7 @@ export default function TransferForm({ monthId, onClose }) {
   const [error, setError] = useState('')
 
   const input =
-    'w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/30'
+    'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2.5 text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
   const amt = toInt(amount)
   const fromOver = fromId && amt > 0 && amt > bal(fromId)
@@ -68,7 +68,7 @@ export default function TransferForm({ monthId, onClose }) {
       }
     >
       <form id="transfer-form" onSubmit={submit} className="space-y-4">
-        <p className="rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
+        <p className="rounded-xl border border-carbon bg-sky px-3 py-2 text-xs text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
           Memindahkan uang antar dompet tanpa memengaruhi pocket atau uang bebas.
         </p>
 
@@ -105,7 +105,7 @@ export default function TransferForm({ monthId, onClose }) {
               ))}
             </select>
             {fromId && (
-              <p className={`mt-1 text-xs ${fromOver ? 'font-medium text-amber-600 dark:text-amber-400' : 'text-slate-400'}`}>
+              <p className={`mt-1 text-xs ${fromOver ? 'font-medium text-ember' : 'text-slate-400'}`}>
                 {fromOver ? 'Melebihi saldo — ' : 'Saldo '}
                 {formatRupiah(bal(fromId))}
               </p>
@@ -118,7 +118,7 @@ export default function TransferForm({ monthId, onClose }) {
               onClick={swap}
               disabled={!fromId && !toId}
               aria-label="Tukar arah transfer"
-              className="rounded-full p-2 text-brand-600 transition hover:bg-brand-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 dark:text-brand-400 dark:hover:bg-brand-500/10"
+              className="rounded-full p-2 text-carbon transition hover:bg-mist active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 dark:text-white dark:hover:bg-slate-700"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 16V4M7 4L3 8M7 4l4 4" />
@@ -164,13 +164,13 @@ export default function TransferForm({ monthId, onClose }) {
         </div>
 
         {wallets.length < 2 && (
-          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+          <p className="rounded-xl border border-carbon bg-sunburst/40 px-3 py-2 text-sm text-carbon dark:border-white/20 dark:bg-white/5">
             Butuh minimal 2 dompet untuk transfer. Tambahkan lewat menu "Dompet".
           </p>
         )}
 
         {error && (
-          <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">{error}</div>
+          <div className="rounded-xl border border-ember/40 bg-ember/10 px-3 py-2 text-sm text-ember">{error}</div>
         )}
       </form>
     </Modal>

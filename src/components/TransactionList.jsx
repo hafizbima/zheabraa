@@ -81,7 +81,7 @@ export default function TransactionList({ onEditTx }) {
     .reduce((a, t) => a + t.amount, 0)
 
   const input =
-    'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:focus:ring-brand-500/30'
+    'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
   const group = {}
   for (const t of filtered) {
@@ -91,7 +91,7 @@ export default function TransactionList({ onEditTx }) {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <section className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+      <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <input
             className={input}
@@ -125,20 +125,20 @@ export default function TransactionList({ onEditTx }) {
 
         <div className="mt-3 flex flex-wrap gap-3 text-sm">
           <span className="text-slate-500 dark:text-slate-400">
-            <span className="font-semibold text-red-500">{formatRupiah(spent)}</span> keluar
+            <span className="font-semibold text-ember">{formatRupiah(spent)}</span> keluar
           </span>
           <span className="text-slate-500 dark:text-slate-400">
-            <span className="font-semibold text-emerald-600">{formatRupiah(refunded)}</span> refund
+            <span className="font-semibold text-mint">{formatRupiah(refunded)}</span> refund
           </span>
           <span className="text-slate-500 dark:text-slate-400">
-            <span className="font-semibold text-slate-800 dark:text-slate-100">{filtered.length}</span> transaksi
+            <span className="font-semibold text-carbon dark:text-white">{filtered.length}</span> transaksi
           </span>
         </div>
       </section>
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-8 text-center">
+        <div className="rounded-2xl border-2 border-dashed border-black/30 bg-paper p-8 text-center dark:border-white/20 dark:bg-slate-900">
           <p className="text-sm text-slate-400">
             {hasFilter ? 'Tidak ada transaksi yang cocok dengan filter.' : 'Belum ada transaksi di bulan ini.'}
           </p>
@@ -163,11 +163,11 @@ export default function TransactionList({ onEditTx }) {
                 return (
                   <div
                     key={t.id}
-                    className="flex items-center gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-sm"
+                    className="flex items-center gap-3 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900"
                   >
                     <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: catColor(t) }} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">{catName(t)}</p>
+                      <p className="truncate text-sm font-medium text-carbon dark:text-white">{catName(t)}</p>
                       <p className="truncate text-xs text-slate-400">
                         {isTransfer
                           ? `${walletName(t.walletId) || '—'} → ${walletName(t.toWalletId) || '—'}${t.description ? ` • ${t.description}` : ''}`
@@ -175,7 +175,7 @@ export default function TransactionList({ onEditTx }) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-sm font-semibold ${isTransfer ? 'text-slate-600 dark:text-slate-300' : t.type === 'refund' ? 'text-emerald-600' : 'text-red-500'}`}>
+                      <p className={`text-sm font-semibold ${isTransfer ? 'text-violet dark:text-lavender' : t.type === 'refund' ? 'text-mint' : 'text-ember'}`}>
                         {isTransfer ? '⇄ ' : t.type === 'refund' ? '+' : '−'}{formatRupiah(t.amount)}
                       </p>
                       <div className="mt-0.5 flex justify-end gap-1">
