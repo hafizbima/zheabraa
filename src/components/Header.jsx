@@ -71,11 +71,13 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pb-2">
-          {navTab('dashboard', 'Dashboard')}
-          {navTab('history', 'Riwayat')}
-          {navTab('stats', 'Statistik')}
-          <div className="flex-1" />
+        <div className="flex flex-wrap items-center gap-2 pb-2">
+          <div className="flex items-center gap-2">
+            {navTab('dashboard', 'Dashboard')}
+            {navTab('history', 'Riwayat')}
+            {navTab('stats', 'Statistik')}
+          </div>
+          <div className="ml-auto flex items-center gap-2">
           <button
             onClick={toggleTheme}
             className={`${pill} flex h-8 items-center gap-1.5 border-carbon bg-paper px-3 py-1.5 text-sm font-medium text-carbon hover:bg-mist dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800`}
@@ -99,6 +101,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
           <button onClick={logout} className={btn.nav} title={`Keluar (${user?.displayName || user?.email})`}>
             Keluar
           </button>
+          </div>
         </div>
       </div>
 
