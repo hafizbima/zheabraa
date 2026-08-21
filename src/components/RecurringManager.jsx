@@ -9,6 +9,7 @@ export default function RecurringManager({ onClose }) {
   const { templates, currentMonth: month, wallets, addTemplate, updateTemplate, removeTemplate } = useStore()
   const [day, setDay] = useState('1')
   const [amount, setAmount] = useState('')
+  const [type, setType] = useState('expense')
   const [categoryId, setCategoryId] = useState('free')
   const [walletId, setWalletId] = useState('')
   const [description, setDescription] = useState('')
@@ -20,6 +21,22 @@ export default function RecurringManager({ onClose }) {
   const cats = month?.categories || []
   const input =
     'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
+
+  const typeButton = (key, active) => (
+    <button
+      type="button"
+      onClick={() => setType(key)}
+      className={`rounded-xl border-2 px-3 py-2 text-sm font-medium transition ${
+        active
+          ? key === 'income'
+            ? 'border-carbon bg-mint/50 text-carbon'
+            : 'border-carbon bg-ember/15 text-ember'
+          : 'border-black/20 bg-paper text-slate-500 hover:bg-mist dark:border-white/20 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+      }`}
+    >
+      {key === 'income' ? 'Pemasukan' : 'Pengeluaran'}
+    </button>
+  )
 
   const catName = (id) => (id ? cats.find((c) => c.id === id)?.name : null)
   const walletName = (id) => (id ? wallets.find((w) => w.id === id)?.name : '—')
@@ -41,6 +58,7 @@ export default function RecurringManager({ onClose }) {
       if (
         d &&
         (d.dayOfMonth !== t.dayOfMonth ||
+          d.type !== t.type ||
           d.amount !== t.amount ||
           d.categoryId !== t.categoryId ||
           d.walletId !== t.walletId ||
@@ -65,6 +83,7 @@ export default function RecurringManager({ onClose }) {
         if (
           d &&
           (d.dayOfMonth !== t.dayOfMonth ||
+            d.type !== t.type ||
             d.amount !== t.amount ||
             d.categoryId !== t.categoryId ||
             d.walletId !== t.walletId ||
@@ -73,6 +92,7 @@ export default function RecurringManager({ onClose }) {
         ) {
           await updateTemplate(t.id, {
             dayOfMonth: d.dayOfMonth,
+            type: d.type === 'income' ? 'income' : 'expense',
             amount: d.amount,
             categoryId: d.categoryId,
             walletId: d.walletId,
@@ -93,14 +113,16 @@ export default function RecurringManager({ onClose }) {
     if (amt <= 0) return
     addTemplate({
       dayOfMonth: toInt(day) || 1,
+      type,
       amount: amt,
-      categoryId: categoryId === 'free' ? null : categoryId,
-      walletId: walletId || null,
+      categoryId: type === 'income' ? null : categoryId === 'free' ? null : categoryId,
+      walletId: type === 'income' ? null : walletId || null,
       description: description.trim(),
       active: true,
     })
     setDay('1')
     setAmount('')
+    setType('expense')
     setCategoryId('free')
     setWalletId('')
     setDescription('')
@@ -113,7 +135,7 @@ export default function RecurringManager({ onClose }) {
       wide
       footer={
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs text-slate-400">Transaksi dipakai otomatis tiap bulan pada tanggal yang ditentukan.</p>
+          <p className="text-xs text-slate-400">Pengeluaran & pemasukan dipakai otomatis tiap bulan pada tanggal yang ditentukan.</p>
           <button
             onClick={saveAll}
             disabled={saving || dirtyCount === 0}
@@ -131,24 +153,34 @@ export default function RecurringManager({ onClose }) {
           <input className={input} type="text" inputMode="numeric" placeholder="Nominal (Rp)" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Nominal" />
           <input className={input + ' sm:col-span-2'} placeholder="Keterangan (mis. Bayar Kos)" value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
-          <select className={input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-            <option value="free">Uang Bebas</option>
-            {cats.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
-            <option value="">Dompet — tidak dilacak</option>
-            {wallets.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-              </option>
-            ))}
-          </select>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          {typeButton('expense', type === 'expense')}
+          {typeButton('income', type === 'income')}
         </div>
+        {type === 'expense' ? (
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            <select className={input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+              <option value="free">Uang Bebas</option>
+              {cats.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
+              <option value="">Dompet — tidak dilacak</option>
+              {wallets.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <p className="mt-2 rounded-xl border border-mint bg-mint/30 px-3 py-2 text-xs text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
+            Pemasukan otomatis ditambahkan ke daftar Pemasukan di Dashboard tiap bulan.
+          </p>
+        )}
         <div className="mt-3 flex justify-end">
           <button type="submit" disabled={toInt(amount) <= 0} className={btn.primary}>
             + Tambah Template
@@ -198,26 +230,48 @@ export default function RecurringManager({ onClose }) {
                 onChange={(e) => updateDraft(t.id, { description: e.target.value })}
                 placeholder="Keterangan"
               />
-              <select
-                className={input + ' w-36'}
-                value={d.categoryId || 'free'}
-                onChange={(e) => updateDraft(t.id, { categoryId: e.target.value === 'free' ? null : e.target.value })}
-              >
-                <option value="free">Uang Bebas</option>
-                {cats.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
+              <div className="flex overflow-hidden rounded-xl border-2 border-black/20 dark:border-white/20">
+                {['expense', 'income'].map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => updateDraft(t.id, { type: k })}
+                    className={`px-2 py-1.5 text-xs font-medium ${
+                      (d.type || 'expense') === k
+                        ? k === 'income'
+                          ? 'bg-mint/60 text-carbon'
+                          : 'bg-ember/15 text-ember'
+                        : 'bg-paper text-slate-500 dark:bg-slate-900 dark:text-slate-300'
+                    }`}
+                  >
+                    {k === 'income' ? 'Pemasukan' : 'Pengeluaran'}
+                  </button>
                 ))}
-              </select>
-              <select className={input + ' w-36'} value={d.walletId || ''} onChange={(e) => updateDraft(t.id, { walletId: e.target.value || null })}>
-                <option value="">Dompet —</option>
-                {wallets.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.name}
-                  </option>
-                ))}
-              </select>
+              </div>
+              {(d.type || 'expense') === 'expense' && (
+                <>
+                  <select
+                    className={input + ' w-36'}
+                    value={d.categoryId || 'free'}
+                    onChange={(e) => updateDraft(t.id, { categoryId: e.target.value === 'free' ? null : e.target.value })}
+                  >
+                    <option value="free">Uang Bebas</option>
+                    {cats.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                  <select className={input + ' w-36'} value={d.walletId || ''} onChange={(e) => updateDraft(t.id, { walletId: e.target.value || null })}>
+                    <option value="">Dompet —</option>
+                    {wallets.map((w) => (
+                      <option key={w.id} value={w.id}>
+                        {w.name}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
               <button
                 onClick={() => setConfirmId(t.id)}
                 className={btn.subtleDanger + ' shrink-0'}

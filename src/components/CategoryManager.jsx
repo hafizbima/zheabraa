@@ -32,6 +32,9 @@ export default function CategoryManager({ onClose }) {
   const [color, setColor] = useState(CATEGORY_COLORS[0])
   const [confirmId, setConfirmId] = useState(null)
   const [drafts, setDrafts] = useState({})
+  const [orderIds, setOrderIds] = useState(null)
+  const [dragId, setDragId] = useState(null)
+  const [overId, setOverId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
 
@@ -52,6 +55,22 @@ export default function CategoryManager({ onClose }) {
     })
   }, [cats])
 
+  useEffect(() => {
+    setOrderIds((prev) => {
+      const ids = cats.map((c) => c.id)
+      if (!prev) return ids
+      const next = prev.filter((id) => ids.includes(id))
+      for (const id of ids) if (!next.includes(id)) next.push(id)
+      return next
+    })
+  }, [cats])
+
+  const baseOrder = cats.map((c) => c.id)
+  const orderDirty = !!orderIds && orderIds.join() !== baseOrder.join()
+  const list = (orderIds || baseOrder)
+    .map((id) => cats.find((c) => c.id === id))
+    .filter(Boolean)
+
   const dirtyCount = useMemo(() => {
     let n = 0
     for (const cat of cats) {
@@ -65,12 +84,21 @@ export default function CategoryManager({ onClose }) {
       )
         n += 1
     }
-    return n
-  }, [cats, drafts])
+    return n + (orderDirty ? 1 : 0)
+  }, [cats, drafts, orderDirty])
 
   const updateDraft = (id, patch) => {
     setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }))
     setJustSaved(false)
+  }
+
+  const move = (targetId) => {
+    if (!dragId || dragId === targetId) return
+    setOrderIds((prev) => {
+      const arr = (prev || baseOrder).filter((id) => id !== dragId)
+      arr.splice(arr.indexOf(targetId), 0, dragId)
+      return arr
+    })
   }
 
   const saveAll = async () => {
@@ -85,6 +113,14 @@ export default function CategoryManager({ onClose }) {
             color: d.color,
             goalAmount: toInt(d.goalAmount),
           })
+        }
+      }
+      if (orderDirty) {
+        for (const cat of cats) {
+          const newIdx = orderIds.indexOf(cat.id)
+          if (newIdx !== baseOrder.indexOf(cat.id)) {
+            await updateCategory(currentMonthId, cat.id, { order: newIdx })
+          }
         }
       }
       setJustSaved(true)
@@ -115,7 +151,7 @@ export default function CategoryManager({ onClose }) {
       footer={
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs text-slate-400">
-            Perubahan hanya tersimpan saat menekan "Simpan Perubahan".
+            Perubahan hanya tersimpan saat menekan "Simpan Perubahan". Seret ⋮⋮ untuk mengurutkan.
           </p>
           <button
             onClick={saveAll}
@@ -154,11 +190,29 @@ export default function CategoryManager({ onClose }) {
       </form>
 
       <div className="mt-4 space-y-2">
-        {cats.map((cat) => {
+        {list.map((cat) => {
           const d = drafts[cat.id] || cat
           const { used } = categoryStatus(cat, txs)
           return (
-            <div key={cat.id} className="flex items-end gap-3 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
+            <div
+              key={cat.id}
+              onDragOver={(e) => { e.preventDefault(); setOverId(cat.id) }}
+              onDragLeave={() => setOverId(null)}
+              onDrop={() => { setOverId(null); move(cat.id) }}
+              className={`flex items-end gap-3 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900 ${overId === cat.id ? 'ring-2 ring-violet' : ''}`}
+            >
+              <div className="flex h-8 shrink-0 flex-col items-center justify-center">
+                <span
+                  draggable
+                  onDragStart={(e) => { setDragId(cat.id); e.dataTransfer.effectAllowed = 'move' }}
+                  onDragEnd={() => setDragId(null)}
+                  className="cursor-grab select-none text-lg leading-none text-slate-400 hover:text-carbon dark:hover:text-white"
+                  title="Seret untuk mengurutkan"
+                  aria-label="Seret untuk mengurutkan"
+                >
+                  ⋮⋮
+                </span>
+              </div>
               <div className="w-8 shrink-0">
                 <p className="mb-1 text-xs text-slate-400">Warna</p>
                 <input

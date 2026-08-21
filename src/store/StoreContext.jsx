@@ -112,6 +112,15 @@ export function StoreProvider({ children }) {
     backend.signOut().catch(console.error)
   }, [])
 
+  const resetPassword = useCallback(async (email) => {
+    try {
+      await backend.resetPassword(email)
+      return { ok: true }
+    } catch (e) {
+      return { error: friendlyAuthError(e) }
+    }
+  }, [])
+
   // --- month meta helper ---
   const monthMeta = useCallback(
     (mId) => {
@@ -302,6 +311,7 @@ export function StoreProvider({ children }) {
       const t = {
         id: uid(),
         dayOfMonth: data.dayOfMonth || 1,
+        type: data.type === 'income' ? 'income' : 'expense',
         amount: data.amount || 0,
         categoryId: data.categoryId || null,
         walletId: data.walletId || null,
@@ -348,10 +358,11 @@ export function StoreProvider({ children }) {
       months,
       currentMonthId,
       currentMonth,
-      login,
-      signup,
-      logout,
-      switchMonth,
+login,
+        signup,
+        logout,
+        resetPassword,
+        switchMonth,
       startNewMonth,
       addWallet,
       updateWallet,
@@ -374,7 +385,7 @@ export function StoreProvider({ children }) {
     }),
     [
       user, authReady, ready, wallets, months, currentMonthId, currentMonth,
-      login, signup, logout, switchMonth, startNewMonth,
+      login, signup, logout, resetPassword, switchMonth, startNewMonth,
       addWallet, updateWallet, deleteWallet,
       addIncome, updateIncome, removeIncome, setCarryOver, setMonthNote,
       addCategory, updateCategory, removeCategory,

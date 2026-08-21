@@ -7,11 +7,20 @@ import {
   totalAllocated,
   categoryUsed,
   monthLeftTotal,
+  walletBalance,
+  allTransactions,
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
+
+function compactNum(v) {
+  if (v >= 1e6) return (v / 1e6).toFixed(1).replace(/\.0$/, '') + ' jt'
+  if (v >= 1e3) return 'Rp ' + (v / 1e3).toFixed(0) + ' rb'
+  return String(v)
+}
 
 export default function Stats() {
-  const { months } = useStore()
+  const { months, wallets } = useStore()
   const [rangeKey, setRangeKey] = useState('3')
 
   const ids = useMemo(() => Object.keys(months).sort(), [months])
@@ -28,14 +37,30 @@ export default function Stats() {
     let spent = 0
     let left = 0
     const catMap = {}
+    const walMap = {}
     const rows = ranged.map((mId) => {
       const m = months[mId]
       const txs = m.transactions || []
       let net = 0
       for (const t of txs) {
-        if (t.type === 'transfer') continue
+        if (t.type === 'transfer') {
+          if (t.walletId) {
+            walMap[t.walletId] ||= { in: 0, out: 0 }
+            walMap[t.walletId].out += t.amount || 0
+          }
+          if (t.toWalletId) {
+            walMap[t.toWalletId] ||= { in: 0, out: 0 }
+            walMap[t.toWalletId].in += t.amount || 0
+          }
+          continue
+        }
         if (t.type === 'refund') net -= t.amount || 0
         else net += t.amount || 0
+        if (t.walletId) {
+          walMap[t.walletId] ||= { in: 0, out: 0 }
+          if (t.type === 'refund') walMap[t.walletId].in += t.amount || 0
+          else walMap[t.walletId].out += t.amount || 0
+        }
       }
       const inc = totalInflow(m)
       const aloc = totalAllocated(m)
@@ -59,8 +84,21 @@ export default function Stats() {
       }
     })
     const cats = Object.values(catMap).sort((a, b) => b.value - a.value)
-    return { income, allocated, spent, left, rows, cats }
-  }, [ranged, months])
+    const all = allTransactions(months)
+    const wals = wallets.map((w) => {
+      const f = walMap[w.id] || { in: 0, out: 0 }
+      return {
+        id: w.id,
+        name: w.name,
+        color: w.color,
+        in: f.in,
+        out: f.out,
+        net: f.in - f.out,
+        balance: walletBalance(w, all),
+      }
+    })
+    return { income, allocated, spent, left, rows, cats, wals }
+  }, [ranged, months, wallets])
 
   const input =
     'rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
@@ -98,10 +136,69 @@ export default function Stats() {
         </div>
       </section>
 
+      {data.wals.length > 0 && (
+        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+          <h3 className="font-semibold text-carbon dark:text-white">Per Dompet</h3>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
+                  <th className="pb-2 pr-3 font-medium">Dompet</th>
+                  <th className="pb-2 pr-3 text-right font-medium">Masuk</th>
+                  <th className="pb-2 pr-3 text-right font-medium">Keluar</th>
+                  <th className="pb-2 pr-3 text-right font-medium">Net</th>
+                  <th className="pb-2 text-right font-medium">Saldo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.wals.map((w) => (
+                  <tr key={w.id} className="border-t border-black/20 dark:border-white/20">
+                    <td className="py-2.5 pr-3">
+                      <span className="flex items-center gap-2 font-medium text-carbon dark:text-white">
+                        <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: w.color }} />
+                        {w.name}
+                      </span>
+                    </td>
+                    <td className="py-2.5 pr-3 text-right text-mint">{formatRupiah(w.in)}</td>
+                    <td className="py-2.5 pr-3 text-right text-ember">{formatRupiah(w.out)}</td>
+                    <td className={`py-2.5 pr-3 text-right ${w.net < 0 ? 'text-ember' : 'text-carbon dark:text-white'}`}>
+                      {formatRupiah(w.net)}
+                    </td>
+                    <td className={`py-2.5 text-right font-medium ${w.balance < 0 ? 'text-ember' : 'text-carbon dark:text-white'}`}>
+                      {formatRupiah(w.balance)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 text-[11px] text-slate-400">
+            Masuk/Keluar dalam rentang terpilih; Saldo = saldo saat ini dari seluruh bulan.
+          </p>
+        </section>
+      )}
+
       {data.cats.length > 0 && (
         <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
           <h3 className="font-semibold text-carbon dark:text-white">Belanja per Kategori</h3>
           <DonutChart data={data.cats} totalLabel="Total Belanja" />
+        </section>
+      )}
+
+      {data.rows.length > 1 && (
+        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+          <h3 className="mb-3 font-semibold text-carbon dark:text-white">Tren Bulanan</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={data.rows} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.15} />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} width={56} tickFormatter={compactNum} />
+              <Tooltip formatter={(v) => formatRupiah(Number(v))} labelStyle={{ color: '#0f172a' }} contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0' }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Line type="monotone" dataKey="income" name="Pemasukan" stroke="#8b5cf6" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="spent" name="Belanja" stroke="#ef4444" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
         </section>
       )}
 

@@ -14,6 +14,7 @@ import {
   allTransactions,
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
+import ReallocateForm from './ReallocateForm.jsx'
 import { btn } from '../lib/buttons.js'
 
 function Card({ label, value, sub, accent, tint }) {
@@ -51,6 +52,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   } = useStore()
 
   const [editingIncome, setEditingIncome] = useState(null)
+  const [reallocOpen, setReallocOpen] = useState(false)
   const [incomeLabel, setIncomeLabel] = useState('')
   const [incomeAmount, setIncomeAmount] = useState('')
   const [carryDraft, setCarryDraft] = useState('')
@@ -117,7 +119,8 @@ const input =
     'rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
   return (
-    <div className="space-y-5">
+    <>
+      <div className="space-y-5">
       {/* Summary */}
       <section className="grid grid-cols-2 gap-3">
         <Card label="Total Pemasukan" value={formatRupiah(inflow)} tint="bg-mint/40 dark:bg-mint/10" />
@@ -225,6 +228,11 @@ const input =
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-carbon dark:text-white">Pocket</h3>
           <div className="flex gap-3">
+            {(month.categories || []).length > 0 && (
+            <button onClick={() => setReallocOpen(true)} className={btn.subtle}>
+              Re-alokasi
+            </button>
+          )}
             <button onClick={onManageRecurring} className={btn.subtle}>
               Transaksi Berulang
             </button>
@@ -305,8 +313,9 @@ const input =
             <p className="text-sm text-slate-400">Belum ada template. Tambahkan via "Kelola" agar otomatis tercatat tiap bulan.</p>
           )}
           {templates.map((t) => {
-            const cat = (month.categories || []).find((c) => c.id === t.categoryId)
-            const wal = wallets.find((w) => w.id === t.walletId)
+            const isIncome = t.type === 'income'
+            const cat = isIncome ? null : (month.categories || []).find((c) => c.id === t.categoryId)
+            const wal = isIncome ? null : wallets.find((w) => w.id === t.walletId)
             return (
               <div key={t.id} className={`flex items-center justify-between gap-3 rounded-xl border border-carbon px-3 py-2 ${t.active !== false ? 'bg-mint/40 dark:bg-white/5' : 'bg-mist opacity-60 dark:bg-slate-800'}`}>
                 <div className="min-w-0">
@@ -314,7 +323,7 @@ const input =
                     Hari {Math.min(28, Math.max(1, t.dayOfMonth || 1))} — {t.description || 'Transaksi berulang'}
                   </p>
                   <p className="text-xs text-slate-400">
-                    {cat ? cat.name : 'Uang Bebas'}
+                    {isIncome ? 'Pemasukan' : cat ? cat.name : 'Uang Bebas'}
                     {wal ? ` · ${wal.name}` : ''}
                   </p>
                 </div>
@@ -354,5 +363,8 @@ const input =
 
       <div className="h-4" />
     </div>
+
+    {reallocOpen && <ReallocateForm onClose={() => setReallocOpen(false)} />}
+  </>
   )
 }

@@ -11,7 +11,7 @@ const WALLET_FIELDS = { name: 'name', color: 'color', openingBalance: 'opening_b
 const MONTH_FIELDS = { label: 'label', carryOver: 'carry_over', incomes: 'incomes', note: 'note', createdAt: 'created_at' }
 const CAT_FIELDS = { name: 'name', budgetAmount: 'budget_amount', goalAmount: 'goal_amount', color: 'color', order: 'sort_order' }
 const TX_FIELDS = { date: 'date', amount: 'amount', type: 'type', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', createdAt: 'created_at' }
-const TEMPLATE_FIELDS = { dayOfMonth: 'day_of_month', amount: 'amount', categoryId: 'category_id', walletId: 'wallet_id', description: 'description', active: 'active', createdAt: 'created_at' }
+const TEMPLATE_FIELDS = { dayOfMonth: 'day_of_month', type: 'type', amount: 'amount', categoryId: 'category_id', walletId: 'wallet_id', description: 'description', active: 'active', createdAt: 'created_at' }
 
 function mapWallet(r) {
   return { id: r.id, name: r.name, color: r.color, openingBalance: r.opening_balance, order: r.sort_order }
@@ -71,6 +71,7 @@ function mapTemplate(r) {
   return {
     id: r.id,
     dayOfMonth: r.day_of_month,
+    type: r.type || 'expense',
     amount: r.amount,
     categoryId: r.category_id,
     walletId: r.wallet_id,
@@ -94,29 +95,53 @@ async function applyRecurringForMonth(uid, mId) {
   const now = new Date()
   const curMonth = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`
   const todayDay = now.getDate()
-  const rows = (data || []).flatMap((t) => {
+  const txRows = []
+  const incomeRows = []
+  for (const t of data || []) {
     const day = Math.min(28, Math.max(1, t.day_of_month))
-    if (mId < curMonth) return []
-    if (mId === curMonth && day > todayDay) return []
-    return [
-      {
-        id: `recur-${t.id}-${mId}-${pad2(day)}`,
-        user_id: uid,
-        month_id: mId,
-        date: `${mId}-${pad2(day)}`,
+    if (mId < curMonth) continue
+    if (mId === curMonth && day > todayDay) continue
+    if (t.type === 'income') {
+      incomeRows.push({
+        id: `recur-${t.id}-${mId}`,
+        label: t.description || 'Pemasukan berulang',
         amount: t.amount || 0,
-        type: 'expense',
-        category_id: t.category_id || null,
-        wallet_id: t.wallet_id || null,
-        description: t.description || 'Transaksi berulang',
-        created_at: Date.now(),
-      },
-    ]
-  })
-  if (!rows.length) return false
-  const res = await supabase.from('transactions').upsert(rows)
-  if (res.error) throw res.error
-  return true
+      })
+      continue
+    }
+    txRows.push({
+      id: `recur-${t.id}-${mId}-${pad2(day)}`,
+      user_id: uid,
+      month_id: mId,
+      date: `${mId}-${pad2(day)}`,
+      amount: t.amount || 0,
+      type: 'expense',
+      category_id: t.category_id || null,
+      wallet_id: t.wallet_id || null,
+      description: t.description || 'Transaksi berulang',
+      created_at: Date.now(),
+    })
+  }
+  let generated = false
+  if (txRows.length) {
+    const res = await supabase.from('transactions').upsert(txRows)
+    if (res.error) throw res.error
+    generated = true
+  }
+  if (incomeRows.length) {
+    const list = await supabase.from('months').select('*').eq('id', mId).eq('user_id', uid)
+    if (list.error) throw list.error
+    const existing = Array.isArray(list.data?.[0]?.incomes) ? list.data[0].incomes : []
+    const ids = new Set(incomeRows.map((i) => i.id))
+    const res = await supabase
+      .from('months')
+      .update({ incomes: existing.filter((i) => !ids.has(i.id)).concat(incomeRows) })
+      .eq('id', mId)
+      .eq('user_id', uid)
+    if (res.error) throw res.error
+    generated = true
+  }
+  return generated
 }
 
 const recurringGenerated = new Set()
@@ -180,6 +205,12 @@ export async function signUp(email, password, displayName) {
 export async function signOut() {
   needClient()
   const { error } = await supabase.auth.signOut()
+  if (error) throw error
+}
+
+export async function resetPassword(email) {
+  needClient()
+  const { error } = await supabase.auth.resetPasswordForEmail(email)
   if (error) throw error
 }
 
@@ -552,4 +583,5 @@ export default {
   updateTemplate,
   removeTemplate,
   applyRecurring,
+  resetPassword,
 }

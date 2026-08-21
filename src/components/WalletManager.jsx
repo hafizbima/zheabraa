@@ -14,6 +14,9 @@ export default function WalletManager({ onClose }) {
   const [color, setColor] = useState(WALLET_COLORS[0])
   const [confirmId, setConfirmId] = useState(null)
   const [drafts, setDrafts] = useState({})
+  const [orderIds, setOrderIds] = useState(null)
+  const [dragId, setDragId] = useState(null)
+  const [overId, setOverId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
 
@@ -31,18 +34,43 @@ export default function WalletManager({ onClose }) {
     })
   }, [wallets])
 
+  useEffect(() => {
+    setOrderIds((prev) => {
+      const ids = wallets.map((w) => w.id)
+      if (!prev) return ids
+      const next = prev.filter((id) => ids.includes(id))
+      for (const id of ids) if (!next.includes(id)) next.push(id)
+      return next
+    })
+  }, [wallets])
+
+  const baseOrder = wallets.map((w) => w.id)
+  const orderDirty = !!orderIds && orderIds.join() !== baseOrder.join()
+  const list = (orderIds || baseOrder)
+    .map((id) => wallets.find((w) => w.id === id))
+    .filter(Boolean)
+
   const dirtyCount = useMemo(() => {
     let n = 0
     for (const w of wallets) {
       const d = drafts[w.id]
       if (d && (d.name !== w.name || d.color !== w.color || d.openingBalance !== w.openingBalance)) n += 1
     }
-    return n
-  }, [wallets, drafts])
+    return n + (orderDirty ? 1 : 0)
+  }, [wallets, drafts, orderDirty])
 
   const updateDraft = (id, patch) => {
     setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }))
     setJustSaved(false)
+  }
+
+  const move = (targetId) => {
+    if (!dragId || dragId === targetId) return
+    setOrderIds((prev) => {
+      const arr = (prev || baseOrder).filter((id) => id !== dragId)
+      arr.splice(arr.indexOf(targetId), 0, dragId)
+      return arr
+    })
   }
 
   const saveAll = async () => {
@@ -52,6 +80,14 @@ export default function WalletManager({ onClose }) {
         const d = drafts[w.id]
         if (d && (d.name !== w.name || d.color !== w.color || d.openingBalance !== w.openingBalance)) {
           await updateWallet(w.id, { name: d.name, color: d.color, openingBalance: d.openingBalance })
+        }
+      }
+      if (orderDirty) {
+        for (const w of wallets) {
+          const newIdx = orderIds.indexOf(w.id)
+          if (newIdx !== baseOrder.indexOf(w.id)) {
+            await updateWallet(w.id, { order: newIdx })
+          }
         }
       }
       setJustSaved(true)
@@ -76,7 +112,7 @@ export default function WalletManager({ onClose }) {
       footer={
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs text-slate-400">
-            Saldo = saldo awal + refund − pengeluaran. Perubahan tersimpan saat menekan "Simpan Perubahan".
+            Saldo = saldo awal + refund − pengeluaran. Perubahan tersimpan saat menekan "Simpan Perubahan". Seret ⋮⋮ untuk mengurutkan.
           </p>
           <button
             onClick={saveAll}
@@ -114,12 +150,28 @@ export default function WalletManager({ onClose }) {
       </form>
 
       <div className="mt-4 space-y-2">
-        {wallets.map((w) => {
+        {list.map((w) => {
           const d = drafts[w.id] || w
           const bal = walletBalance({ ...w, openingBalance: d.openingBalance }, allTx)
           const dirty = d.name !== w.name || d.color !== w.color || d.openingBalance !== w.openingBalance
           return (
-            <div key={w.id} className="flex items-center gap-3 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
+            <div
+              key={w.id}
+              onDragOver={(e) => { e.preventDefault(); setOverId(w.id) }}
+              onDragLeave={() => setOverId(null)}
+              onDrop={() => { setOverId(null); move(w.id) }}
+              className={`flex items-center gap-3 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900 ${overId === w.id ? 'ring-2 ring-violet' : ''}`}
+            >
+              <span
+                draggable
+                onDragStart={(e) => { setDragId(w.id); e.dataTransfer.effectAllowed = 'move' }}
+                onDragEnd={() => setDragId(null)}
+                className="shrink-0 cursor-grab select-none text-lg leading-none text-slate-400 hover:text-carbon dark:hover:text-white"
+                title="Seret untuk mengurutkan"
+                aria-label="Seret untuk mengurutkan"
+              >
+                ⋮⋮
+              </span>
               <input
                 type="color"
                 value={d.color}

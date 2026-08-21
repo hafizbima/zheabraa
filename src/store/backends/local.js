@@ -222,12 +222,21 @@ function generateRecurring(uid, mId) {
   const curMonth = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`
   const todayDay = now.getDate()
   if (mId < curMonth) return
+  const month = store.months[mId]
   store.transactions[mId] = store.transactions[mId] || []
   let changed = false
+  const incomes = (month && Array.isArray(month.incomes)) ? month.incomes : []
   for (const t of store.templates) {
     if (!t.active) continue
     const day = Math.min(28, Math.max(1, t.dayOfMonth || 1))
     if (mId === curMonth && day > todayDay) continue
+    if (t.type === 'income') {
+      const id = `recur-${t.id}-${mId}`
+      if (incomes.some((i) => i.id === id)) continue
+      incomes.push({ id, label: t.description || 'Pemasukan berulang', amount: t.amount || 0 })
+      changed = true
+      continue
+    }
     const id = `recur-${t.id}-${mId}-${pad2(day)}`
     if (store.transactions[mId].some((x) => x.id === id)) continue
     store.transactions[mId].unshift({
@@ -244,8 +253,10 @@ function generateRecurring(uid, mId) {
     changed = true
   }
   if (changed) {
+    if (month) month.incomes = incomes
     persist()
     emitDetail(mId)
+    emitMonths()
   }
 }
 
@@ -382,6 +393,10 @@ export function applyRecurring(uid, mId) {
   return Promise.resolve()
 }
 
+export async function resetPassword() {
+  // Not applicable in local mode
+}
+
 init()
 
 export default {
@@ -412,4 +427,5 @@ export default {
   updateTemplate,
   removeTemplate,
   applyRecurring,
+  resetPassword,
 }

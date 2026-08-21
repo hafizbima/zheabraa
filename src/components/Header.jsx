@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { flushSync } from 'react-dom'
 import { useStore } from '../store/StoreContext.jsx'
 import { useTheme } from '../theme.js'
 import { btn } from '../lib/buttons.js'
@@ -8,6 +9,25 @@ import Confirm from './Confirm.jsx'
 export default function Header({ view, onViewChange, onOpenWallets }) {
   const { user, logout, currentMonthId, switchMonth, startNewMonth, months } = useStore()
   const { theme, toggleTheme } = useTheme()
+
+  const onToggleTheme = (e) => {
+    if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      toggleTheme()
+      return
+    }
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = rect.left + rect.width / 2
+    const y = rect.top + rect.height / 2
+    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
+    document.startViewTransition(() => flushSync(toggleTheme)).ready
+      .then(() => {
+        document.documentElement.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+          { duration: 400, easing: 'ease-in-out', pseudoElement: '::view-transition-new(root)' }
+        )
+      })
+      .catch(() => {})
+  }
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmNew, setConfirmNew] = useState(false)
 
@@ -79,7 +99,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
           </div>
           <div className="ml-auto flex items-center gap-2">
           <button
-            onClick={toggleTheme}
+            onClick={onToggleTheme}
             className={`${pill} flex h-8 items-center gap-1.5 border-carbon bg-paper px-3 py-1.5 text-sm font-medium text-carbon hover:bg-mist dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800`}
             aria-label={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}
           >
