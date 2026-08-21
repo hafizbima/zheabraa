@@ -75,6 +75,13 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const freeSpent = freeMoneySpent(txs)
   const left = freeLeft(month)
 
+  // ponytail: threshold 70% + top 3 hardcoded, bikin configurable kalau user minta
+  const alerts = (month.categories || [])
+    .map((cat) => ({ cat, ...categoryStatus(cat, txs) }))
+    .filter((a) => a.budget > 0 && a.pct >= 70)
+    .sort((a, b) => b.pct - a.pct)
+    .slice(0, 3)
+
   const donutData = (month.categories || [])
     .filter((c) => c.budgetAmount > 0)
     .map((c) => ({ name: c.name, value: c.budgetAmount, color: c.color }))
@@ -128,6 +135,34 @@ const input =
         <Card label="Uang Bebas (sisa)" value={formatRupiah(pool)} sub="sebelum dipakai" tint="bg-sky/60 dark:bg-sky/10" />
         <Card label="Sisa Uang Bebas" value={formatRupiah(left)} sub={`terpakai ${formatRupiah(freeSpent)}`} accent={left < 0 ? 'text-ember' : 'text-carbon dark:text-white'} tint="bg-[#B8B8FF] dark:bg-white/5" />
       </section>
+
+      {/* Budget perlu dicek — mirip Buatin.mba overview */}
+      {alerts.length > 0 && (
+        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+          <h3 className="font-semibold text-carbon dark:text-white">Budget yang perlu dicek</h3>
+          <div className="mt-3 space-y-2">
+            {alerts.map(({ cat, used, budget, pct, status }) => (
+              <div key={cat.id} className="rounded-xl border border-carbon bg-paper px-3 py-2.5 dark:border-white/20 dark:bg-slate-900">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
+                    <span className="text-sm font-medium text-carbon dark:text-white">{cat.name}</span>
+                  </div>
+                  <span className={`shrink-0 text-xs font-semibold ${status === 'over' ? 'text-ember' : 'text-brand-600'}`}>
+                    {pct}% kepakai
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {formatRupiah(used)} / {formatRupiah(budget)}
+                </p>
+                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full border border-black/20 bg-black/5 dark:border-white/20 dark:bg-white/10">
+                  <div className={`h-full rounded-full ${statusStyles(status)} transition-all`} style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Pemasukan & carry-over */}
       <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">

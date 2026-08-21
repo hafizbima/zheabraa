@@ -19,9 +19,23 @@ function compactNum(v) {
   return String(v)
 }
 
+function weekStartISO(iso) {
+  const [y, m, d] = iso.split('-').map(Number)
+  const dt = new Date(y, m - 1, d)
+  const dow = dt.getDay()
+  const diff = dow === 0 ? -6 : 1 - dow
+  dt.setDate(dt.getDate() + diff)
+  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`
+}
+function fmtDayMonth(iso) {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+}
+
 export default function Stats() {
   const { months, wallets } = useStore()
   const [rangeKey, setRangeKey] = useState('3')
+  const [gran, setGran] = useState('bulanan')
 
   const ids = useMemo(() => Object.keys(months).sort(), [months])
 
@@ -100,19 +114,53 @@ export default function Stats() {
     return { income, allocated, spent, left, rows, cats, wals }
   }, [ranged, months, wallets])
 
+  // ponytail: hanya hari/minggu yang ada transaksi yang muncul (sparse), isi 0 untuk hari kosong kalau butuh garis kontinu
+  const trend = useMemo(() => {
+    if (gran === 'bulanan') return { key: 'bulanan', rows: data.rows }
+    const bucket = {}
+    for (const mId of ranged) {
+      for (const t of months[mId]?.transactions || []) {
+        if (t.type === 'transfer') continue
+        if (!t.date) continue
+        const k = gran === 'harian' ? t.date : weekStartISO(t.date)
+        bucket[k] ||= 0
+        bucket[k] += t.type === 'refund' ? -(t.amount || 0) : t.amount || 0
+      }
+    }
+    const keys = Object.keys(bucket).sort()
+    const rows = keys.map((k) => {
+      if (gran === 'harian') return { label: fmtDayMonth(k), date: k, spent: bucket[k] }
+      const [y, mo, d] = k.split('-').map(Number)
+      const end = new Date(y, mo - 1, d + 6)
+      const endISO = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`
+      return { label: `${fmtDayMonth(k)}–${fmtDayMonth(endISO)}`, date: k, spent: bucket[k] }
+    })
+    return { key: gran, rows }
+  }, [gran, ranged, months, data.rows])
+
   const input =
     'rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
+  const granBtn = (key, label) =>
+    `rounded-full border px-3 py-1.5 text-xs font-semibold transition ${gran === key ? 'border-carbon bg-carbon text-white dark:border-white dark:bg-white dark:text-carbon' : 'border-carbon bg-paper text-carbon hover:bg-mist dark:border-white/30 dark:bg-slate-900 dark:text-white'}`
+
   return (
     <div className="space-y-5">
-      <section className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold text-carbon dark:text-white">Statistik</h2>
-        <select className={input} value={rangeKey} onChange={(e) => setRangeKey(e.target.value)} aria-label="Rentang bulan">
-          <option value="3">3 bulan terakhir</option>
-          <option value="6">6 bulan terakhir</option>
-          <option value="12">12 bulan terakhir</option>
-          <option value="all">Semua bulan</option>
-        </select>
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-display text-lg font-bold text-carbon dark:text-white">Statistik</h2>
+          <select className={input} value={rangeKey} onChange={(e) => setRangeKey(e.target.value)} aria-label="Rentang bulan">
+            <option value="3">3 bulan terakhir</option>
+            <option value="6">6 bulan terakhir</option>
+            <option value="12">12 bulan terakhir</option>
+            <option value="all">Semua bulan</option>
+          </select>
+        </div>
+        <div className="flex gap-2">
+          <button className={granBtn('harian', 'Harian')} onClick={() => setGran('harian')}>Harian</button>
+          <button className={granBtn('mingguan', 'Mingguan')} onClick={() => setGran('mingguan')}>Mingguan</button>
+          <button className={granBtn('bulanan', 'Bulanan')} onClick={() => setGran('bulanan')}>Bulanan</button>
+        </div>
       </section>
 
       <section className="grid grid-cols-2 gap-3">
@@ -185,17 +233,19 @@ export default function Stats() {
         </section>
       )}
 
-      {data.rows.length > 1 && (
+      {trend.rows.length > 1 && (
         <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-          <h3 className="mb-3 font-semibold text-carbon dark:text-white">Tren Bulanan</h3>
+          <h3 className="mb-3 font-semibold text-carbon dark:text-white">
+            {gran === 'harian' ? 'Tren Harian' : gran === 'mingguan' ? 'Tren Mingguan' : 'Tren Bulanan'}
+          </h3>
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={data.rows} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
+            <LineChart data={trend.rows} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.15} />
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} width={56} tickFormatter={compactNum} />
               <Tooltip formatter={(v) => formatRupiah(Number(v))} labelStyle={{ color: '#0f172a' }} contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0' }} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="income" name="Pemasukan" stroke="#8b5cf6" strokeWidth={2} dot={false} />
+              {gran === 'bulanan' && <Line type="monotone" dataKey="income" name="Pemasukan" stroke="#8b5cf6" strokeWidth={2} dot={false} />}
               <Line type="monotone" dataKey="spent" name="Belanja" stroke="#ef4444" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
