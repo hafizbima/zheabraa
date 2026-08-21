@@ -53,7 +53,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => { setSent(false); setMode('login'); setError('') }}
-                className="mt-3 font-medium text-carbon underline underline-offset-2"
+                className="mt-3 font-medium text-carbon underline underline-offset-2 dark:text-white"
               >
                 Kembali ke login
               </button>
@@ -64,7 +64,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setMode('login')}
-                className="mt-3 font-medium text-carbon underline underline-offset-2"
+                className="mt-3 font-medium text-carbon underline underline-offset-2 dark:text-white"
               >
                 Kembali ke login
               </button>
@@ -124,7 +124,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => { setMode('login'); setError('') }}
-                    className="font-medium text-carbon underline underline-offset-2"
+                    className="font-medium text-carbon underline underline-offset-2 dark:text-white"
                   >
                     Kembali ke login
                   </button>
@@ -139,7 +139,7 @@ export default function Login() {
                         setMode(mode === 'login' ? 'signup' : 'login')
                         setError('')
                       }}
-                      className="font-medium text-carbon underline underline-offset-2"
+                      className="font-medium text-carbon underline underline-offset-2 dark:text-white"
                     >
                       {mode === 'login' ? 'Buat akun' : 'Masuk'}
                     </button>
@@ -149,7 +149,7 @@ export default function Login() {
                       <button
                         type="button"
                         onClick={() => { setMode('reset'); setError('') }}
-                        className="font-medium text-carbon underline underline-offset-2"
+                        className="font-medium text-carbon underline underline-offset-2 dark:text-white"
                       >
                         Lupa password?
                       </button>
