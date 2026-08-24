@@ -27,6 +27,8 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
 
   const isTransfer = transaction?.type === 'transfer' || type === 'transfer'
   const isFree = !isTransfer && categoryId === 'free'
+  const targetMonth = date ? date.slice(0, 7) : monthId
+  const monthMismatch = targetMonth !== monthId
   const input =
     'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2.5 text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
@@ -97,6 +99,11 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Tanggal</label>
           <input type="date" className={input} value={date} onChange={(e) => setDate(e.target.value)} />
+          {monthMismatch && (
+            <p className="mt-1 text-xs text-amber-600 dark:text-amber-300">
+              Tanggal ini akan tercatat di <strong>{targetMonth}</strong>, bukan di bulan yang sedang dibuka. Pocket yang kepotong adalah pocket bulan {targetMonth}.
+            </p>
+          )}
         </div>
 
         <div>

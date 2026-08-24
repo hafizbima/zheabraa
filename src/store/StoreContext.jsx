@@ -274,18 +274,52 @@ export function StoreProvider({ children }) {
   const addTransaction = useCallback(
     (mId, data) => {
       if (!user) return
-      const tx = { id: uid(), createdAt: Date.now(), ...data }
-      backend.setTransaction(user.uid, mId, tx).catch(console.error)
+      const targetId = data.date ? data.date.slice(0, 7) : mId
+      let resolvedCatId = data.categoryId
+      if (resolvedCatId && targetId !== mId) {
+        const sourceCat = Object.values(months)
+          .flatMap((mm) => mm.categories || [])
+          .find((c) => c.id === resolvedCatId)
+        if (sourceCat) {
+          const targetCats = months[targetId]?.categories || []
+          const match = targetCats.find((c) => c.name === sourceCat.name)
+          resolvedCatId = match ? match.id : null
+        }
+      }
+      const tx = { id: uid(), createdAt: Date.now(), ...data, categoryId: resolvedCatId }
+      if (targetId !== mId) backend.ensureMonth(user.uid, targetId).catch(console.error)
+      backend.setTransaction(user.uid, targetId, tx).catch(console.error)
     },
-    [user],
+    [user, months],
   )
 
   const updateTransaction = useCallback(
     (mId, txId, patch) => {
       if (!user) return
+      const targetId = patch.date ? patch.date.slice(0, 7) : mId
+      if (targetId !== mId) {
+        const oldTx = months[mId]?.transactions?.find((t) => t.id === txId)
+        if (oldTx) {
+          let resolvedCatId = patch.categoryId !== undefined ? patch.categoryId : oldTx.categoryId
+          if (resolvedCatId) {
+            const sourceCat = Object.values(months)
+              .flatMap((mm) => mm.categories || [])
+              .find((c) => c.id === resolvedCatId)
+            const targetCats = months[targetId]?.categories || []
+            const match = sourceCat ? targetCats.find((c) => c.name === sourceCat.name) : null
+            if (sourceCat && !match) resolvedCatId = null
+            else if (match) resolvedCatId = match.id
+          }
+          const newTx = { ...oldTx, ...patch, categoryId: resolvedCatId }
+          backend.removeTransaction(user.uid, mId, txId).catch(console.error)
+          backend.ensureMonth(user.uid, targetId).catch(console.error)
+          backend.setTransaction(user.uid, targetId, newTx).catch(console.error)
+          return
+        }
+      }
       backend.updateTransaction(user.uid, mId, txId, patch).catch(console.error)
     },
-    [user],
+    [user, months],
   )
 
   const removeTransaction = useCallback(
