@@ -19,6 +19,8 @@ export default function WalletManager({ onClose }) {
   const [overId, setOverId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
+  const [adjustId, setAdjustId] = useState(null)
+  const [adjustInput, setAdjustInput] = useState('')
 
   const allTx = allTransactions(months)
   const input =
@@ -213,6 +215,15 @@ export default function WalletManager({ onClose }) {
               <div className="w-28 shrink-0 text-right">
                 <p className="text-xs text-slate-400">saldo saat ini</p>
                 <p className={`text-sm font-semibold ${bal < 0 ? 'text-ember' : 'text-carbon dark:text-white'}`}>{formatRupiah(bal)}</p>
+                <button
+                  onClick={() => {
+                    setAdjustId(w.id)
+                    setAdjustInput(String(bal))
+                  }}
+                  className="mt-1 text-[11px] font-medium text-violet underline underline-offset-2 hover:text-violet/80 dark:text-lavender"
+                >
+                  Sesuaikan
+                </button>
               </div>
               <button
                 onClick={() => setConfirmId(w.id)}
@@ -246,6 +257,75 @@ export default function WalletManager({ onClose }) {
           }}
         />
       )}
+
+      {adjustId &&
+        (() => {
+          const w = wallets.find((x) => x.id === adjustId)
+          if (!w) return null
+          const d = drafts[w.id] || w
+          const bal =
+            wallets.length === 1
+              ? walletBalanceSingle({ ...w, openingBalance: d.openingBalance }, allTx)
+              : walletBalance({ ...w, openingBalance: d.openingBalance }, allTx)
+          const target = toInt(adjustInput)
+          const delta = target - bal
+          const hasDelta = adjustInput.trim() !== '' && delta !== 0
+          return (
+            <Modal
+              title={`Sesuaikan Saldo — ${w.name}`}
+              onClose={() => setAdjustId(null)}
+              footer={
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setAdjustId(null)} className={btn.neutral}>
+                    Batal
+                  </button>
+                  <button
+                    disabled={!hasDelta}
+                    onClick={() => {
+                      const newOpening = (d.openingBalance || 0) + delta
+                      updateDraft(w.id, { openingBalance: newOpening })
+                      setAdjustId(null)
+                    }}
+                    className={btn.primary}
+                  >
+                    Sesuaikan
+                  </button>
+                </div>
+              }
+            >
+              <div className="space-y-3">
+                <div className="rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Tercatat</p>
+                  <p className="text-base font-semibold text-carbon dark:text-white">{formatRupiah(bal)}</p>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Saldo Bank sebenarnya (Rp)</label>
+                  <input
+                    className={input}
+                    type="text"
+                    inputMode="numeric"
+                    value={adjustInput}
+                    onChange={(e) => setAdjustInput(e.target.value)}
+                    placeholder="mis. 1250000"
+                    autoFocus
+                  />
+                  {adjustInput.trim() !== '' && (
+                    <p className="mt-1 text-xs text-slate-400">{formatRupiah(target)}</p>
+                  )}
+                </div>
+                {hasDelta && (
+                  <div className={`rounded-xl border px-3 py-2 text-sm ${delta > 0 ? 'border-mint bg-mint/20 text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white' : 'border-ember/30 bg-ember/10 text-ember'}`}>
+                    Selisih: <strong>{delta > 0 ? '+' : ''}{formatRupiah(delta)}</strong> {delta > 0 ? 'akan ditambahkan ke openingBalance' : 'akan dikurangi dari openingBalance'}
+                  </div>
+                )}
+                {!hasDelta && adjustInput.trim() !== '' && (
+                  <p className="text-xs text-slate-400">Tidak ada perubahan.</p>
+                )}
+                <p className="text-xs text-slate-400">Hanya openingBalance yang diubah, tidak ada transaksi baru. Pocket & carry-over tidak berubah. Tekan Simpan Perubahan di belakang untuk menyimpan permanen.</p>
+              </div>
+            </Modal>
+          )
+        })()}
     </Modal>
   )
 }
