@@ -6,7 +6,7 @@ import { todayISO } from '../lib/dates.js'
 import { btn } from '../lib/buttons.js'
 
 export default function TransactionForm({ monthId, transaction, prefill, onClose }) {
-  const { currentMonth: month, wallets, addTransaction, updateTransaction } = useStore()
+  const { currentMonth: month, months, wallets, addTransaction, updateTransaction } = useStore()
 
   const [date, setDate] = useState(transaction?.date || todayISO())
   const [type, setType] = useState(transaction?.type || 'expense')
@@ -29,6 +29,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const isFree = !isTransfer && categoryId === 'free'
   const targetMonth = date ? date.slice(0, 7) : monthId
   const monthMismatch = targetMonth !== monthId
+  const categorySourceMonth = months[targetMonth] || month
   const input =
     'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2.5 text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
@@ -170,10 +171,10 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
           </>
         ) : (
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Kategori / Pocket</label>
+            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Kategori / Pocket {monthMismatch && `— pocket bulan ${targetMonth}`}</label>
             <select className={input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
               <option value="free">Uang Bebas (tidak dari pocket)</option>
-              {(month?.categories || []).map((c) => (
+              {(categorySourceMonth?.categories || []).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import backend from './backend.js'
 import { monthIdOf, addMonths, labelOf } from '../lib/dates.js'
 import { uid } from '../lib/id.js'
@@ -84,10 +84,58 @@ export function StoreProvider({ children }) {
     return () => unsubs.forEach((u) => u())
   }, [user, monthIdsKey])
 
+  const repairedRef = useRef(new Set())
   const currentMonth = months[currentMonthId]
   const ready =
     authReady &&
     (!user || (walletsReceived && !!currentMonth?.categories && !!currentMonth?.transactions))
+
+  // ponytail: auto-repair transaksi nyasar — date bulan != month_id atau categoryId tidak ada di bulan itu (id pocket tiap bulan beda)
+  useEffect(() => {
+    if (!user) return
+    if (!Object.keys(months).length) return
+    for (const mId of Object.keys(months)) {
+      const cats = months[mId]?.categories || []
+      const catIds = new Set(cats.map((c) => c.id))
+      for (const t of months[mId]?.transactions || []) {
+        if (repairedRef.current.has(t.id)) continue
+        if (!t.date) continue
+        const target = t.date.slice(0, 7)
+        // 1) bulan di tanggal != bulan penyimpanan → pindahkan + map pocket by nama
+        if (target !== mId) {
+          const sourceCat = t.categoryId
+            ? Object.values(months)
+                .flatMap((mm) => mm.categories || [])
+                .find((c) => c.id === t.categoryId)
+            : null
+          let resolvedCatId = t.categoryId
+          if (sourceCat) {
+            const targetCats = months[target]?.categories || []
+            const match = targetCats.find((c) => c.name === sourceCat.name)
+            resolvedCatId = match ? match.id : null
+          }
+          repairedRef.current.add(t.id)
+          backend.removeTransaction(user.uid, mId, t.id).catch(console.error)
+          backend.ensureMonth(user.uid, target).catch(() => {})
+          backend.setTransaction(user.uid, target, { ...t, categoryId: resolvedCatId }).catch(console.error)
+          continue
+        }
+        // 2) categoryId ada tapi tidak di bulan ini → map by nama (Skincare tiap bulan id beda)
+        if (t.categoryId && !catIds.has(t.categoryId)) {
+          const sourceCat = Object.values(months)
+            .flatMap((mm) => mm.categories || [])
+            .find((c) => c.id === t.categoryId)
+          if (sourceCat) {
+            const match = cats.find((c) => c.name === sourceCat.name)
+            if (match) {
+              repairedRef.current.add(t.id)
+              backend.updateTransaction(user.uid, mId, t.id, { categoryId: match.id }).catch(console.error)
+            }
+          }
+        }
+      }
+    }
+  }, [user, months])
 
   // --- auth actions ---
   const login = useCallback(async (email, password) => {
