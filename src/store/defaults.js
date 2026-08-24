@@ -22,12 +22,10 @@ export function defaultCategories() {
 }
 
 export function defaultWallets() {
-  return [
-    { id: uid(), name: 'Cash', color: WALLET_COLORS[0], openingBalance: 0, order: 0 },
-    { id: uid(), name: 'Bank', color: WALLET_COLORS[1], openingBalance: 0, order: 1 },
-    { id: uid(), name: 'E-Wallet', color: WALLET_COLORS[2], openingBalance: 0, order: 2 },
-  ]
+  return [{ id: uid(), name: 'Rekening Utama', color: WALLET_COLORS[1], openingBalance: 0, order: 0 }]
 }
+
+export const getPrimaryWallet = (wallets) => wallets?.[0] || null
 
 export function createBlankMonth(mId) {
   return {

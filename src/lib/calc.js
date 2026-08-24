@@ -75,6 +75,27 @@ export function walletBalance(wallet, allTransactions) {
   return (wallet.openingBalance || 0) + inflow - outflow
 }
 
+// ponytail: 1 rekening → transaksi tanpa walletId dianggap milik rekening utama (fallback untuk data lama)
+export function walletBalanceSingle(wallet, allTransactions) {
+  let inflow = 0
+  let outflow = 0
+  for (const tx of allTransactions) {
+    if (tx.type === 'transfer') {
+      // transfer di mode single praktis tidak ada, tapi tetap handle
+      const from = tx.walletId ?? wallet.id
+      const to = tx.toWalletId ?? wallet.id
+      if (from === wallet.id) outflow += tx.amount || 0
+      if (to === wallet.id) inflow += tx.amount || 0
+      continue
+    }
+    const wid = tx.walletId ?? wallet.id
+    if (wid !== wallet.id) continue
+    if (tx.type === 'refund') inflow += tx.amount || 0
+    else outflow += tx.amount || 0
+  }
+  return (wallet.openingBalance || 0) + inflow - outflow
+}
+
 export function allTransactions(months) {
   return Object.values(months).flatMap((m) => m.transactions || [])
 }

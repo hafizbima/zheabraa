@@ -11,6 +11,7 @@ import {
   categoryStatus,
   categoryLeft,
   walletBalance,
+  walletBalanceSingle,
   allTransactions,
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
@@ -74,6 +75,12 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const pool = freePool(month)
   const freeSpent = freeMoneySpent(txs)
   const left = freeLeft(month)
+  const primary = wallets[0] || null
+  const primaryBalance = primary
+    ? wallets.length === 1
+      ? walletBalanceSingle(primary, allTransactions(months))
+      : walletBalance(primary, allTransactions(months))
+    : 0
 
   // ponytail: threshold 70% + top 3 hardcoded, bikin configurable kalau user minta
   const alerts = (month.categories || [])
@@ -258,10 +265,13 @@ const input =
         </section>
       )}
 
-      {/* Kategori progress */}
+      {/* Kategori progress — sekat virtual dari 1 rekening */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-carbon dark:text-white">Pocket</h3>
+          <div>
+            <h3 className="font-semibold text-carbon dark:text-white">Pocket</h3>
+            {primary && <p className="text-[11px] text-slate-400">sekat virtual dari {primary.name}</p>}
+          </div>
           <div className="flex gap-3">
             {(month.categories || []).length > 0 && (
             <button onClick={() => setReallocOpen(true)} className={btn.subtle}>
@@ -276,6 +286,11 @@ const input =
             </button>
           </div>
         </div>
+        {allocated > inflow && (
+          <p className="rounded-xl border border-sunburst bg-sunburst/30 px-3 py-2 text-xs text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
+            Alokasi pocket ({formatRupiah(allocated)}) melebihi pemasukan ({formatRupiah(inflow)}). Kurangi budget atau tambah pemasukan. — ponytail: warning saja, enforce kalau diminta
+          </p>
+        )}
         {(month.categories || []).map((cat) => {
           const { used, budget, status, pct } = categoryStatus(cat, txs)
           const left = categoryLeft(cat, txs)
@@ -369,31 +384,53 @@ const input =
         </div>
       </section>
 
-      {/* Wallet ringkasan */}
+      {/* Rekening / Dompet — 1 rekening = single card, >1 fallback ke grid lama */}
       <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-carbon dark:text-white">Dompet</h3>
-          <button onClick={onTransfer} className={btn.subtle}>
-            Transfer
-          </button>
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {wallets.map((w) => (
-            <div key={w.id} className="rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: w.color }} />
-                <span className="truncate text-sm font-medium text-carbon dark:text-white">{w.name}</span>
-              </div>
-              <p className="mt-1.5 text-sm font-semibold text-carbon dark:text-white">
-                {formatRupiah(walletBalance(w, allTransactions(months)))}
-              </p>
-              <p className="text-[11px] text-slate-400">saldo saat ini</p>
-            </div>
-          ))}
-          {wallets.length === 0 && (
-            <p className="col-span-full text-sm text-slate-400">Belum ada dompet.</p>
+          <h3 className="font-semibold text-carbon dark:text-white">{wallets.length === 1 ? 'Rekening Utama' : 'Dompet'}</h3>
+          {wallets.length > 1 && (
+            <button onClick={onTransfer} className={btn.subtle}>
+              Transfer
+            </button>
           )}
         </div>
+        {wallets.length === 1 && primary ? (
+          <div className="mt-3 rounded-xl border border-carbon bg-sky/30 p-4 dark:border-white/20 dark:bg-white/5">
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full" style={{ backgroundColor: primary.color }} />
+              <span className="text-sm font-medium text-carbon dark:text-white">{primary.name}</span>
+              <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-carbon">sekat virtual</span>
+            </div>
+            <p className="mt-2 text-2xl font-bold text-carbon dark:text-white">{formatRupiah(primaryBalance)}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">saldo saat ini — pocket adalah sekat virtual dari rekening ini</p>
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-lg bg-white/70 px-2 py-1.5 dark:bg-white/10">
+                <p className="text-slate-500 dark:text-slate-400">Teralokasi</p>
+                <p className="font-semibold text-carbon dark:text-white">{formatRupiah(allocated)}</p>
+              </div>
+              <div className="rounded-lg bg-white/70 px-2 py-1.5 dark:bg-white/10">
+                <p className="text-slate-500 dark:text-slate-400">Uang Bebas</p>
+                <p className="font-semibold text-carbon dark:text-white">{formatRupiah(pool)}</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {wallets.map((w) => (
+              <div key={w.id} className="rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: w.color }} />
+                  <span className="truncate text-sm font-medium text-carbon dark:text-white">{w.name}</span>
+                </div>
+                <p className="mt-1.5 text-sm font-semibold text-carbon dark:text-white">
+                  {formatRupiah(walletBalance(w, allTransactions(months)))}
+                </p>
+                <p className="text-[11px] text-slate-400">saldo saat ini</p>
+              </div>
+            ))}
+            {wallets.length === 0 && <p className="col-span-full text-sm text-slate-400">Belum ada dompet.</p>}
+          </div>
+        )}
       </section>
 
       <div className="h-4" />

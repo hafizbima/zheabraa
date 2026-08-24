@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Modal from './Modal.jsx'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah, toInt } from '../lib/money.js'
@@ -18,6 +18,12 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const [toWalletId, setToWalletId] = useState(transaction?.toWalletId || '')
   const [description, setDescription] = useState(transaction?.description || '')
   const [error, setError] = useState('')
+  const isSingle = wallets.length === 1
+  const primary = wallets[0] || null
+
+  useEffect(() => {
+    if (!transaction && isSingle && primary && !walletId) setWalletId(primary.id)
+  }, [isSingle, primary, transaction, walletId])
 
   const isTransfer = transaction?.type === 'transfer' || type === 'transfer'
   const isFree = !isTransfer && categoryId === 'free'
@@ -42,7 +48,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
       type,
       amount: amt,
       categoryId: isTransfer ? null : isFree ? null : categoryId,
-      walletId: isTransfer ? walletId : walletId || null,
+      walletId: isTransfer ? walletId : walletId || (isSingle ? primary?.id : null),
       toWalletId: isTransfer ? toWalletId : null,
       description: description.trim(),
     }
@@ -170,17 +176,23 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         )}
 
         {!isTransfer && (
-          <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dompet (opsional)</label>
-            <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
-              <option value="">— Tidak dilacak —</option>
-              {wallets.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          isSingle ? (
+            <p className="rounded-xl border border-black/10 bg-sky/20 px-3 py-2 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+              Tercatat di <strong>{primary?.name}</strong> — pocket adalah sekat virtual dari rekening ini.
+            </p>
+          ) : (
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dompet (opsional)</label>
+              <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
+                <option value="">— Tidak dilacak —</option>
+                {wallets.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )
         )}
 
         <div>

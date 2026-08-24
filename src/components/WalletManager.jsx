@@ -4,7 +4,7 @@ import Confirm from './Confirm.jsx'
 import { useStore } from '../store/StoreContext.jsx'
 import { WALLET_COLORS } from '../lib/palette.js'
 import { formatRupiah, toInt } from '../lib/money.js'
-import { walletBalance, allTransactions } from '../lib/calc.js'
+import { walletBalance, walletBalanceSingle, allTransactions } from '../lib/calc.js'
 import { btn } from '../lib/buttons.js'
 
 export default function WalletManager({ onClose }) {
@@ -104,15 +104,19 @@ export default function WalletManager({ onClose }) {
     setBalance('')
   }
 
+  const isSingle = wallets.length === 1
+
   return (
     <Modal
-      title="Kelola Dompet"
+      title={isSingle ? 'Rekening Utama' : 'Kelola Dompet'}
       onClose={onClose}
       wide
       footer={
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs text-slate-400">
-            Saldo = saldo awal + refund − pengeluaran. Perubahan tersimpan saat menekan "Simpan Perubahan". Seret ⋮⋮ untuk mengurutkan.
+            {isSingle
+              ? 'Pocket adalah sekat virtual dari 1 rekening — saldo pocket dihitung dari transaksi, bukan rekening terpisah.'
+              : 'Saldo = saldo awal + refund − pengeluaran. Perubahan tersimpan saat menekan "Simpan Perubahan". Seret ⋮⋮ untuk mengurutkan.'}
           </p>
           <button
             onClick={saveAll}
@@ -124,35 +128,46 @@ export default function WalletManager({ onClose }) {
         </div>
       }
     >
-      <form onSubmit={submitNew} className="rounded-2xl border-2 border-carbon bg-sky/50 p-4 dark:border-white/20 dark:bg-white/5">
-        <h4 className="mb-3 text-sm font-semibold text-carbon dark:text-white">Tambah dompet</h4>
-        <div className="grid gap-2 sm:grid-cols-3">
-          <input className={input} placeholder="Nama (mis. GoPay)" value={name} onChange={(e) => setName(e.target.value)} required />
-          <input className={input} type="text" inputMode="numeric" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(e.target.value)} />
-          <div className="flex flex-wrap items-center gap-1.5">
-            {WALLET_COLORS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setColor(c)}
-                className={`h-6 w-6 rounded-full ${color === c ? 'ring-2 ring-slate-400 ring-offset-2' : ''}`}
-                style={{ backgroundColor: c }}
-                aria-label={`Warna ${c}`}
-              />
-            ))}
+      {isSingle ? (
+        <div className="rounded-2xl border-2 border-carbon bg-sky/50 p-4 dark:border-white/20 dark:bg-white/5">
+          <p className="text-sm text-carbon dark:text-white">
+            Kamu pakai <strong>1 Rekening Utama</strong> — pocket di bawah adalah sekat virtual. Tambah dompet hanya jika butuh rekening fisik terpisah (mis. Cash/E-Wallet).
+          </p>
+        </div>
+      ) : (
+        <form onSubmit={submitNew} className="rounded-2xl border-2 border-carbon bg-sky/50 p-4 dark:border-white/20 dark:bg-white/5">
+          <h4 className="mb-3 text-sm font-semibold text-carbon dark:text-white">Tambah dompet</h4>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <input className={input} placeholder="Nama (mis. GoPay)" value={name} onChange={(e) => setName(e.target.value)} required />
+            <input className={input} type="text" inputMode="numeric" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(e.target.value)} />
+            <div className="flex flex-wrap items-center gap-1.5">
+              {WALLET_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  className={`h-6 w-6 rounded-full ${color === c ? 'ring-2 ring-slate-400 ring-offset-2' : ''}`}
+                  style={{ backgroundColor: c }}
+                  aria-label={`Warna ${c}`}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="mt-3 flex justify-end">
-          <button type="submit" className={btn.primary}>
-            + Tambah
-          </button>
-        </div>
-      </form>
+          <div className="mt-3 flex justify-end">
+            <button type="submit" className={btn.primary}>
+              + Tambah
+            </button>
+          </div>
+        </form>
+      )}
 
       <div className="mt-4 space-y-2">
         {list.map((w) => {
           const d = drafts[w.id] || w
-          const bal = walletBalance({ ...w, openingBalance: d.openingBalance }, allTx)
+          const bal =
+            wallets.length === 1
+              ? walletBalanceSingle({ ...w, openingBalance: d.openingBalance }, allTx)
+              : walletBalance({ ...w, openingBalance: d.openingBalance }, allTx)
           const dirty = d.name !== w.name || d.color !== w.color || d.openingBalance !== w.openingBalance
           return (
             <div

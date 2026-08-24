@@ -8,6 +8,7 @@ import {
   categoryUsed,
   monthLeftTotal,
   walletBalance,
+  walletBalanceSingle,
   allTransactions,
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
@@ -52,28 +53,33 @@ export default function Stats() {
     let left = 0
     const catMap = {}
     const walMap = {}
+    const isSingle = wallets.length === 1
+    const primaryId = wallets[0]?.id
     const rows = ranged.map((mId) => {
       const m = months[mId]
       const txs = m.transactions || []
       let net = 0
       for (const t of txs) {
         if (t.type === 'transfer') {
-          if (t.walletId) {
-            walMap[t.walletId] ||= { in: 0, out: 0 }
-            walMap[t.walletId].out += t.amount || 0
+          const from = t.walletId ?? (isSingle ? primaryId : null)
+          const to = t.toWalletId ?? (isSingle ? primaryId : null)
+          if (from) {
+            walMap[from] ||= { in: 0, out: 0 }
+            walMap[from].out += t.amount || 0
           }
-          if (t.toWalletId) {
-            walMap[t.toWalletId] ||= { in: 0, out: 0 }
-            walMap[t.toWalletId].in += t.amount || 0
+          if (to) {
+            walMap[to] ||= { in: 0, out: 0 }
+            walMap[to].in += t.amount || 0
           }
           continue
         }
         if (t.type === 'refund') net -= t.amount || 0
         else net += t.amount || 0
-        if (t.walletId) {
-          walMap[t.walletId] ||= { in: 0, out: 0 }
-          if (t.type === 'refund') walMap[t.walletId].in += t.amount || 0
-          else walMap[t.walletId].out += t.amount || 0
+        const wid = t.walletId ?? (isSingle ? primaryId : null)
+        if (wid) {
+          walMap[wid] ||= { in: 0, out: 0 }
+          if (t.type === 'refund') walMap[wid].in += t.amount || 0
+          else walMap[wid].out += t.amount || 0
         }
       }
       const inc = totalInflow(m)
@@ -101,6 +107,7 @@ export default function Stats() {
     const all = allTransactions(months)
     const wals = wallets.map((w) => {
       const f = walMap[w.id] || { in: 0, out: 0 }
+      const bal = wallets.length === 1 ? walletBalanceSingle(w, all) : walletBalance(w, all)
       return {
         id: w.id,
         name: w.name,
@@ -108,7 +115,7 @@ export default function Stats() {
         in: f.in,
         out: f.out,
         net: f.in - f.out,
-        balance: walletBalance(w, all),
+        balance: bal,
       }
     })
     return { income, allocated, spent, left, rows, cats, wals }
