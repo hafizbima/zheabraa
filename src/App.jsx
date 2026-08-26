@@ -64,7 +64,7 @@ function Shell() {
   }
 
   return (
-    <div className="min-h-screen bg-sky dark:bg-[#131a33]">
+    <div className="min-h-screen bg-gradient-to-b from-sky via-sky to-[#cfe6ff] dark:from-[#131a33] dark:via-[#131a33] dark:to-[#0f1b3d]">
       <Header
         view={view}
         onViewChange={setView}

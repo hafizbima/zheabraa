@@ -211,7 +211,7 @@ export default function CategoryManager({ onClose }) {
               onDragOver={(e) => { e.preventDefault(); setOverId(cat.id) }}
               onDragLeave={() => setOverId(null)}
               onDrop={() => { setOverId(null); move(cat.id) }}
-              className={`flex items-end gap-3 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900 ${overId === cat.id ? 'ring-2 ring-violet' : ''}`}
+              className={`flex flex-wrap items-end gap-x-3 gap-y-2 rounded-xl border border-carbon bg-paper p-3 transition-shadow hover:shadow-carbon-sm dark:border-white/20 dark:bg-slate-900 ${overId === cat.id ? 'ring-2 ring-violet' : ''}`}
             >
               <div className="flex h-8 shrink-0 flex-col items-center justify-center">
                 <span
@@ -239,7 +239,7 @@ export default function CategoryManager({ onClose }) {
                   aria-label="Warna"
                 />
               </div>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-36 flex-1 basis-40">
                 <p className="mb-1 text-xs text-slate-400">Nama</p>
                 <input
                   className={input + ' w-full'}
@@ -247,7 +247,7 @@ export default function CategoryManager({ onClose }) {
                   onChange={(e) => updateDraft(cat.id, { name: e.target.value })}
                 />
               </div>
-              <div className="w-32 shrink-0">
+              <div className="w-32 shrink-0 sm:w-28">
                 <p className="mb-1 text-xs text-slate-400">Budget/bulan</p>
                 <input
                   className={input + ' text-right'}
@@ -258,7 +258,7 @@ export default function CategoryManager({ onClose }) {
                   aria-label="Budget"
                 />
               </div>
-              <div className="w-32 shrink-0">
+              <div className="w-32 shrink-0 sm:w-28">
                 <p className="mb-1 text-xs text-slate-400">Target</p>
                 <input
                   className={input + ' text-right'}

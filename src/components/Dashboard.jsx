@@ -21,12 +21,12 @@ import { btn } from '../lib/buttons.js'
 function Card({ label, value, sub, accent, tint }) {
   return (
     <div
-      className={`rounded-2xl border-2 border-carbon p-3.5 dark:border-white/30 ${
+      className={`group rounded-2xl border-2 border-carbon p-3.5 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-carbon-sm dark:border-white/30 ${
         tint || 'bg-paper dark:bg-slate-900'
       }`}
     >
-      <p className="text-xs font-medium text-slate-500 dark:text-slate-300">{label}</p>
-      <p className={`mt-1 text-base font-bold ${accent || 'text-carbon dark:text-white'}`}>{value}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">{label}</p>
+      <p className={`mt-1 text-lg font-bold ${accent || 'text-carbon dark:text-white'}`}>{value}</p>
       {sub && <p className="mt-0.5 text-[11px] text-slate-400 dark:text-slate-300">{sub}</p>}
     </div>
   )
@@ -136,7 +136,7 @@ const input =
     <>
       <div className="space-y-5">
       {/* Summary */}
-      <section className="grid grid-cols-2 gap-3">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card label="Total Pemasukan" value={formatRupiah(inflow)} tint="bg-mint/40 dark:bg-mint/10" />
         <Card label="Teralokasi ke Pocket" value={formatRupiah(allocated)} sub={`uang bebas ${formatRupiah(pool)}`} accent="text-violet dark:text-lavender" tint="bg-lavender/60 dark:bg-lavender/10" />
         <Card label="Uang Bebas (sisa)" value={formatRupiah(pool)} sub="sebelum dipakai" tint="bg-sky/60 dark:bg-sky/10" />
@@ -302,7 +302,7 @@ const input =
             <button
               key={cat.id}
               onClick={() => onNewTx({ categoryId: cat.id })}
-              className="block w-full rounded-2xl border-2 border-carbon bg-paper p-4 text-left transition-colors hover:bg-mist dark:border-white/30 dark:bg-slate-900 dark:hover:bg-slate-800"
+              className="block w-full rounded-2xl border-2 border-carbon bg-paper p-4 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-carbon-sm active:scale-[0.99] dark:border-white/30 dark:bg-slate-900 dark:hover:bg-slate-800"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2.5">
@@ -395,13 +395,13 @@ const input =
           )}
         </div>
         {wallets.length === 1 && primary ? (
-          <div className="mt-3 rounded-xl border border-carbon bg-sky/30 p-4 dark:border-white/20 dark:bg-white/5">
-            <div className="flex items-center gap-2">
+          <div className="mt-3 rounded-xl border-2 border-carbon bg-sky/30 p-4 dark:border-white/20 dark:bg-white/5">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="h-3 w-3 rounded-full" style={{ backgroundColor: primary.color }} />
               <span className="text-sm font-medium text-carbon dark:text-white">{primary.name}</span>
-              <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-carbon">sekat virtual</span>
+              <span className="rounded-full border border-carbon/20 bg-white px-2 py-0.5 text-[10px] font-semibold text-carbon dark:border-white/20 dark:bg-white/10 dark:text-white">sekat virtual</span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-carbon dark:text-white">{formatRupiah(primaryBalance)}</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-carbon dark:text-white">{formatRupiah(primaryBalance)}</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">saldo saat ini — pocket adalah sekat virtual dari rekening ini</p>
             <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
               <div className="rounded-lg bg-white/70 px-2 py-1.5 dark:bg-white/10">
@@ -417,7 +417,7 @@ const input =
         ) : (
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {wallets.map((w) => (
-              <div key={w.id} className="rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
+              <div key={w.id} className="rounded-xl border border-carbon bg-paper p-3 transition-shadow hover:shadow-carbon-sm dark:border-white/20 dark:bg-slate-900">
                 <div className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded-full" style={{ backgroundColor: w.color }} />
                   <span className="truncate text-sm font-medium text-carbon dark:text-white">{w.name}</span>

@@ -189,7 +189,7 @@ export default function WalletManager({ onClose }) {
               onDragOver={(e) => { e.preventDefault(); setOverId(w.id) }}
               onDragLeave={() => setOverId(null)}
               onDrop={() => { setOverId(null); move(w.id) }}
-              className={`flex items-center gap-3 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900 ${overId === w.id ? 'ring-2 ring-violet' : ''}`}
+              className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-carbon bg-paper p-3 transition-shadow hover:shadow-carbon-sm dark:border-white/20 dark:bg-slate-900 ${overId === w.id ? 'ring-2 ring-violet' : ''}`}
             >
               <div className="flex shrink-0 flex-col items-center justify-center">
                 <span
@@ -215,11 +215,11 @@ export default function WalletManager({ onClose }) {
                 aria-label="Warna"
               />
               <input
-                className={input + ' flex-1'}
+                className={input + ' min-w-36 flex-1 basis-40'}
                 value={d.name}
                 onChange={(e) => updateDraft(w.id, { name: e.target.value })}
               />
-              <div className="w-32 shrink-0">
+              <div className="w-28 shrink-0 sm:w-32">
                 <input
                   className={input + ' text-right'}
                   type="text"
@@ -230,7 +230,7 @@ export default function WalletManager({ onClose }) {
                   title="Saldo awal"
                 />
               </div>
-              <div className="w-28 shrink-0 text-right">
+              <div className="ml-auto w-32 shrink-0 text-right sm:ml-0 sm:w-28">
                 <p className="text-xs text-slate-400">saldo saat ini</p>
                 <p className={`text-sm font-semibold ${bal < 0 ? 'text-ember' : 'text-carbon dark:text-white'}`}>{formatRupiah(bal)}</p>
                 <button
