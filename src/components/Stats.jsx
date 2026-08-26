@@ -8,7 +8,7 @@ import {
   categoryUsed,
   monthLeftTotal,
   walletBalance,
-  walletBalanceSingle,
+  singleWalletBalance,
   allTransactions,
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
@@ -107,7 +107,7 @@ export default function Stats() {
     const all = allTransactions(months)
     const wals = wallets.map((w) => {
       const f = walMap[w.id] || { in: 0, out: 0 }
-      const bal = wallets.length === 1 ? walletBalanceSingle(w, all) : walletBalance(w, all)
+      const bal = wallets.length === 1 ? singleWalletBalance(w, months) : walletBalance(w, all)
       return {
         id: w.id,
         name: w.name,

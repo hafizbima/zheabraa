@@ -11,7 +11,7 @@ import {
   categoryStatus,
   categoryLeft,
   walletBalance,
-  walletBalanceSingle,
+  singleWalletBalance,
   allTransactions,
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
@@ -78,7 +78,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const primary = wallets[0] || null
   const primaryBalance = primary
     ? wallets.length === 1
-      ? walletBalanceSingle(primary, allTransactions(months))
+      ? singleWalletBalance(primary, months)
       : walletBalance(primary, allTransactions(months))
     : 0
 

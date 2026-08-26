@@ -101,6 +101,18 @@ export default function CategoryManager({ onClose }) {
     })
   }
 
+  // fallback drag untuk layar sentuh
+  const moveBy = (id, dir) => {
+    setOrderIds((prev) => {
+      const arr = [...(prev || baseOrder)]
+      const i = arr.indexOf(id)
+      const j = i + dir
+      if (i < 0 || j < 0 || j >= arr.length) return arr
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
+      return arr
+    })
+  }
+
   const saveAll = async () => {
     setSaving(true)
     try {
@@ -207,10 +219,14 @@ export default function CategoryManager({ onClose }) {
                   onDragStart={(e) => { setDragId(cat.id); e.dataTransfer.effectAllowed = 'move' }}
                   onDragEnd={() => setDragId(null)}
                   className="cursor-grab select-none text-lg leading-none text-slate-400 hover:text-carbon dark:hover:text-white"
-                  title="Seret untuk mengurutkan"
+                  title="Seret untuk mengurutkan (atau pakai tombol ↑↓)"
                   aria-label="Seret untuk mengurutkan"
                 >
                   ⋮⋮
+                </span>
+                <span className="mt-0.5 flex gap-0.5">
+                  <button type="button" onClick={() => moveBy(cat.id, -1)} aria-label="Naikkan urutan" className="px-0.5 text-xs text-slate-400 hover:text-carbon dark:hover:text-white">▲</button>
+                  <button type="button" onClick={() => moveBy(cat.id, 1)} aria-label="Turunkan urutan" className="px-0.5 text-xs text-slate-400 hover:text-carbon dark:hover:text-white">▼</button>
                 </span>
               </div>
               <div className="w-8 shrink-0">

@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, cleanup, within } from '@testing-library/react'
+import { render, cleanup, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import localBackend from '../src/store/backends/local.js'
@@ -22,7 +22,7 @@ beforeEach(() => {
 
 describe('Gimme Money smoke', () => {
   it('login -> dashboard -> add transaction -> history -> wallets', async () => {    const user = userEvent.setup()
-    const { getByText, getByPlaceholderText, getByRole, getAllByText, findByText } = render(<App />)
+    const { getByText, getByPlaceholderText, getByRole, getAllByText, findByText, findAllByText } = render(<App />)
 
     // Login screen
     expect(getByRole('heading', { name: 'Masuk' })).toBeInTheDocument()
@@ -51,15 +51,14 @@ describe('Gimme Money smoke', () => {
     await user.click(getByRole('button', { name: 'Riwayat' }))
     expect(getByPlaceholderText('Cari keterangan…')).toBeInTheDocument()
 
-    // Wallet manager
+    // Wallet manager (single Rekening Utama)
     await user.click(getByRole('button', { name: 'Dompet' }))
-    await findByText('Kelola Dompet')
-    expect(getAllByText('Cash').length).toBeGreaterThan(0)
+    expect((await findAllByText('Rekening Utama')).length).toBeGreaterThan(0)
   })
 
   it('history filter "Uang Bebas" shows free-money transactions', async () => {
     const user = userEvent.setup()
-    const { getByText, getByPlaceholderText, getByRole, getAllByRole, findByText } = render(<App />)
+    const { getByText, getByPlaceholderText, getByRole, getAllByRole, findByText, queryByText } = render(<App />)
 
     // Login
     await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
@@ -74,44 +73,39 @@ describe('Gimme Money smoke', () => {
     await user.type(getByPlaceholderText('Wajib diisi untuk uang bebas'), 'jajan pasar')
     await user.click(getByRole('button', { name: 'Simpan' }))
 
+    // Wait for modal to close (transaksi memicu re-render — jangan klik sebelum settle)
+    await waitFor(() => expect(queryByText('Tambah Transaksi')).not.toBeInTheDocument())
+
     // History view
     await user.click(getByRole('button', { name: 'Riwayat' }))
     expect(getByPlaceholderText('Cari keterangan…')).toBeInTheDocument()
 
     // Filter by Uang Bebas -> free-money tx must appear (regression: was empty)
-    const [catSelect] = getAllByRole('combobox')
+    const catSelect = getAllByRole('combobox').find((s) => [...s.options].some((o) => o.value === 'free'))
     await user.selectOptions(catSelect, 'free')
-    expect(await findByText('jajan pasar')).toBeInTheDocument()
+    expect(await findByText(/jajan pasar/)).toBeInTheDocument()
   })
 
-  it('transfer between wallets is recorded in history and updates balances', async () => {
+  it('single Rekening Utama balance drops when an expense is recorded', async () => {
     const user = userEvent.setup()
-    const { getByText, getByPlaceholderText, getByRole, getAllByRole, findByText } = render(<App />)
+    const { getByText, getByPlaceholderText, getByRole, findAllByText, findByText } = render(<App />)
 
-    // Login
     await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
     await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
     await user.click(getByRole('button', { name: 'Masuk' }))
     await findByText('Total Pemasukan')
 
-    // Open dedicated transfer via dashboard wallet summary
-    await user.click(getByRole('button', { name: 'Transfer' }))
-    await findByText('Transfer Antar Dompet')
-    await user.type(getByPlaceholderText('0'), '75000')
+    // Expense 50k on Transport pocket
+    await user.click(getByText('Transport'))
+    await findByText('Tambah Transaksi')
+    await user.type(getByPlaceholderText('0'), '50000')
+    await user.click(getByRole('button', { name: 'Simpan' }))
+    await findByText('Rp 50.000')
 
-    // Pick source & destination wallets
-    const [source, dest] = getAllByRole('combobox')
-    await user.selectOptions(source, within(source).getByRole('option', { name: 'Cash' }))
-    await user.selectOptions(dest, within(dest).getByRole('option', { name: 'Bank' }))
-    await user.click(getByRole('button', { name: 'Simpan Transfer' }))
-
-    // Dashboard wallet summary reflects the transfer (Bank +75k)
-    expect(await findByText('Rp 75.000')).toBeInTheDocument()
-
-    // History records the transfer with source -> destination
-    await user.click(getByRole('button', { name: 'Riwayat' }))
-    expect(await findByText('Transfer Dompet')).toBeInTheDocument()
-    expect(getByText('Cash → Bank')).toBeInTheDocument()
+    // Single wallet balance (opening 0) is now -50k
+    await user.click(getByRole('button', { name: 'Dompet' }))
+    expect((await findAllByText('Rp -50.000')).length).toBeGreaterThan(0)
+    expect((await findAllByText('Rekening Utama')).length).toBeGreaterThan(0)
   })
 
   it('dark mode toggle adds "dark" class to the document root', async () => {

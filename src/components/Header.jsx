@@ -17,7 +17,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
 
   // auto-hide on scroll down, show on scroll up
   useEffect(() => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return
     let ticking = false
     const onScroll = () => {
       if (ticking) return
@@ -40,7 +40,10 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
   }, [menuOpen, gearOpen])
 
   const onToggleTheme = (e) => {
-    if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (
+      !document.startViewTransition ||
+      (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)
+    ) {
       toggleTheme()
       return
     }

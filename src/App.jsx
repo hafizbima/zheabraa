@@ -41,7 +41,7 @@ function Root() {
 }
 
 function Shell() {
-  const { currentMonthId } = useStore()
+  const { currentMonthId, notice, notify } = useStore()
   const [view, setView] = useState('dashboard')
   const [txOpen, setTxOpen] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -108,6 +108,16 @@ function Shell() {
       {walletOpen && <WalletManager onClose={() => setWalletOpen(false)} />}
       {recurrOpen && <RecurringManager onClose={() => setRecurrOpen(false)} />}
       {transferOpen && <TransferForm monthId={currentMonthId} onClose={() => setTransferOpen(false)} />}
+
+      {notice && (
+        <div
+          role="alert"
+          onClick={() => notify('')}
+          className="fixed bottom-24 left-1/2 z-[60] w-max max-w-[90vw] -translate-x-1/2 cursor-pointer rounded-full border-2 border-ember bg-paper px-4 py-2 text-sm font-medium text-ember shadow-lg dark:border-ember dark:bg-slate-900"
+        >
+          {notice}
+        </div>
+      )}
     </div>
   )
 }

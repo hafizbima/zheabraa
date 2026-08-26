@@ -39,6 +39,7 @@ export default function TransferForm({ monthId, onClose }) {
     if (!fromId) return setError('Pilih dompet asal')
     if (!toId) return setError('Pilih dompet tujuan')
     if (fromId === toId) return setError('Dompet asal dan tujuan tidak boleh sama')
+    if (amt > bal(fromId)) return setError(`Melebihi saldo ${formatRupiah(bal(fromId))} — transfer dibatalkan`)
 
     addTransaction(monthId, {
       date,

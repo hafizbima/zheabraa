@@ -4,7 +4,7 @@ import Confirm from './Confirm.jsx'
 import { useStore } from '../store/StoreContext.jsx'
 import { WALLET_COLORS } from '../lib/palette.js'
 import { formatRupiah, toInt } from '../lib/money.js'
-import { walletBalance, walletBalanceSingle, allTransactions } from '../lib/calc.js'
+import { walletBalance, singleWalletBalance, allTransactions } from '../lib/calc.js'
 import { btn } from '../lib/buttons.js'
 
 export default function WalletManager({ onClose }) {
@@ -71,6 +71,18 @@ export default function WalletManager({ onClose }) {
     setOrderIds((prev) => {
       const arr = (prev || baseOrder).filter((id) => id !== dragId)
       arr.splice(arr.indexOf(targetId), 0, dragId)
+      return arr
+    })
+  }
+
+  // fallback drag untuk layar sentuh
+  const moveBy = (id, dir) => {
+    setOrderIds((prev) => {
+      const arr = [...(prev || baseOrder)]
+      const i = arr.indexOf(id)
+      const j = i + dir
+      if (i < 0 || j < 0 || j >= arr.length) return arr
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
       return arr
     })
   }
@@ -168,7 +180,7 @@ export default function WalletManager({ onClose }) {
           const d = drafts[w.id] || w
           const bal =
             wallets.length === 1
-              ? walletBalanceSingle({ ...w, openingBalance: d.openingBalance }, allTx)
+              ? singleWalletBalance({ ...w, openingBalance: d.openingBalance }, months)
               : walletBalance({ ...w, openingBalance: d.openingBalance }, allTx)
           const dirty = d.name !== w.name || d.color !== w.color || d.openingBalance !== w.openingBalance
           return (
@@ -179,16 +191,22 @@ export default function WalletManager({ onClose }) {
               onDrop={() => { setOverId(null); move(w.id) }}
               className={`flex items-center gap-3 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900 ${overId === w.id ? 'ring-2 ring-violet' : ''}`}
             >
-              <span
-                draggable
-                onDragStart={(e) => { setDragId(w.id); e.dataTransfer.effectAllowed = 'move' }}
-                onDragEnd={() => setDragId(null)}
-                className="shrink-0 cursor-grab select-none text-lg leading-none text-slate-400 hover:text-carbon dark:hover:text-white"
-                title="Seret untuk mengurutkan"
-                aria-label="Seret untuk mengurutkan"
-              >
-                ⋮⋮
-              </span>
+              <div className="flex shrink-0 flex-col items-center justify-center">
+                <span
+                  draggable
+                  onDragStart={(e) => { setDragId(w.id); e.dataTransfer.effectAllowed = 'move' }}
+                  onDragEnd={() => setDragId(null)}
+                  className="cursor-grab select-none text-lg leading-none text-slate-400 hover:text-carbon dark:hover:text-white"
+                  title="Seret untuk mengurutkan (atau pakai tombol ↑↓)"
+                  aria-label="Seret untuk mengurutkan"
+                >
+                  ⋮⋮
+                </span>
+                <span className="mt-0.5 flex gap-0.5">
+                  <button type="button" onClick={() => moveBy(w.id, -1)} aria-label="Naikkan urutan" className="px-0.5 text-xs text-slate-400 hover:text-carbon dark:hover:text-white">▲</button>
+                  <button type="button" onClick={() => moveBy(w.id, 1)} aria-label="Turunkan urutan" className="px-0.5 text-xs text-slate-400 hover:text-carbon dark:hover:text-white">▼</button>
+                </span>
+              </div>
               <input
                 type="color"
                 value={d.color}
@@ -265,7 +283,7 @@ export default function WalletManager({ onClose }) {
           const d = drafts[w.id] || w
           const bal =
             wallets.length === 1
-              ? walletBalanceSingle({ ...w, openingBalance: d.openingBalance }, allTx)
+              ? singleWalletBalance({ ...w, openingBalance: d.openingBalance }, months)
               : walletBalance({ ...w, openingBalance: d.openingBalance }, allTx)
           const target = toInt(adjustInput)
           const delta = target - bal

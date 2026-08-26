@@ -1,12 +1,28 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah } from '../lib/money.js'
-import { formatDate } from '../lib/dates.js'
+import { formatDate, labelOf } from '../lib/dates.js'
 import Confirm from './Confirm.jsx'
 import { btn } from '../lib/buttons.js'
 
+function downloadCSV(filename, rows) {
+  const csv = rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function TransactionList({ onEditTx }) {
-  const { currentMonth: month, currentMonthId, removeTransaction } = useStore()
+  const { months, currentMonthId, removeTransaction } = useStore()
+  const { wallets } = useStore()
+
+  const monthIds = Object.keys(months).sort().reverse()
+  const [viewMonth, setViewMonth] = useState(currentMonthId)
+  const month = months[viewMonth] || { id: viewMonth }
 
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('all')
@@ -15,9 +31,12 @@ export default function TransactionList({ onEditTx }) {
   const [toDate, setToDate] = useState('')
   const [confirmId, setConfirmId] = useState(null)
 
-  const txs = month?.transactions || []
-  const categories = month?.categories || []
-  const { wallets } = useStore()
+  useEffect(() => {
+    setViewMonth(currentMonthId)
+  }, [currentMonthId])
+
+  const txs = month.transactions || []
+  const categories = month.categories || []
 
   const catName = (t) =>
     t.type === 'transfer'
@@ -92,6 +111,16 @@ export default function TransactionList({ onEditTx }) {
     <div className="space-y-4">
       {/* Filters */}
       <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Lihat bulan</label>
+          <select className={input + ' w-52'} value={viewMonth} onChange={(e) => setViewMonth(e.target.value)} aria-label="Bulan transaksi">
+            {monthIds.map((m) => (
+              <option key={m} value={m}>
+                {labelOf(m)}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <input
             className={input}
@@ -123,7 +152,7 @@ export default function TransactionList({ onEditTx }) {
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-3 text-sm">
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
           <span className="text-slate-500 dark:text-slate-400">
             <span className="font-semibold text-ember">{formatRupiah(spent)}</span> keluar
           </span>
@@ -133,8 +162,50 @@ export default function TransactionList({ onEditTx }) {
           <span className="text-slate-500 dark:text-slate-400">
             <span className="font-semibold text-carbon dark:text-white">{filtered.length}</span> transaksi
           </span>
+          <button
+            onClick={() => {
+              const rows = [['Tanggal', 'Tipe', 'Kategori', 'Dompet', 'Keterangan', 'Nominal']]
+              for (const t of filtered) {
+                rows.push([
+                  t.date,
+                  t.type === 'transfer' ? 'Transfer' : t.type === 'refund' ? 'Refund' : 'Pengeluaran',
+                  catName(t),
+                  t.type === 'transfer'
+                    ? `${walletName(t.walletId) || '—'} → ${walletName(t.toWalletId) || '—'}`
+                    : walletName(t.walletId) || '—',
+                  t.description || '',
+                  String(t.amount || 0),
+                ])
+              }
+              downloadCSV(`transaksi-${month?.label || 'bulan'}.csv`, rows)
+            }}
+            className={btn.ghost}
+          >
+            Export CSV
+          </button>
         </div>
       </section>
+
+      {/* Pemasukan bulan ini (income bukan transaksi wallet — tampil derived) */}
+      {!hasFilter && (month?.incomes || []).length > 0 && (
+        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-carbon dark:text-white">Pemasukan Bulan Ini</h3>
+            <span className="text-sm font-bold text-mint">+{formatRupiah((month.incomes || []).reduce((a, i) => a + (i.amount || 0), 0))}</span>
+          </div>
+          <div className="mt-3 space-y-2">
+            {(month.incomes || []).map((inc) => (
+              <div key={inc.id} className="flex items-center justify-between rounded-xl border border-carbon bg-lavender/40 px-3 py-2 dark:border-white/20 dark:bg-white/5">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-carbon dark:text-white">{inc.label}</p>
+                  <p className="text-xs text-slate-400">{wallets.length === 1 ? wallets[0].name : '—'} • mengkredit saldo</p>
+                </div>
+                <p className="shrink-0 text-sm font-semibold text-mint">+{formatRupiah(inc.amount)}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* List */}
       {filtered.length === 0 ? (
@@ -179,7 +250,7 @@ export default function TransactionList({ onEditTx }) {
                         {isTransfer ? '⇄ ' : t.type === 'refund' ? '+' : '−'}{formatRupiah(t.amount)}
                       </p>
                       <div className="mt-0.5 flex justify-end gap-1">
-                        <button onClick={() => onEditTx(currentMonthId, t)} className={btn.subtle}>
+                        <button onClick={() => onEditTx(viewMonth, t)} className={btn.subtle}>
                           Ubah
                         </button>
                         <button onClick={() => setConfirmId(t.id)} className={btn.subtleDanger}>
@@ -201,7 +272,7 @@ export default function TransactionList({ onEditTx }) {
           message="Transaksi ini akan dihapus permanen. Lanjutkan?"
           onCancel={() => setConfirmId(null)}
           onConfirm={() => {
-            removeTransaction(currentMonthId, confirmId)
+            removeTransaction(viewMonth, confirmId)
             setConfirmId(null)
           }}
         />

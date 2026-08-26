@@ -1,4 +1,4 @@
-import { uid } from '../lib/id.js'
+import { uid, slugify } from '../lib/id.js'
 import { labelOf } from '../lib/dates.js'
 import { CATEGORY_COLORS, WALLET_COLORS } from '../lib/palette.js'
 
@@ -15,6 +15,7 @@ export function defaultCategories() {
   return DEFAULT_CATEGORY_NAMES.map((name, i) => ({
     id: uid(),
     name,
+    key: slugify(name),
     budgetAmount: 0,
     color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
     order: i,

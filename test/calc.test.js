@@ -11,6 +11,7 @@ import {
   freeLeft,
   monthLeftTotal,
   walletBalance,
+  singleWalletBalance,
 } from '../src/lib/calc.js'
 
 const walletA = { id: 'w1', name: 'Cash', openingBalance: 100000 }
@@ -108,6 +109,39 @@ describe('calc', () => {
     ]
     expect(walletBalance(walletA, txs)).toBe(100000 - 30000 - 10000)
     expect(walletBalance(walletB, txs)).toBe(50000 + 30000)
+  })
+
+  it('singleWalletBalance credits income and counts untracked (null walletId) txs', () => {
+    const primary = { id: 'w1', name: 'Rekening Utama', openingBalance: 0 }
+    const months = {
+      '2026-08': {
+        incomes: [{ id: 'i1', amount: 1000000 }],
+        transactions: [{ walletId: 'w1', type: 'expense', amount: 200000 }],
+      },
+      '2026-09': {
+        incomes: [{ id: 'i2', amount: 500000 }],
+        transactions: [
+          { walletId: null, type: 'expense', amount: 75000 },
+          { walletId: 'w1', type: 'refund', amount: 10000 },
+        ],
+      },
+    }
+    // 1jt + 500rb income - 200rb - 75rb (untracked dianggap rekening) + 10rb refund
+    expect(singleWalletBalance(primary, months)).toBe(1000000 + 500000 - 200000 - 75000 + 10000)
+  })
+
+  it('singleWalletBalance ignores wallets that are not the primary', () => {
+    const primary = { id: 'w1', name: 'Rekening Utama', openingBalance: 100000 }
+    const months = {
+      '2026-08': {
+        incomes: [],
+        transactions: [
+          { walletId: 'w2', type: 'expense', amount: 50000 },
+          { walletId: 'w1', type: 'expense', amount: 10000 },
+        ],
+      },
+    }
+    expect(singleWalletBalance(primary, months)).toBe(100000 - 10000)
   })
 
   it('transfer does not affect pocket or free money', () => {

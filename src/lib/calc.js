@@ -75,13 +75,13 @@ export function walletBalance(wallet, allTransactions) {
   return (wallet.openingBalance || 0) + inflow - outflow
 }
 
-// ponytail: 1 rekening → transaksi tanpa walletId dianggap milik rekening utama (fallback untuk data lama)
-export function walletBalanceSingle(wallet, allTransactions) {
+// Mode 1 rekening: semua uang ada di satu dompet → transaksi tanpa walletId,
+// income bulan (month.incomes) ikut mengkredit saldo rekening.
+export function singleWalletBalance(wallet, months) {
   let inflow = 0
   let outflow = 0
-  for (const tx of allTransactions) {
+  for (const tx of allTransactions(months)) {
     if (tx.type === 'transfer') {
-      // transfer di mode single praktis tidak ada, tapi tetap handle
       const from = tx.walletId ?? wallet.id
       const to = tx.toWalletId ?? wallet.id
       if (from === wallet.id) outflow += tx.amount || 0
@@ -93,7 +93,8 @@ export function walletBalanceSingle(wallet, allTransactions) {
     if (tx.type === 'refund') inflow += tx.amount || 0
     else outflow += tx.amount || 0
   }
-  return (wallet.openingBalance || 0) + inflow - outflow
+  const income = Object.values(months).reduce((a, m) => a + totalIncome(m), 0)
+  return (wallet.openingBalance || 0) + inflow - outflow + income
 }
 
 export function allTransactions(months) {
