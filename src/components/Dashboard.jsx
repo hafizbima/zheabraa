@@ -16,6 +16,7 @@ import {
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
 import ReallocateForm from './ReallocateForm.jsx'
+import EmptyState from './EmptyState.jsx'
 import { btn } from '../lib/buttons.js'
 
 function Card({ label, value, sub, accent, tint }) {
@@ -138,7 +139,7 @@ const input =
       {/* Summary */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card label="Total Pemasukan" value={formatRupiah(inflow)} tint="bg-mint/40 dark:bg-mint/10" />
-        <Card label="Teralokasi ke Pocket" value={formatRupiah(allocated)} sub={`uang bebas ${formatRupiah(pool)}`} accent="text-violet dark:text-lavender" tint="bg-lavender/60 dark:bg-lavender/10" />
+        <Card label="Teralokasi ke Pocket" value={formatRupiah(allocated)} sub={`uang bebas ${formatRupiah(pool)}`} accent="text-[#a67c00] dark:text-[#d9a441]" tint="bg-lavender/60 dark:bg-lavender/10" />
         <Card label="Uang Bebas (sisa)" value={formatRupiah(pool)} sub="sebelum dipakai" tint="bg-sky/60 dark:bg-sky/10" />
         <Card label="Sisa Uang Bebas" value={formatRupiah(left)} sub={`terpakai ${formatRupiah(freeSpent)}`} accent={left < 0 ? 'text-ember' : 'text-carbon dark:text-white'} tint="bg-[#B8B8FF] dark:bg-white/5" />
       </section>
@@ -260,7 +261,7 @@ const input =
       {/* Alokasi chart */}
       {donutData.length > 0 && (
         <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-          <h3 className="font-semibold text-carbon dark:text-white">Alokasi Pocket</h3>
+          <h3 className="font-semibold text-[#a67c00] dark:text-[#d9a441]">Alokasi Pocket</h3>
           <DonutChart data={donutData} totalLabel="Teralokasi" />
         </section>
       )}
@@ -344,9 +345,15 @@ const input =
           )
         })}
         {(month.categories || []).length === 0 && (
-          <p className="rounded-2xl border-2 border-dashed border-black/30 bg-paper p-6 text-center text-sm text-slate-400 dark:border-white/20 dark:bg-slate-900">
-            Belum ada kategori. Kelola Kategori untuk menambahkan pocket.
-          </p>
+          <EmptyState
+            title="Belum ada pocket"
+            sub="Buat kategori + budget untuk membagi uang dari Rekening Utama."
+            action={
+              <button onClick={onManageCategories} className={btn.primary}>
+                Kelola Kategori
+              </button>
+            }
+          />
         )}
       </section>
 

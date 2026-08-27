@@ -7,7 +7,7 @@ html {
 }
 
 body {
-  @apply bg-sky font-sans text-slate-800 antialiased dark:bg-[#131a33] dark:text-slate-100;
+  @apply bg-sky font-sans text-slate-800 antialiased dark:bg-[#0f1b3d] dark:text-slate-100;
 }
 
 h1,
@@ -59,3 +59,14 @@ input[type='date']::-webkit-calendar-picker-indicator:hover {
   animation: none;
   mix-blend-mode: normal;
 }
+
+@keyframes modal-backdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modal-panel {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.modal-backdrop { animation: modal-backdrop 160ms ease-out; }
+.modal-panel { animation: modal-panel 200ms cubic-bezier(0.2, 0.8, 0.3, 1); will-change: transform, opacity; }

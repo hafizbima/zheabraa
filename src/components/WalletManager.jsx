@@ -6,6 +6,7 @@ import { WALLET_COLORS } from '../lib/palette.js'
 import { formatRupiah, toInt } from '../lib/money.js'
 import { walletBalance, singleWalletBalance, allTransactions } from '../lib/calc.js'
 import { btn } from '../lib/buttons.js'
+import EmptyState from './EmptyState.jsx'
 
 export default function WalletManager({ onClose }) {
   const { wallets, months, addWallet, updateWallet, deleteWallet } = useStore()
@@ -258,9 +259,7 @@ export default function WalletManager({ onClose }) {
           )
         })}
         {wallets.length === 0 && (
-          <p className="rounded-2xl border-2 border-dashed border-black/30 p-6 text-center text-sm text-slate-400 dark:border-white/20">
-            Belum ada dompet.
-          </p>
+          <EmptyState title="Belum ada dompet" sub="Tambahkan dompet untuk mulai melacak saldo." />
         )}
       </div>
 

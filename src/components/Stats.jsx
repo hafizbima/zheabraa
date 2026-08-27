@@ -12,7 +12,7 @@ import {
   allTransactions,
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 
 function compactNum(v) {
   if (v >= 1e6) return (v / 1e6).toFixed(1).replace(/\.0$/, '') + ' jt'
@@ -251,11 +251,22 @@ export default function Stats() {
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} width={56} tickFormatter={compactNum} />
               <Tooltip formatter={(v) => formatRupiah(Number(v))} labelStyle={{ color: '#0f172a' }} contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0' }} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
               {gran === 'bulanan' && <Line type="monotone" dataKey="income" name="Pemasukan" stroke="#8b5cf6" strokeWidth={2} dot={false} />}
               <Line type="monotone" dataKey="spent" name="Belanja" stroke="#ef4444" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+            {gran === 'bulanan' && (
+              <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#8b5cf6]" />
+                Pemasukan
+              </span>
+            )}
+            <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#ef4444]" />
+              Belanja
+            </span>
+          </div>
         </section>
       )}
 

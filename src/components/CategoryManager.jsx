@@ -6,6 +6,7 @@ import { CATEGORY_COLORS } from '../lib/palette.js'
 import { formatRupiah, toInt } from '../lib/money.js'
 import { categoryStatus } from '../lib/calc.js'
 import { btn } from '../lib/buttons.js'
+import EmptyState from './EmptyState.jsx'
 
 function ColorPicker({ value, onChange }) {
   return (
@@ -287,9 +288,7 @@ export default function CategoryManager({ onClose }) {
           )
         })}
         {cats.length === 0 && (
-          <p className="rounded-2xl border-2 border-dashed border-black/30 p-6 text-center text-sm text-slate-400 dark:border-white/20">
-            Belum ada kategori.
-          </p>
+          <EmptyState title="Belum ada kategori" sub="Tambahkan kategori untuk membagi uang jadi pocket." />
         )}
       </div>
 

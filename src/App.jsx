@@ -23,7 +23,7 @@ function Root() {
   const { user, ready } = useStore()
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-sky dark:bg-[#131a33]">
+      <div className="flex min-h-screen items-center justify-center bg-sky dark:bg-[#0f1b3d]">
         <div className="text-center text-carbon dark:text-white">
           <img
             src="/logo.png"
@@ -90,7 +90,7 @@ function Shell() {
       {/* FAB */}
       <button
         onClick={() => openNewTx(null)}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border-2 border-carbon bg-paper text-2xl text-carbon transition hover:bg-mist active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border-2 border-carbon bg-paper text-2xl text-carbon shadow-carbon transition hover:bg-mist active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
         aria-label="Tambah transaksi"
       >
         +
@@ -113,7 +113,7 @@ function Shell() {
         <div
           role="alert"
           onClick={() => notify('')}
-          className="fixed bottom-24 left-1/2 z-[60] w-max max-w-[90vw] -translate-x-1/2 cursor-pointer rounded-full border-2 border-ember bg-paper px-4 py-2 text-sm font-medium text-ember shadow-lg dark:border-ember dark:bg-slate-900"
+          className="fixed left-1/2 top-4 z-[70] w-max max-w-[90vw] -translate-x-1/2 cursor-pointer rounded-full border-2 border-ember bg-paper px-4 py-2 text-sm font-medium text-ember shadow-lg dark:border-ember dark:bg-slate-900"
         >
           {notice}
         </div>
