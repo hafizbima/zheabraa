@@ -12,6 +12,7 @@ import {
   allTransactions,
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
+import { btn } from '../lib/buttons.js'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 
 function compactNum(v) {
@@ -156,12 +157,22 @@ export default function Stats() {
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-display text-lg font-bold text-carbon dark:text-white">Statistik</h2>
-          <select className={input} value={rangeKey} onChange={(e) => setRangeKey(e.target.value)} aria-label="Rentang bulan">
+          <div className="flex items-center gap-2">
+            <button onClick={() => window.print()} className={btn.ghost} aria-label="Cetak laporan">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 9V3h12v6" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="8" rx="1" />
+              </svg>
+              Cetak
+            </button>
+            <select className={input} value={rangeKey} onChange={(e) => setRangeKey(e.target.value)} aria-label="Rentang bulan">
             <option value="3">3 bulan terakhir</option>
             <option value="6">6 bulan terakhir</option>
             <option value="12">12 bulan terakhir</option>
             <option value="all">Semua bulan</option>
           </select>
+        </div>
         </div>
         <div className="flex gap-2">
           <button className={granBtn('harian', 'Harian')} onClick={() => setGran('harian')}>Harian</button>

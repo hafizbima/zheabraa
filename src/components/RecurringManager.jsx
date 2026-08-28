@@ -4,6 +4,15 @@ import Confirm from './Confirm.jsx'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah, toInt } from '../lib/money.js'
 import { btn } from '../lib/buttons.js'
+import EmptyState from './EmptyState.jsx'
+
+const TYPES = [
+  { key: 'expense', label: 'Pengeluaran', activeCls: 'border-carbon bg-ember/15 text-ember' },
+  { key: 'income', label: 'Pemasukan', activeCls: 'border-carbon bg-mint/50 text-carbon' },
+  { key: 'bill', label: 'Tagihan', activeCls: 'border-carbon bg-sky/50 text-carbon' },
+  { key: 'transfer', label: 'Transfer', activeCls: 'border-carbon bg-violet/15 text-violet' },
+]
+const typeMeta = (k) => TYPES.find((t) => t.key === k) || TYPES[0]
 
 export default function RecurringManager({ onClose }) {
   const { templates, currentMonth: month, wallets, addTemplate, updateTemplate, removeTemplate } = useStore()
@@ -12,6 +21,7 @@ export default function RecurringManager({ onClose }) {
   const [type, setType] = useState('expense')
   const [categoryId, setCategoryId] = useState('free')
   const [walletId, setWalletId] = useState('')
+  const [toWalletId, setToWalletId] = useState('')
   const [description, setDescription] = useState('')
   const [confirmId, setConfirmId] = useState(null)
   const [drafts, setDrafts] = useState({})
@@ -21,22 +31,6 @@ export default function RecurringManager({ onClose }) {
   const cats = month?.categories || []
   const input =
     'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
-
-  const typeButton = (key, active) => (
-    <button
-      type="button"
-      onClick={() => setType(key)}
-      className={`rounded-xl border-2 px-3 py-2 text-sm font-medium transition ${
-        active
-          ? key === 'income'
-            ? 'border-carbon bg-mint/50 text-carbon'
-            : 'border-carbon bg-ember/15 text-ember'
-          : 'border-black/20 bg-paper text-slate-500 hover:bg-mist dark:border-white/20 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
-      }`}
-    >
-      {key === 'income' ? 'Pemasukan' : 'Pengeluaran'}
-    </button>
-  )
 
   const catName = (id) => (id ? cats.find((c) => c.id === id)?.name : null)
   const walletName = (id) => (id ? wallets.find((w) => w.id === id)?.name : '—')
@@ -51,24 +45,18 @@ export default function RecurringManager({ onClose }) {
     })
   }, [templates])
 
-  const dirtyCount = useMemo(() => {
-    let n = 0
-    for (const t of templates) {
-      const d = drafts[t.id]
-      if (
-        d &&
-        (d.dayOfMonth !== t.dayOfMonth ||
-          d.type !== t.type ||
-          d.amount !== t.amount ||
-          d.categoryId !== t.categoryId ||
-          d.walletId !== t.walletId ||
-          d.description !== t.description ||
-          d.active !== t.active)
-      )
-        n += 1
-    }
-    return n
-  }, [templates, drafts])
+  const isDirty = (t, d) =>
+    d &&
+    (d.dayOfMonth !== t.dayOfMonth ||
+      d.type !== t.type ||
+      d.amount !== t.amount ||
+      d.categoryId !== t.categoryId ||
+      d.walletId !== t.walletId ||
+      d.toWalletId !== t.toWalletId ||
+      d.description !== t.description ||
+      d.active !== t.active)
+
+  const dirtyCount = useMemo(() => templates.filter((t) => isDirty(t, drafts[t.id])).length, [templates, drafts])
 
   const updateDraft = (id, patch) => {
     setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }))
@@ -80,22 +68,14 @@ export default function RecurringManager({ onClose }) {
     try {
       for (const t of templates) {
         const d = drafts[t.id]
-        if (
-          d &&
-          (d.dayOfMonth !== t.dayOfMonth ||
-            d.type !== t.type ||
-            d.amount !== t.amount ||
-            d.categoryId !== t.categoryId ||
-            d.walletId !== t.walletId ||
-            d.description !== t.description ||
-            d.active !== t.active)
-        ) {
+        if (isDirty(t, d)) {
           await updateTemplate(t.id, {
             dayOfMonth: d.dayOfMonth,
-            type: d.type === 'income' ? 'income' : 'expense',
+            type: d.type,
             amount: d.amount,
             categoryId: d.categoryId,
             walletId: d.walletId,
+            toWalletId: d.toWalletId,
             description: d.description,
             active: d.active,
           })
@@ -111,12 +91,14 @@ export default function RecurringManager({ onClose }) {
     e.preventDefault()
     const amt = toInt(amount)
     if (amt <= 0) return
+    const isOut = type === 'expense' || type === 'bill'
     addTemplate({
       dayOfMonth: toInt(day) || 1,
       type,
       amount: amt,
-      categoryId: type === 'income' ? null : categoryId === 'free' ? null : categoryId,
+      categoryId: isOut ? (categoryId === 'free' ? null : categoryId) : null,
       walletId: type === 'income' ? null : walletId || null,
+      toWalletId: type === 'transfer' ? toWalletId || null : null,
       description: description.trim(),
       active: true,
     })
@@ -125,6 +107,7 @@ export default function RecurringManager({ onClose }) {
     setType('expense')
     setCategoryId('free')
     setWalletId('')
+    setToWalletId('')
     setDescription('')
   }
 
@@ -135,7 +118,7 @@ export default function RecurringManager({ onClose }) {
       wide
       footer={
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs text-slate-400">Pengeluaran & pemasukan dipakai otomatis tiap bulan pada tanggal yang ditentukan.</p>
+          <p className="text-xs text-slate-400">Template dipakai otomatis tiap bulan pada tanggal yang ditentukan.</p>
           <button
             onClick={saveAll}
             disabled={saving || dirtyCount === 0}
@@ -153,11 +136,21 @@ export default function RecurringManager({ onClose }) {
           <input className={input} type="text" inputMode="numeric" placeholder="Nominal (Rp)" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Nominal" />
           <input className={input + ' sm:col-span-2'} placeholder="Keterangan (mis. Bayar Kos)" value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          {typeButton('expense', type === 'expense')}
-          {typeButton('income', type === 'income')}
+        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {TYPES.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setType(t.key)}
+              className={`rounded-xl border-2 px-3 py-2 text-sm font-medium transition ${
+                type === t.key ? t.activeCls : 'border-black/20 bg-paper text-slate-500 hover:bg-mist dark:border-white/20 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
-        {type === 'expense' ? (
+        {type === 'expense' || type === 'bill' ? (
           <div className="mt-2 grid gap-2 sm:grid-cols-2">
             <select className={input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
               <option value="free">Uang Bebas</option>
@@ -169,6 +162,25 @@ export default function RecurringManager({ onClose }) {
             </select>
             <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
               <option value="">Dompet — tidak dilacak</option>
+              {wallets.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : type === 'transfer' ? (
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
+              <option value="">Dompet asal</option>
+              {wallets.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name}
+                </option>
+              ))}
+            </select>
+            <select className={input} value={toWalletId} onChange={(e) => setToWalletId(e.target.value)}>
+              <option value="">Dompet tujuan</option>
               {wallets.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.name}
@@ -190,14 +202,14 @@ export default function RecurringManager({ onClose }) {
 
       <div className="mt-4 space-y-2">
         {templates.length === 0 && (
-          <p className="rounded-2xl border-2 border-dashed border-black/30 p-6 text-center text-sm text-slate-400 dark:border-white/20">
-            Belum ada template transaksi berulang.
-          </p>
+          <EmptyState title="Belum ada template" sub="Tambah template untuk pengeluaran, pemasukan, tagihan, atau transfer berulang." />
         )}
         {templates.map((t) => {
           const d = drafts[t.id] || t
+          const dt = typeMeta(d.type || 'expense')
+          const isOut = (d.type || 'expense') === 'expense' || d.type === 'bill'
           return (
-            <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
+            <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-carbon bg-paper p-3 transition-shadow hover:shadow-carbon-sm dark:border-white/20 dark:bg-slate-900">
               <label className="flex items-center gap-1.5 text-xs text-slate-500">
                 <input
                   type="checkbox"
@@ -225,30 +237,26 @@ export default function RecurringManager({ onClose }) {
                 aria-label="Nominal"
               />
               <input
-                className={input + ' flex-1 min-w-32'}
+                className={input + ' min-w-32 flex-1'}
                 value={d.description}
                 onChange={(e) => updateDraft(t.id, { description: e.target.value })}
                 placeholder="Keterangan"
               />
               <div className="flex overflow-hidden rounded-xl border-2 border-black/20 dark:border-white/20">
-                {['expense', 'income'].map((k) => (
+                {TYPES.map((tk) => (
                   <button
-                    key={k}
+                    key={tk.key}
                     type="button"
-                    onClick={() => updateDraft(t.id, { type: k })}
+                    onClick={() => updateDraft(t.id, { type: tk.key })}
                     className={`px-2 py-1.5 text-xs font-medium ${
-                      (d.type || 'expense') === k
-                        ? k === 'income'
-                          ? 'bg-mint/60 text-carbon'
-                          : 'bg-ember/15 text-ember'
-                        : 'bg-paper text-slate-500 dark:bg-slate-900 dark:text-slate-300'
+                      (d.type || 'expense') === tk.key ? tk.activeCls : 'bg-paper text-slate-500 dark:bg-slate-900 dark:text-slate-300'
                     }`}
                   >
-                    {k === 'income' ? 'Pemasukan' : 'Pengeluaran'}
+                    {tk.label}
                   </button>
                 ))}
               </div>
-              {(d.type || 'expense') === 'expense' && (
+              {isOut && (
                 <>
                   <select
                     className={input + ' w-36'}
@@ -272,10 +280,27 @@ export default function RecurringManager({ onClose }) {
                   </select>
                 </>
               )}
-              <button
-                onClick={() => setConfirmId(t.id)}
-                className={btn.subtleDanger + ' shrink-0'}
-              >
+              {d.type === 'transfer' && (
+                <>
+                  <select className={input + ' w-36'} value={d.walletId || ''} onChange={(e) => updateDraft(t.id, { walletId: e.target.value || null })}>
+                    <option value="">Dari —</option>
+                    {wallets.map((w) => (
+                      <option key={w.id} value={w.id}>
+                        {w.name}
+                      </option>
+                    ))}
+                  </select>
+                  <select className={input + ' w-36'} value={d.toWalletId || ''} onChange={(e) => updateDraft(t.id, { toWalletId: e.target.value || null })}>
+                    <option value="">Ke —</option>
+                    {wallets.map((w) => (
+                      <option key={w.id} value={w.id}>
+                        {w.name}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
+              <button onClick={() => setConfirmId(t.id)} className={btn.subtleDanger + ' shrink-0'}>
                 Hapus
               </button>
             </div>

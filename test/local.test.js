@@ -135,4 +135,28 @@ describe('recurring templates (local backend)', () => {
     expect(incs[0].amount).toBe(15000000)
     expect(getDetail('2026-09').transactions).toHaveLength(0)
   })
+
+  it('generates recurring transfer transactions with from/to wallets', async () => {
+    local.ensureMonth('u1', '2026-09')
+    await local.addTemplate('u1', {
+      id: 't-tr',
+      type: 'transfer',
+      dayOfMonth: 10,
+      amount: 200000,
+      categoryId: null,
+      walletId: 'w1',
+      toWalletId: 'w2',
+      description: 'Tabungan',
+      active: true,
+      createdAt: Date.now(),
+    })
+    await local.applyRecurring('u1', '2026-09')
+    const txs = getDetail('2026-09').transactions
+    const t = txs.find((x) => x.id === 'recur-t-tr-2026-09-10')
+    expect(t).toBeTruthy()
+    expect(t.type).toBe('transfer')
+    expect(t.walletId).toBe('w1')
+    expect(t.toWalletId).toBe('w2')
+    expect(t.amount).toBe(200000)
+  })
 })

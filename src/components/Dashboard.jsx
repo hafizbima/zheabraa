@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah } from '../lib/money.js'
 import { formatDate, todayISO } from '../lib/dates.js'
@@ -51,6 +51,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     removeIncome,
     setCarryOver,
     setMonthNote,
+    notify,
   } = useStore()
 
   const [editingIncome, setEditingIncome] = useState(null)
@@ -59,6 +60,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const [incomeAmount, setIncomeAmount] = useState('')
   const [carryDraft, setCarryDraft] = useState('')
   const [noteDraft, setNoteDraft] = useState('')
+  const [quick, setQuick] = useState('')
+  const notifiedOver = useRef(new Set())
 
   useEffect(() => {
     setCarryDraft(month ? String(month.carryOver ?? 0) : '')
@@ -93,6 +96,38 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const donutData = (month.categories || [])
     .filter((c) => c.budgetAmount > 0)
     .map((c) => ({ name: c.name, value: c.budgetAmount, color: c.color }))
+
+  // notifikasi sekali per pocket saat status over
+  useEffect(() => {
+    if (!month) return
+    for (const a of alerts) {
+      if (a.status === 'over' && !notifiedOver.current.has(a.cat.id)) {
+        notifiedOver.current.add(a.cat.id)
+        notify(`Pocket "${a.cat.name}" melebihi budget ${formatRupiah(a.budget)}`)
+      }
+    }
+  }, [alerts, notify, month])
+
+  const upcomingBills = templates.filter((t) => t.type === 'bill' && t.active !== false)
+
+  const quickSubmit = (e) => {
+    e.preventDefault()
+    const q = quick.trim()
+    if (!q) return
+    // format: "makan 35k" | "makan 35000 skincare" | "gaji 5jt" (income default expense)
+    const m = q.match(/^(.+?)\s+(\d[\d.]*(?:k|rb|jt|juta)?)\s*(?:ke\s*(.+))?$/i)
+    if (!m) return setQuick('')
+    let amount = Number(m[2].replace(/[.,]/g, ''))
+    const suf = (m[2].toLowerCase().match(/(k|rb|jt|juta)$/) || [])[1]
+    if (suf === 'k' || suf === 'rb') amount *= 1000
+    else if (suf === 'jt' || suf === 'juta') amount *= 1000000
+    const catName = m[3]?.trim()
+    const cat = catName
+      ? (month.categories || []).find((c) => c.name.toLowerCase() === catName.toLowerCase())
+      : null
+    onNewTx({ categoryId: cat ? cat.id : undefined, description: m[1].trim(), amount: Math.round(amount) })
+    setQuick('')
+  }
 
   const saveIncome = () => {
     const amount = Math.round(Number(incomeAmount) || 0)
@@ -143,6 +178,54 @@ const input =
         <Card label="Uang Bebas (sisa)" value={formatRupiah(pool)} sub="sebelum dipakai" tint="bg-sky/60 dark:bg-sky/10" />
         <Card label="Sisa Uang Bebas" value={formatRupiah(left)} sub={`terpakai ${formatRupiah(freeSpent)}`} accent={left < 0 ? 'text-ember' : 'text-carbon dark:text-white'} tint="bg-[#B8B8FF] dark:bg-white/5" />
       </section>
+
+      {/* Quick-add natural language */}
+      <form onSubmit={quickSubmit} className="rounded-2xl border-2 border-carbon bg-paper p-3 dark:border-white/30 dark:bg-slate-900">
+        <div className="flex items-center gap-2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-slate-400">
+            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <input
+            className="flex-1 bg-transparent text-sm text-carbon outline-none placeholder:text-slate-400 dark:text-white"
+            placeholder='Cepat: "makan 35k skincare" atau "gaji 5jt"'
+            value={quick}
+            onChange={(e) => setQuick(e.target.value)}
+            aria-label="Catat cepat"
+          />
+          <span className="hidden text-[10px] text-slate-400 sm:inline">Enter untuk buka form</span>
+        </div>
+      </form>
+
+      {/* Tagihan bulan ini (template tipe bill) */}
+      {upcomingBills.length > 0 && (
+        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+          <h3 className="font-semibold text-carbon dark:text-white">Tagihan</h3>
+          <div className="mt-3 space-y-2">
+            {upcomingBills.map((b) => {
+              const due = Math.min(28, Math.max(1, b.dayOfMonth || 1))
+              const overdue = due < new Date().getDate()
+              const cat = (month.categories || []).find((c) => c.id === b.categoryId)
+              return (
+                <div key={b.id} className="flex items-center justify-between gap-3 rounded-xl border border-carbon px-3 py-2 dark:border-white/20 dark:bg-white/5">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-carbon dark:text-white">{b.description || 'Tagihan'}</p>
+                    <p className="text-xs text-slate-400">
+                      {cat ? cat.name : '—'}
+                      {overdue ? ' • jatuh tempo' : ` • tgl ${due}`}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <p className="text-sm font-semibold text-carbon dark:text-white">{formatRupiah(b.amount)}</p>
+                    <button onClick={() => onNewTx({ categoryId: b.categoryId, description: b.description, amount: b.amount })} className={btn.subtle}>
+                      Bayar
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Budget perlu dicek — mirip Buatin.mba overview */}
       {alerts.length > 0 && (
@@ -371,8 +454,11 @@ const input =
           )}
           {templates.map((t) => {
             const isIncome = t.type === 'income'
+            const isBill = t.type === 'bill'
+            const isTransfer = t.type === 'transfer'
             const cat = isIncome ? null : (month.categories || []).find((c) => c.id === t.categoryId)
             const wal = isIncome ? null : wallets.find((w) => w.id === t.walletId)
+            const walTo = isTransfer ? wallets.find((w) => w.id === t.toWalletId) : null
             return (
               <div key={t.id} className={`flex items-center justify-between gap-3 rounded-xl border border-carbon px-3 py-2 ${t.active !== false ? 'bg-mint/40 dark:bg-white/5' : 'bg-mist opacity-60 dark:bg-slate-800'}`}>
                 <div className="min-w-0">
@@ -380,8 +466,8 @@ const input =
                     Hari {Math.min(28, Math.max(1, t.dayOfMonth || 1))} — {t.description || 'Transaksi berulang'}
                   </p>
                   <p className="text-xs text-slate-400">
-                    {isIncome ? 'Pemasukan' : cat ? cat.name : 'Uang Bebas'}
-                    {wal ? ` · ${wal.name}` : ''}
+                    {isIncome ? 'Pemasukan' : isBill ? 'Tagihan' : isTransfer ? 'Transfer' : cat ? cat.name : 'Uang Bebas'}
+                    {isTransfer ? ` · ${wal?.name || '—'} → ${walTo?.name || '—'}` : wal ? ` · ${wal.name}` : ''}
                   </p>
                 </div>
                 <p className="shrink-0 text-sm font-semibold text-carbon dark:text-white">{formatRupiah(t.amount)}</p>

@@ -22,6 +22,7 @@ export default function TransactionList({ onEditTx }) {
 
   const monthIds = Object.keys(months).sort().reverse()
   const [viewMonth, setViewMonth] = useState(currentMonthId)
+  const [globalSearch, setGlobalSearch] = useState('')
   const month = months[viewMonth] || { id: viewMonth }
 
   const [search, setSearch] = useState('')
@@ -66,6 +67,19 @@ export default function TransactionList({ onEditTx }) {
     setFromDate('')
     setToDate('')
   }
+
+  // pencarian lintas bulan: cari di semua bulan jika globalSearch diisi
+  const globalResults = useMemo(() => {
+    const q = globalSearch.trim().toLowerCase()
+    if (!q) return []
+    const out = []
+    for (const mId of Object.keys(months)) {
+      for (const t of months[mId]?.transactions || []) {
+        if ((t.description || '').toLowerCase().includes(q)) out.push({ mId, tx: t })
+      }
+    }
+    return out.sort((a, b) => (a.tx.date === b.tx.date ? b.tx.createdAt - a.tx.createdAt : a.tx.date < b.tx.date ? 1 : -1))
+  }, [globalSearch, months])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -121,6 +135,13 @@ export default function TransactionList({ onEditTx }) {
             ))}
           </select>
         </div>
+        <input
+          className={input + ' mb-2'}
+          placeholder="Cari di semua bulan…"
+          value={globalSearch}
+          onChange={(e) => setGlobalSearch(e.target.value)}
+          aria-label="Cari semua bulan"
+        />
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <input
             className={input}
@@ -207,6 +228,45 @@ export default function TransactionList({ onEditTx }) {
         </section>
       )}
 
+      {/* Cari global — hasil dari semua bulan */}
+      {globalSearch.trim() && (
+        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+          <h3 className="font-semibold text-carbon dark:text-white">Hasil pencarian " {globalSearch.trim()} "</h3>
+          {globalResults.length === 0 ? (
+            <p className="mt-3 text-sm text-slate-400">Tidak ditemukan.</p>
+          ) : (
+            <div className="mt-3 space-y-2">
+              {globalResults.map(({ mId, tx }) => {
+                const isTransfer = tx.type === 'transfer'
+                return (
+                  <div key={tx.id} className="flex items-center gap-3 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
+                    <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: catColor(tx) }} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-carbon dark:text-white">{catName(tx)}</p>
+                      <p className="truncate text-xs text-slate-400">
+                        {formatDate(tx.date)} — {labelOf(mId)}
+                        {isTransfer
+                          ? ` • ${walletName(tx.walletId) || '—'} → ${walletName(tx.toWalletId) || '—'}`
+                          : ` • ${tx.description || '—'}${walletName(tx.walletId) ? ` • ${walletName(tx.walletId)}` : ''}`}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-sm font-semibold ${isTransfer ? 'text-violet dark:text-lavender' : tx.type === 'refund' ? 'text-mint' : 'text-ember'}`}>
+                        {isTransfer ? '⇄ ' : tx.type === 'refund' ? '+' : '−'}{formatRupiah(tx.amount)}
+                      </p>
+                      <div className="mt-0.5 flex justify-end gap-1">
+                        <button onClick={() => onEditTx(mId, tx)} className={btn.subtle}>Ubah</button>
+                        <button onClick={() => setConfirmId({ mId, id: tx.id })} className={btn.subtleDanger}>Hapus</button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
       {/* List */}
       {filtered.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-black/30 bg-paper p-8 text-center dark:border-white/20 dark:bg-slate-900">
@@ -253,7 +313,7 @@ export default function TransactionList({ onEditTx }) {
                         <button onClick={() => onEditTx(viewMonth, t)} className={btn.subtle}>
                           Ubah
                         </button>
-                        <button onClick={() => setConfirmId(t.id)} className={btn.subtleDanger}>
+                        <button onClick={() => setConfirmId({ mId: viewMonth, id: t.id })} className={btn.subtleDanger}>
                           Hapus
                         </button>
                       </div>
@@ -272,7 +332,7 @@ export default function TransactionList({ onEditTx }) {
           message="Transaksi ini akan dihapus permanen. Lanjutkan?"
           onCancel={() => setConfirmId(null)}
           onConfirm={() => {
-            removeTransaction(viewMonth, confirmId)
+            removeTransaction(confirmId.mId, confirmId.id)
             setConfirmId(null)
           }}
         />

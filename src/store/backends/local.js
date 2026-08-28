@@ -239,17 +239,31 @@ function generateRecurring(uid, mId) {
     }
     const id = `recur-${t.id}-${mId}-${pad2(day)}`
     if (store.transactions[mId].some((x) => x.id === id)) continue
-    store.transactions[mId].unshift({
-      id,
-      date: `${mId}-${pad2(day)}`,
-      amount: t.amount || 0,
-      type: 'expense',
-      categoryId: t.categoryId || null,
-      walletId: t.walletId || null,
-      toWalletId: null,
-      description: t.description || 'Transaksi berulang',
-      createdAt: Date.now(),
-    })
+    store.transactions[mId].unshift(
+      t.type === 'transfer'
+        ? {
+            id,
+            date: `${mId}-${pad2(day)}`,
+            amount: t.amount || 0,
+            type: 'transfer',
+            categoryId: null,
+            walletId: t.walletId || null,
+            toWalletId: t.toWalletId || null,
+            description: t.description || 'Transfer berulang',
+            createdAt: Date.now(),
+          }
+        : {
+            id,
+            date: `${mId}-${pad2(day)}`,
+            amount: t.amount || 0,
+            type: 'expense',
+            categoryId: t.categoryId || null,
+            walletId: t.walletId || null,
+            toWalletId: null,
+            description: t.description || 'Transaksi berulang',
+            createdAt: Date.now(),
+          },
+    )
     changed = true
   }
   if (changed) {
@@ -397,6 +411,32 @@ export async function resetPassword() {
   // Not applicable in local mode
 }
 
+export async function loadAll(uid) {
+  const months = {}
+  for (const id of Object.keys(store.months)) {
+    months[id] = {
+      ...store.months[id],
+      categories: store.categories[id] || [],
+      transactions: store.transactions[id] || [],
+    }
+  }
+  return { wallets: [...store.wallets], months, templates: [...store.templates] }
+}
+
+export async function restoreAll(uid, data) {  const migrated = migrate({
+    wallets: data.wallets || [],
+    months: data.months || {},
+    templates: data.templates || [],
+  })
+  store.wallets = migrated.wallets
+  store.months = migrated.months
+  store.categories = migrated.categories
+  store.transactions = migrated.transactions
+  store.templates = migrated.templates
+  persist()
+  emitAll()
+}
+
 init()
 
 export default {
@@ -427,5 +467,7 @@ export default {
   updateTemplate,
   removeTemplate,
   applyRecurring,
+  loadAll,
+  restoreAll,
   resetPassword,
 }

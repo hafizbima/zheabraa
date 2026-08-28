@@ -11,7 +11,7 @@ const WALLET_FIELDS = { name: 'name', color: 'color', openingBalance: 'opening_b
 const MONTH_FIELDS = { label: 'label', carryOver: 'carry_over', incomes: 'incomes', note: 'note', createdAt: 'created_at' }
 const CAT_FIELDS = { name: 'name', budgetAmount: 'budget_amount', goalAmount: 'goal_amount', color: 'color', key: 'key', order: 'sort_order' }
 const TX_FIELDS = { date: 'date', amount: 'amount', type: 'type', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', createdAt: 'created_at' }
-const TEMPLATE_FIELDS = { dayOfMonth: 'day_of_month', type: 'type', amount: 'amount', categoryId: 'category_id', walletId: 'wallet_id', description: 'description', active: 'active', createdAt: 'created_at' }
+const TEMPLATE_FIELDS = { dayOfMonth: 'day_of_month', type: 'type', amount: 'amount', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', active: 'active', createdAt: 'created_at' }
 
 function mapWallet(r) {
   return { id: r.id, name: r.name, color: r.color, openingBalance: r.opening_balance, order: r.sort_order }
@@ -75,6 +75,7 @@ function mapTemplate(r) {
     amount: r.amount,
     categoryId: r.category_id,
     walletId: r.wallet_id,
+    toWalletId: r.to_wallet_id,
     description: r.description,
     active: r.active !== false,
     createdAt: Number(r.created_at) || 0,
@@ -106,6 +107,22 @@ async function applyRecurringForMonth(uid, mId) {
         id: `recur-${t.id}-${mId}`,
         label: t.description || 'Pemasukan berulang',
         amount: t.amount || 0,
+      })
+      continue
+    }
+    if (t.type === 'transfer') {
+      txRows.push({
+        id: `recur-${t.id}-${mId}-${pad2(day)}`,
+        user_id: uid,
+        month_id: mId,
+        date: `${mId}-${pad2(day)}`,
+        amount: t.amount || 0,
+        type: 'transfer',
+        category_id: null,
+        wallet_id: t.wallet_id || null,
+        to_wallet_id: t.to_wallet_id || null,
+        description: t.description || 'Transfer berulang',
+        created_at: Date.now(),
       })
       continue
     }
@@ -162,6 +179,68 @@ async function applyRecurringQuiet(uid, mId) {
 export async function applyRecurring(uid, mId) {
   needClient()
   await applyRecurringForMonth(uid, mId)
+}
+
+// --- load all (tanpa realtime) ---
+export async function loadAll(uid) {
+  needClient()
+  const [w, m, c, t, tpl] = await Promise.all([
+    supabase.from('wallets').select('*').eq('user_id', uid).order('sort_order', { ascending: true }),
+    supabase.from('months').select('*').eq('user_id', uid),
+    supabase.from('categories').select('*').eq('user_id', uid),
+    supabase.from('transactions').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
+    supabase.from('recurring_templates').select('*').eq('user_id', uid).order('day_of_month', { ascending: true }),
+  ])
+  for (const r of [w, m, c, t]) if (r.error) throw r.error
+  if (tpl.error && !isMissingTable(tpl.error)) throw tpl.error
+
+  const wallets = (w.data || []).filter((x) => !x.deleted).map(mapWallet)
+  const months = {}
+  for (const r of m.data || []) {
+    const mm = mapMonth(r)
+    mm.categories = []
+    mm.transactions = []
+    months[r.id] = mm
+  }
+  for (const r of c.data || []) {
+    const mm = months[r.month_id]
+    if (mm) mm.categories.push(mapCategory(r))
+  }
+  for (const r of t.data || []) {
+    const mm = months[r.month_id]
+    if (mm) mm.transactions.push(mapTransaction(r))
+  }
+
+  // generate recurring untuk bulan berjalan & mendatang (sekali, via recurringGenerated set)
+  const now = new Date()
+  const curMonth = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`
+  let generated = false
+  for (const mId of Object.keys(months)) {
+    if (mId >= curMonth && (await applyRecurringQuiet(uid, mId))) generated = true
+  }
+  if (generated) {
+    const [m2, t2] = await Promise.all([
+      supabase.from('months').select('*').eq('user_id', uid),
+      supabase.from('transactions').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
+    ])
+    if (!m2.error) for (const r of m2.data || []) {
+      const mm = months[r.id]
+      if (mm) Object.assign(mm, mapMonth(r), { categories: mm.categories, transactions: mm.transactions })
+    }
+    if (!t2.error) {
+      for (const r of t2.data || []) {
+        const mm = months[r.month_id]
+        if (!mm) continue
+        const tx = mapTransaction(r)
+        const i = mm.transactions.findIndex((x) => x.id === tx.id)
+        if (i >= 0) mm.transactions[i] = tx
+        else mm.transactions.push(tx)
+      }
+    }
+  }
+
+  const templates = (tpl.data || []).map(mapTemplate)
+  return { wallets, months, templates }
 }
 
 // --- auth ---
@@ -569,6 +648,7 @@ export default {
   subscribeWallets,
   subscribeMonths,
   subscribeMonthDetail,
+  loadAll,
   setWallet,
   updateWallet,
   removeWallet,

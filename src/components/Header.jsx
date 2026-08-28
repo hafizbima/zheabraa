@@ -3,16 +3,19 @@ import { flushSync } from 'react-dom'
 import { useStore } from '../store/StoreContext.jsx'
 import { useTheme } from '../theme.js'
 import { addMonths, labelOf } from '../lib/dates.js'
+import { exportBackup, importBackup } from '../lib/backup.js'
 import Confirm from './Confirm.jsx'
 
 export default function Header({ view, onViewChange, onOpenWallets }) {
-  const { logout, currentMonthId, switchMonth, startNewMonth, months } = useStore()
+  const { user, logout, currentMonthId, switchMonth, startNewMonth, months, wallets, templates, notify } = useStore()
   const { theme, toggleTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
   const [gearOpen, setGearOpen] = useState(false)
   const [confirmNew, setConfirmNew] = useState(false)
+  const [busy, setBusy] = useState(false)
   const [hidden, setHidden] = useState(false)
   const lastY = useRef(0)
+  const restoreRef = useRef(null)
   const monthIds = Object.keys(months).sort().reverse()
 
   // auto-hide on scroll down, show on scroll up
@@ -129,7 +132,53 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
               {gearOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setGearOpen(false)} />
-                  <div className={`absolute right-0 top-9 z-50 w-36 overflow-hidden rounded-xl border shadow-lg ${isDark ? 'border-[#24305a] bg-[#16234a]' : 'border-carbon bg-paper'}`}>
+                  <div className={`absolute right-0 top-9 z-50 w-44 overflow-hidden rounded-xl border shadow-lg ${isDark ? 'border-[#24305a] bg-[#16234a]' : 'border-carbon bg-paper'}`}>
+                    <button
+                      onClick={() => {
+                        setGearOpen(false)
+                        exportBackup({ wallets, months, templates })
+                      }}
+                      disabled={busy}
+                      className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium ${isDark ? 'text-[#f5f2e8] hover:bg-white/10' : 'text-carbon hover:bg-mist'}`}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 3v12M7 10l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" />
+                      </svg>
+                      Unduh Backup
+                    </button>
+                    <button
+                      onClick={() => restoreRef.current?.click()}
+                      disabled={busy}
+                      className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium ${isDark ? 'text-[#f5f2e8] hover:bg-white/10' : 'text-carbon hover:bg-mist'}`}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 21V9M7 14l5-5 5 5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2" strokeLinecap="round" />
+                      </svg>
+                      {busy ? 'Memulihkan…' : 'Pulihkan Backup'}
+                    </button>
+                    <input
+                      ref={restoreRef}
+                      type="file"
+                      accept="application/json,.json"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const f = e.target.files?.[0]
+                        e.target.value = ''
+                        if (!f) return
+                        setGearOpen(false)
+                        setBusy(true)
+                        try {
+                          await importBackup(f, user?.uid)
+                          notify('Backup dipulihkan. Muat ulang halaman untuk melihat data baru.')
+                          setTimeout(() => window.location.reload(), 1200)
+                        } catch (err) {
+                          notify(err?.message || 'Gagal memulihkan backup')
+                          setBusy(false)
+                        }
+                      }}
+                    />
                     <button
                       onClick={() => {
                         setGearOpen(false)

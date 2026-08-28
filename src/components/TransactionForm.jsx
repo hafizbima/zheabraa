@@ -10,14 +10,17 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
 
   const [date, setDate] = useState(transaction?.date || todayISO())
   const [type, setType] = useState(transaction?.type || 'expense')
-  const [amount, setAmount] = useState(transaction ? String(transaction.amount || '') : '')
+  const [amount, setAmount] = useState(
+    transaction ? String(transaction.amount || '') : prefill?.amount ? String(prefill.amount) : '',
+  )
   const [categoryId, setCategoryId] = useState(
     transaction ? transaction.categoryId || 'free' : prefill?.categoryId || 'free',
   )
   const [walletId, setWalletId] = useState(transaction?.walletId || '')
   const [toWalletId, setToWalletId] = useState(transaction?.toWalletId || '')
-  const [description, setDescription] = useState(transaction?.description || '')
+  const [description, setDescription] = useState(transaction?.description || prefill?.description || '')
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const isSingle = wallets.length === 1
   const primary = wallets[0] || null
 
@@ -35,6 +38,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
 
   const submit = (e) => {
     e.preventDefault()
+    setSubmitting(true)
     const amt = toInt(amount)
     if (amt <= 0) return setError('Nominal harus lebih dari 0')
     if (!date) return setError('Tanggal wajib diisi')
@@ -89,9 +93,10 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
           <button
             type="submit"
             form="tx-form"
+            disabled={submitting}
             className={btn.primary}
           >
-            {transaction ? 'Simpan Perubahan' : 'Simpan'}
+            {submitting ? 'Menyimpan…' : transaction ? 'Simpan Perubahan' : 'Simpan'}
           </button>
         </div>
       }
