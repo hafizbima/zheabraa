@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<style>
+@page { size: A4; margin: 18mm 16mm; }
+html,body{margin:0;padding:0}
+body{font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:10.5pt;line-height:1.55;color:#1c1c1c;}
+h1{font-size:22pt;color:#0f1b3d;border-bottom:3px solid #d9a441;padding-bottom:6px;margin:0 0 4px}
+h2{font-size:15pt;color:#0f1b3d;margin:20px 0 6px;border-left:5px solid #d9a441;padding-left:10px}
+h3{font-size:12pt;color:#1d58b0;margin:14px 0 4px}
+p{margin:5px 0}
+ul{margin:4px 0 4px 0;padding-left:18px}
+li{margin:2px 0}
+table{border-collapse:collapse;width:100%;margin:8px 0;font-size:9.5pt}
+th,td{border:1px solid #cbd5e1;padding:5px 8px;text-align:left;vertical-align:top}
+th{background:#0f1b3d;color:#fff}
+tr:nth-child(even) td{background:#f6f8fb}
+blockquote{background:#fff7e6;border-left:4px solid #d9a441;margin:8px 0;padding:6px 12px;color:#5a4a1a}
+code{background:#eef2f7;padding:1px 5px;border-radius:3px;font-family:Consolas,monospace;font-size:9pt}
+pre{background:#0f1b3d;color:#e6ecf5;padding:10px;border-radius:6px;overflow-x:auto;font-size:9pt;font-family:Consolas,monospace}
+hr{border:none;border-top:2px solid #d9a441;margin:18px 0}
+.cover{text-align:center;padding-top:40mm}
+.cover h1{border:none;font-size:30pt;margin:8px 0}
+.cover .sub{color:#1d58b0;font-size:13pt;margin-bottom:30px}
+.toc{columns:2;column-gap:24px;font-size:9.5pt}
+.toc a{color:#1d58b0;text-decoration:none}
+.footer{margin-top:26px;border-top:1px solid #d9a441;padding-top:6px;font-size:8.5pt;color:#888}
+</style></head><body>
+<h1>Zheabraa Pocket Budgeting — Buku Manual</h1>
+<blockquote>Versi 0.1 · Bahasa: Indonesia · Aplikasi web (Vite + React + Supabase / localStorage)</blockquote>
+<hr>
+<h2>1. Tentang Zheabraa</h2>
+<p>Zheabraa adalah aplikasi keuangan pribadi dengan metode <b>pocket (amplop) digital</b>.</p>
+<p>Kamu memiliki <b>1 Rekening Utama</b> (sumber dana fisik) dan membaginya menjadi</p>
+<p>beberapa <b>pocket virtual</b>. Setiap pocket memiliki <b>budget bulanan</b>. Saat</p>
+<p>belanja, uang keluar dari pocket sekaligus mengurangi saldo rekening — persis</p>
+<p>seperti amplop sungguhan, tapi uang tetap tersimpan di satu rekening.</p>
+<p><b>Konsep dasar:</b></p>
+<ul><li><b>Pemasukan</b> — gaji, pendapatan sampingan, dll. Menambah saldo rekening.</li></ul>
+<ul><li><b>Alokasi</b> — membagi pemasukan ke pocket (menetapkan budget tiap kategori).</li></ul>
+<ul><li><b>Uang Bebas</b> — sisa pemasukan yang belum dialokasikan ke pocket mana pun.</li></ul>
+<ul><li><b>Pengeluaran</b> — belanja yang dibayar dari pocket tertentu atau uang bebas.</li></ul>
+<p>Dengan cara ini kamu selalu tahu: *"pocket mana yang masih aman, mana yang</p>
+<p>mulai menipis, dan berapa total uang di rekening."*</p>
+<hr>
+<h2>2. Memulai</h2>
+<h3>2.1. Mode Penyimpanan Data</h3>
+<table><tbody><tr><th>Mode</th><th>Data disimpan di</th><th>Akses</th></tr><tr><td><b>Supabase</b> (default)</td><td>Cloud (server)</td><td>HP &amp; laptop, tersinkron antar perangkat</td></tr><tr><td><b>Lokal</b></td><td>localStorage perangkat ini</td><td>Offline, hanya di satu perangkat</td></tr></tbody></table>
+<p>Mode dipilih pengembang lewat file <code>.env</code>. Di halaman login, muncul badge</p>
+<p><b>"Mode lokal"</b> jika mode lokal aktif. Dalam mode lokal, fitur reset password</p>
+<p>tidak tersedia.</p>
+<h3>2.2. Membuat Akun</h3>
+<p>1. Buka aplikasi, lalu klik <b>Buat akun</b> di halaman login.</p>
+<p>2. Isi <b>Nama</b>, <b>Email</b>, dan <b>Password</b> (minimal 6 karakter).</p>
+<p>3. Klik <b>Daftar</b>.</p>
+<p>4. Akun baru otomatis dibuat dengan:</p>
+<ul><li>1 dompet <b>Rekening Utama</b> (saldo awal 0).</li></ul>
+<ul><li>6 pocket default: Transport, Gym, Date, Giving, Saving, Skincare</li></ul>
+<p>(budget masing-masing 0, dapat diubah kapan saja).</p>
+<h3>2.3. Login &amp; Logout</h3>
+<ul><li>Masukkan <b>email</b> dan <b>password</b>, lalu klik <b>Masuk</b>.</li></ul>
+<ul><li>Untuk keluar: klik ikon <b>gear (⚙️)</b> di pojok kanan atas header, lalu pilih <b>Keluar</b>.</li></ul>
+<h3>2.4. Lupa Password</h3>
+<ul><li>Di halaman login, klik <b>Lupa password?</b>.</li></ul>
+<ul><li>Masukkan email akun. Link reset akan dikirim ke email tersebut.</li></ul>
+<ul><li><b>Mode lokal</b> tidak mendukung reset password.</li></ul>
+<hr>
+<h2>3. Navigasi</h2>
+<p>Header aplikasi terdiri dari tiga baris:</p>
+<p>1. <b>Baris atas</b> — logo + nama aplikasi di kiri; di kanan tombol <b>tema</b> (☀️/🌙)</p>
+<p>dan <b>gear (⚙️)</b> untuk menu pengaturan.</p>
+<p>2. <b>Baris tengah</b> — navigasi bulan: <code>‹ [Bulan] [Tahun] ›</code>. Klik nama bulan untuk</p>
+<p>memilih bulan lain; pilih <b>➕ Mulai Bulan Baru</b> untuk membuat bulan berikutnya.</p>
+<p>3. <b>Baris bawah</b> — grid navigasi 2×2 dengan tombol: <b>Dashboard</b>, <b>Riwayat</b>,</p>
+<p><b>Statistik</b>, dan <b>Dompet</b>.</p>
+<p><b>Perilaku scroll:</b> saat kamu scroll ke bawah, header otomatis menghilang agar</p>
+<p>konten lebih lega; scroll ke atas akan memunculkannya kembali.</p>
+<hr>
+<h2>4. Dashboard</h2>
+<p>Dashboard adalah tampilan utama bulan berjalan. Berikut urutan bagiannya:</p>
+<h3>4.1. Kartu Ringkasan</h3>
+<p>Empat kartu cepat:</p>
+<ul><li><b>Total Pemasukan</b> — jumlah pemasukan + carry-over.</li></ul>
+<ul><li><b>Teralokasi ke Pocket</b> — total budget yang dibagi ke pocket (berwarna emas).</li></ul>
+<ul><li><b>Uang Bebas</b> — pemasukan dikurangi alokasi (sebelum dipakai).</li></ul>
+<ul><li><b>Sisa Uang Bebas</b> — uang bebas dikurangi yang sudah terpakai.</li></ul>
+<h3>4.2. Catat Cepat (Quick Add)</h3>
+<p>Ketik satu baris seperti bahasa sehari-hari lalu tekan <b>Enter</b>. Form transaksi</p>
+<p>akan terbuka dengan data terisi otomatis.</p>
+<table><tbody><tr><th>Contoh ketikan</th><th>Hasil</th></tr><tr><td><code>makan 35k</code></td><td>Pengeluaran Rp 35.000, keterangan "makan"</td></tr><tr><td><code>makan 35000 skincare</code></td><td>Pengeluaran Rp 35.000 + pocket Skincare terpilih</td></tr><tr><td><code>gaji 5jt</code></td><td>Nominal 5.000.000, keterangan "gaji"</td></tr></tbody></table>
+<p>Awalan: <code>k</code> / <code>rb</code> = 1.000, <code>jt</code> / <code>juta</code> = 1.000.000. Kata setelah <code>ke</code></p>
+<p>dipakai untuk memilih pocket berdasarkan nama.</p>
+<h3>4.3. Tagihan Bulan Ini</h3>
+<p>Menampilkan template bertipe <b>Tagihan</b> yang aktif. Muncul badge **"jatuh</p>
+<p>tempo"<b> jika tanggalnya sudah lewat bulan ini. Tombol </b>Bayar** membuka form</p>
+<p>transaksi yang sudah terisi nominal dan pocket.</p>
+<h3>4.4. Budget yang Perlu Dicek</h3>
+<p>Tiga pocket teratas dengan pemakaian budget ≥ 70%. Warna <b>oranye</b> = waspada,</p>
+<p><b>merah</b> = melebihi. Muncul otomatis, berguna untuk mengingatkan sebelum</p>
+<p>kebobolan.</p>
+<h3>4.5. Pemasukan &amp; Carry-over</h3>
+<ul><li>Daftar pemasukan bulan ini (label + nominal). Setiap baris punya tombol</li></ul>
+<p><b>Ubah</b> dan <b>Hapus</b>, serta tombol <b>+ Tambah</b> untuk income baru.</p>
+<ul><li><b>Carry-over</b> — sisa bulan lalu yang otomatis dibawa ke bulan ini. Bisa diubah manual.</li></ul>
+<h3>4.6. Catatan Bulan Ini</h3>
+<p>Kolom catatan bebas untuk bulan berjalan. Tersimpan otomatis saat kolom</p>
+<p>ditinggalkan.</p>
+<h3>4.7. Alokasi Pocket (Donut)</h3>
+<p>Diagram lingkaran proporsi budget per pocket, dilengkapi **legenda warna +</p>
+<p>nominal** di bawahnya.</p>
+<h3>4.8. Daftar Pocket</h3>
+<p>Kartu per pocket menampilkan:</p>
+<ul><li>Nama, warna, badge <b>Target</b> (jika ada target tabungan).</li></ul>
+<ul><li>Nominal terpakai / budget, dan sisa.</li></ul>
+<ul><li>Bilah kemajuan: ungu/violet = aman, oranye ≥ 80%, merah ≥ 100%.</li></ul>
+<p>Klik kartu pocket untuk langsung membuka form transaksi baru pada pocket itu.</p>
+<p>Di atas daftar ada tombol <b>Re-alokasi</b>, <b>Transaksi Berulang</b>, dan</p>
+<p><b>Kelola Kategori</b>.</p>
+<h3>4.9. Transaksi Berulang</h3>
+<p>Ringkasan template berulang yang aktif bulan ini (lihat bab 9).</p>
+<h3>4.10. Rekening Utama / Dompet</h3>
+<ul><li><b>Mode 1 rekening (default):</b> kartu besar <b>Rekening Utama</b> dengan saldo</li></ul>
+<p>saat ini (sudah termasuk kredit pemasukan), plus subtotal *Teralokasi* &amp;</p>
+<p>*Uang Bebas*, dan badge "sekat virtual".</p>
+<ul><li><b>Mode lebih dari 1 dompet:</b> grid kartu saldo per dompet + tombol <b>Transfer</b>.</li></ul>
+<hr>
+<h2>5. Pocket / Kategori</h2>
+<p>Kelola lewat Dashboard → <b>Kelola Kategori</b> (tombol di seksi Pocket).</p>
+<h3>5.1. Menambah Pocket</h3>
+<p>Form <b>Tambah kategori</b> berisi: nama, budget per bulan, target tabungan</p>
+<p>(opsional), dan pemilihan warna. Klik <b>+ Tambah</b>.</p>
+<h3>5.2. Mengubah &amp; Menghapus</h3>
+<ul><li>Ubah nama, budget, warna, atau target langsung pada baris, lalu tekan</li></ul>
+<p><b>Simpan Perubahan (N)</b>.</p>
+<ul><li>Tombol <b>Hapus</b> (dengan konfirmasi) — semua transaksi pada kategori itu</li></ul>
+<p>dipindahkan ke "Uang Bebas".</p>
+<h3>5.3. Mengurutkan</h3>
+<p>Seret gagang <code>⋮⋮</code> ke posisi baru, atau gunakan tombol <b>▲ / ▼</b>. Urutan</p>
+<p>tersimpan saat menekan <b>Simpan Perubahan</b>.</p>
+<h3>5.4. Target Tabungan</h3>
+<p>Setiap pocket bisa memiliki target kumpulan (misal "Terkumpul 5jt dari 10jt").</p>
+<p>Ditampilkan progress bar + badge <b>Target Tercapai</b> saat tercapai.</p>
+<h3>5.5. Re-alokasi</h3>
+<p>Memindahkan nominal antar pocket. Terdapat pratinjau budget sebelum dan sesudah</p>
+<p>re-alokasi.</p>
+<blockquote>Peringatan "Alokasi melebihi pemasukan" muncul jika total budget lebih besar</blockquote>
+<blockquote>dari total pemasukan bulan berjalan.</blockquote>
+<hr>
+<h2>6. Rekening / Dompet</h2>
+<p>Klik tombol <b>Dompet</b> pada grid navigasi → terbuka modal <b>Kelola Dompet</b>.</p>
+<h3>6.1. Mode Satu Rekening</h3>
+<p>Mode default. Judul modal "Rekening Utama", form tambah dompet disembunyikan</p>
+<p>karena pocket adalah sekat virtual dari rekening ini. Kamu dapat mengubah nama,</p>
+<p>warna, dan saldo awal langsung pada baris, lalu tekan <b>Simpan Perubahan</b>.</p>
+<h3>6.2. Menyesuaikan Saldo (Tanpa Transaksi)</h3>
+<p>1. Klik link <b>Sesuaikan</b> di bawah "saldo saat ini".</p>
+<p>2. Ketik <b>saldo bank sebenarnya</b> (misalnya dari mutasi rekening).</p>
+<p>3. Aplikasi menghitung <b>selisih</b> (+ / −).</p>
+<p>4. Klik <b>Sesuaikan</b>, lalu tekan <b>Simpan Perubahan</b> di belakang.</p>
+<p>Proses ini <b>tidak membuat transaksi baru</b> — hanya menyesuaikan saldo rekening.</p>
+<h3>6.3. Mode Banyak Dompet</h3>
+<p>Jika kamu menambahkan dompet fisik tambahan (misal Cash, E-Wallet), tampil:</p>
+<ul><li>Form <b>Tambah dompet</b> (nama, saldo awal, warna).</li></ul>
+<ul><li>Grid kartu saldo per dompet di Dashboard.</li></ul>
+<ul><li>Tombol <b>Transfer</b> untuk memindahkan uang antar dompet.</li></ul>
+<h3>6.4. Transfer</h3>
+<p>Pilih dompet asal &amp; tujuan, nominal, dan tanggal. Transfer <b>tidak</b> mengubah</p>
+<p>pocket/uang bebas. Transfer yang melebihi saldo dompet asal akan ditolak.</p>
+<hr>
+<h2>7. Transaksi</h2>
+<h3>7.1. Membuka Form</h3>
+<ul><li>Tombol <b>FAB (+)</b> di kanan bawah layar (selalu tersedia).</li></ul>
+<ul><li>Klik kartu pocket di Dashboard.</li></ul>
+<ul><li>Klik <b>Bayar</b> pada seksi Tagihan.</li></ul>
+<ul><li>Gunakan Catat Cepat (bab 4.2).</li></ul>
+<h3>7.2. Jenis Transaksi</h3>
+<table><tbody><tr><th>Jenis</th><th>Efek ke pocket</th><th>Efek ke rekening</th></tr><tr><td>Pengeluaran</td><td>Mengurangi sisa pocket / uang bebas</td><td>Mengurangi saldo</td></tr><tr><td>Refund / Koreksi</td><td>Menambah sisa pocket / uang bebas</td><td>Menambah saldo</td></tr><tr><td>Transfer</td><td>Tidak ada efek</td><td>Memindahkan antar dompet</td></tr></tbody></table>
+<h3>7.3. Memilih Tanggal</h3>
+<p>Tanggal menentukan bulan tempat transaksi dicatat. Jika tanggal berada di bulan</p>
+<p>yang berbeda dari bulan yang sedang dibuka, muncul peringatan — pocket yang</p>
+<p>terpotong adalah pocket dari bulan sesuai tanggal tersebut.</p>
+<h3>7.4. Kategori &amp; Dompet</h3>
+<ul><li><b>Uang Bebas</b> — pengeluaran tanpa pocket.</li></ul>
+<ul><li><b>Pocket</b> — pilih salah satu pocket; budget pocket berkurang.</li></ul>
+<ul><li><b>Dompet</b> — di mode 1 rekening otomatis "Rekening Utama"; di mode banyak</li></ul>
+<p>pilih dompet atau "tidak dilacak".</p>
+<h3>7.5. Tombol Simpan</h3>
+<p>Saat proses menyimpan, tombol menampilkan <b>"Menyimpan…"</b> dan non-aktif</p>
+<p>sebentar untuk mencegah klik ganda.</p>
+<h3>7.6. Edit &amp; Hapus</h3>
+<p>Dari halaman <b>Riwayat</b> klik <b>Ubah</b> untuk mengedit atau <b>Hapus</b> untuk</p>
+<p>menghapus (dengan konfirmasi).</p>
+<hr>
+<h2>8. Riwayat</h2>
+<h3>8.1. Filter</h3>
+<ul><li><b>Cari keterangan</b> (teks bebas).</li></ul>
+<ul><li><b>Kategori</b> — semua / Uang Bebas / pocket tertentu.</li></ul>
+<ul><li><b>Dompet</b> — semua / tanpa dompet / dompet tertentu.</li></ul>
+<ul><li><b>Tanggal</b> — rentang dari s/d.</li></ul>
+<p>Di bawah filter ada ringkasan total pengeluaran, refund, dan jumlah transaksi</p>
+<p>dari hasil filter.</p>
+<h3>8.2. Pilih Bulan</h3>
+<p>Dropdown <b>"Lihat bulan"</b> untuk melihat transaksi bulan lain tanpa mengubah</p>
+<p>bulan aktif di Dashboard.</p>
+<h3>8.3. Pencarian Global</h3>
+<p>Kolom <b>"Cari di semua bulan…"</b> mencari keterangan di seluruh bulan sekaligus.</p>
+<p>Hasil bisa di-ubah atau di-hapus langsung — aplikasi tetap mengingat bulan asal</p>
+<p>transaksi.</p>
+<h3>8.4. Pemasukan Bulan Ini</h3>
+<p>Blok yang menampilkan data income bulan terpilih (label + nominal, dengan tanda</p>
+<p>"+"). Ini data derived, bukan transaksi — tetapi ikut mengkredit saldo rekening.</p>
+<h3>8.5. Ekspor CSV</h3>
+<p>Tombol <b>Export CSV</b> mengunduh hasil filter (atau seluruh bulan jika tanpa</p>
+<p>filter) sebagai file <code>.csv</code>. File menyertakan BOM UTF-8 agar terbuka rapi di Excel.</p>
+<hr>
+<h2>9. Transaksi Berulang</h2>
+<p>Dashboard → <b>Transaksi Berulang</b> → <b>Kelola</b>.</p>
+<h3>9.1. Jenis Template</h3>
+<table><tbody><tr><th>Tipe</th><th>Perilaku otomatis</th></tr><tr><td>Pengeluaran</td><td>Membuat transaksi pengeluaran pada tanggal tertentu</td></tr><tr><td>Pemasukan</td><td>Menambah ke daftar income bulan itu</td></tr><tr><td>Tagihan</td><td>Muncul di seksi Tagihan Dashboard; membuat transaksi pengeluaran</td></tr><tr><td>Transfer</td><td>Membuat transaksi transfer antar dua dompet</td></tr></tbody></table>
+<h3>9.2. Membuat Template</h3>
+<p>1. Isi <b>tanggal</b>, <b>nominal</b>, dan <b>keterangan</b>.</p>
+<p>2. Pilih tipe. Untuk pengeluaran/tagihan: pilih pocket + dompet.</p>
+<p>Untuk transfer: pilih dompet asal &amp; tujuan.</p>
+<p>3. Klik <b>+ Tambah Template</b>.</p>
+<h3>9.3. Mengelola</h3>
+<p>Setiap baris template dapat: diaktifkan/nonaktifkan (checkbox), diubah</p>
+<p>tanggal/nominal/tipe/dompetnya, atau dihapus (dengan konfirmasi). Simpan lewat</p>
+<p>tombol <b>Simpan Perubahan (N)</b>.</p>
+<hr>
+<h2>10. Statistik</h2>
+<h3>10.1. Rentang &amp; Granularitas</h3>
+<ul><li><b>Rentang bulan</b> — 3, 6, 12 bulan terakhir, atau semua bulan.</li></ul>
+<ul><li><b>Granularitas tren</b> — Harian / Mingguan / Bulanan.</li></ul>
+<h3>10.2. Ringkasan</h3>
+<p>Total <b>Pemasukan</b>, <b>Dialokasikan</b>, <b>Belanja (net)</b>, dan <b>Sisa Akhir Bulan</b>.</p>
+<h3>10.3. Per Dompet</h3>
+<p>Tabel Masuk / Keluar / Net / Saldo per dompet. Transfer dihitung sebagai</p>
+<p>masuk/keluar. Saldo = saldo saat ini dari seluruh bulan.</p>
+<h3>10.4. Belanja per Kategori</h3>
+<p>Donut chart total belanja per pocket, dengan legenda warna + nominal.</p>
+<h3>10.5. Tren</h3>
+<p>Garis <b>Pemasukan vs Belanja</b> (granularitas Bulanan), atau garis <b>Belanja</b></p>
+<p>saja (granularitas Harian/Mingguan). Ada legenda chip warna di bawah grafik.</p>
+<h3>10.6. Per Bulan</h3>
+<p>Tabel Pemasukan / Alokasi / Belanja / Sisa per bulan.</p>
+<h3>10.7. Cetak Laporan</h3>
+<p>Tombol <b>Cetak</b> membuka dialog cetak browser; layout halaman dioptimalkan</p>
+<p>untuk kertas (header &amp; elemen aksi disembunyikan).</p>
+<hr>
+<h2>11. Tagihan</h2>
+<p>Tagihan adalah template bertipe <b>Tagihan</b>. Muncul di Dashboard pada seksi</p>
+<p><b>Tagihan</b> beserta tanggal, nominal, dan pocket tujuan.</p>
+<ul><li>Badge <b>"jatuh tempo"</b> jika tanggal ≤ tanggal hari ini.</li></ul>
+<ul><li>Tombol <b>Bayar</b> membuka form transaksi pengeluaran yang sudah terisi.</li></ul>
+<ul><li>Setelah dibayar, transaksi tercatat sebagai pengeluaran biasa di bulan tersebut.</li></ul>
+<hr>
+<h2>12. Pengaturan &amp; Backup</h2>
+<h3>12.1. Tema</h3>
+<p>Tombol ☀️/🌙 di header untuk berpindah mode terang/gelap (dengan animasi View</p>
+<p>Transitions). Preferensi tersimpan otomatis.</p>
+<h3>12.2. Menu Gear (⚙️)</h3>
+<ul><li><b>Unduh Backup</b> — mengunduh seluruh data (dompet, semua bulan + transaksi,</li></ul>
+<p>template) sebagai file JSON.</p>
+<ul><li><b>Pulihkan Backup</b> — memilih file JSON untuk memulihkan data. Aplikasi akan</li></ul>
+<p>otomatis memuat ulang setelah berhasil.</p>
+<ul><li><b>Keluar</b> — logout dari akun.</li></ul>
+<blockquote>Lakukan backup sebelum mengganti perangkat atau mereset data.</blockquote>
+<hr>
+<h2>13. Model Data</h2>
+<h3>13.1. Rumus Keuangan</h3>
+<table><tbody><tr><th>Variabel</th><th>Rumus</th></tr><tr><td>Total Pemasukan</td><td>Σ income + carry-over</td></tr><tr><td>Teralokasi</td><td>Σ budget pocket</td></tr><tr><td>Uang Bebas</td><td>Pemasukan − Alokasi</td></tr><tr><td>Sisa Uang Bebas</td><td>Uang Bebas − (expense − refund tanpa pocket)</td></tr><tr><td>Sisa Pocket</td><td>budget − (expense − refund pocket tersebut)</td></tr><tr><td>Saldo Rekening (1 rekening)</td><td>saldo awal + Σ income + refund − expense − transfer keluar</td></tr></tbody></table>
+<h3>13.2. Carry-over</h3>
+<p>Sisa akhir bulan menjadi carry-over bulan berikutnya secara otomatis saat</p>
+<p>membuat bulan baru.</p>
+<hr>
+<h2>14. Tanya Jawab</h2>
+<table><tbody><tr><th>Masalah</th><th>Solusi</th></tr><tr><td>Loading lama saat pertama buka</td><td>Data dimuat dalam batch paralel; periksa koneksi internet</td></tr><tr><td>Transaksi tidak mengurangi pocket</td><td>Pastikan memilih pocket (bukan "Uang Bebas") dan tanggal sesuai bulan</td></tr><tr><td>Saldo rekening tidak bergerak saat income ditambah</td><td>Income otomatis mengkredit saldo — cek kartu Rekening Utama</td></tr><tr><td>Tombol Simpan tidak aktif</td><td>Belum ada perubahan; angka di tombol = jumlah baris yang berubah</td></tr><tr><td>Backup tidak bisa dipulihkan</td><td>Pastikan file adalah hasil "Unduh Backup" (JSON valid)</td></tr><tr><td>Lupa password</td><td>Gunakan "Lupa password?" di halaman login atau hubungi pengembang</td></tr><tr><td>Data tidak muncul di pencarian</td><td>Periksa filter bulan/kategori/dompet yang sedang aktif</td></tr></tbody></table>
+<hr>
+<h2>15. Informasi Umum</h2>
+<p>Aplikasi dikembangkan oleh <b>hafizbima (Haz Bim)</b>.</p>
+<p>Umpan balik, laporan bug, dan permintaan fitur dapat dikirim melalui repositori:</p>
+<p>&lt;https://github.com/hafizbima/zheabraa&gt;.</p>
+<p>*Dokumen ini disusun untuk versi 0.1. Fitur dapat berubah seiring pembaruan aplikasi.*</p>
+
+</body></html>

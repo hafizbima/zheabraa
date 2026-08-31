@@ -67,6 +67,21 @@ function isMissingTable(err) {
   return !!err && (err.code === 'PGRST205' || /Could not find the table/i.test(err.message || ''))
 }
 
+function isMissingKeyCol(err) {
+  return !!err && err.code === 'PGRST204' && /'key' column of 'categories'/.test(err.message || '')
+}
+
+let keyColumnOk = true
+function stripKey(r) { if (keyColumnOk) return r; const { key, ...rest } = r; return rest }
+async function withKeyFallback(run) {
+  if (!keyColumnOk) return run()
+  try { return await run() }
+  catch (e) {
+    if (isMissingKeyCol(e)) { keyColumnOk = false; return run() }
+    throw e
+  }
+}
+
 function mapTemplate(r) {
   return {
     id: r.id,
@@ -346,8 +361,10 @@ export async function ensureSeeded(uid) {
     }))
     const res = await supabase.from('months').upsert(month).select()
     if (res.error) throw res.error
-    const res2 = await supabase.from('categories').upsert(categories)
-    if (res2.error) throw res2.error
+    await withKeyFallback(async () => {
+      const res2 = await supabase.from('categories').upsert(categories.map(stripKey))
+      if (res2.error) throw res2.error
+    })
     await applyRecurringQuiet(uid, mId)
   }
 }
@@ -491,8 +508,10 @@ export async function ensureMonth(uid, mId) {
     color: c.color,
     sort_order: c.order,
   }))
-  const res2 = await supabase.from('categories').upsert(cats)
-  if (res2.error) throw res2.error
+  await withKeyFallback(async () => {
+    const res2 = await supabase.from('categories').upsert(cats.map(stripKey))
+    if (res2.error) throw res2.error
+  })
   await applyRecurringQuiet(uid, mId)
 }
 export async function createNextMonth(uid, mId, carryOver, cats) {
@@ -521,8 +540,10 @@ export async function createNextMonth(uid, mId, carryOver, cats) {
     color: c.color,
     sort_order: c.order || 0,
   }))
-  const res2 = await supabase.from('categories').upsert(rows)
-  if (res2.error) throw res2.error
+  await withKeyFallback(async () => {
+    const res2 = await supabase.from('categories').upsert(rows.map(stripKey))
+    if (res2.error) throw res2.error
+  })
   await applyRecurringQuiet(uid, mId)
 }
 
@@ -566,22 +587,26 @@ export async function removeTemplate(uid, id) {
 // --- categories ---
 export async function setCategory(uid, mId, cat) {
   needClient()
-  return throwIfError(
-    await supabase
-      .from('categories')
-      .upsert({ id: cat.id, user_id: uid, month_id: mId, ...categoryRow(cat) }),
-  )
+  return withKeyFallback(async () => {
+    const row = stripKey(categoryRow(cat))
+    return throwIfError(
+      await supabase.from('categories').upsert({ id: cat.id, user_id: uid, month_id: mId, ...row }),
+    )
+  })
 }
 export async function updateCategory(uid, mId, id, patch) {
   needClient()
-  return throwIfError(
-    await supabase
-      .from('categories')
-      .update(categoryRow(patch))
-      .eq('id', id)
-      .eq('user_id', uid)
-      .eq('month_id', mId),
-  )
+  return withKeyFallback(async () => {
+    const row = stripKey(categoryRow(patch))
+    return throwIfError(
+      await supabase
+        .from('categories')
+        .update(row)
+        .eq('id', id)
+        .eq('user_id', uid)
+        .eq('month_id', mId),
+    )
+  })
 }
 export async function removeCategory(uid, mId, id) {
   needClient()
