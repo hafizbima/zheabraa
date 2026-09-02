@@ -9,7 +9,7 @@ const MAP = {
   'auth/network-request-failed': 'Gagal terhubung ke internet',
   'auth/popup-closed-by-user': 'Login dibatalkan',
   'auth/operation-not-allowed': 'Metode login tidak diizinkan',
-  'invalid_credentials': 'Email atau password salah',
+'invalid_credentials': 'Email atau password salah',
   'user_already_exists': 'Email sudah terdaftar',
   'email_not_confirmed': 'Email belum dikonfirmasi',
   'weak_password': 'Password minimal 6 karakter',
@@ -17,8 +17,8 @@ const MAP = {
   'rate_limit': 'Terlalu banyak percobaan, coba lagi nanti',
   'email_address_invalid': 'Format email tidak valid',
   'over_email_send_rate_limit': 'Tidak bisa kirim email konfirmasi (batas pengiriman tercapai). Atur SMTP di Supabase atau nonaktifkan konfirmasi email.',
+  'invalid_api_key': 'Konfigurasi tidak valid. Hubungi pengembang.',
 }
-
 const MESSAGE_PATTERNS = [
   [/invalid login credentials/i, 'Email atau password salah'],
   [/user already registered/i, 'Email sudah terdaftar'],
@@ -27,6 +27,7 @@ const MESSAGE_PATTERNS = [
   [/at least 6 characters/i, 'Password minimal 6 karakter'],
   [/rate limit|too many requests/i, 'Terlalu banyak percobaan, coba lagi nanti'],
   [/fetch|network|failed to fetch/i, 'Gagal terhubung ke internet'],
+  [/invalid api key/i, 'Konfigurasi tidak valid. Hubungi pengembang.'],
 ]
 
 export function friendlyAuthError(e) {

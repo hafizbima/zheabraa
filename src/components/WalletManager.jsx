@@ -145,9 +145,23 @@ export default function WalletManager({ onClose }) {
     >
       {isSingle ? (
         <div className="rounded-2xl border-2 border-carbon bg-sky/50 p-4 dark:border-white/20 dark:bg-white/5">
-          <p className="text-sm text-carbon dark:text-white">
-            Kamu pakai <strong>1 Rekening Utama</strong> — pocket di bawah adalah sekat virtual. Tambah dompet hanya jika butuh rekening fisik terpisah (mis. Cash/E-Wallet).
+          <p className="mb-3 text-sm text-carbon dark:text-white">
+            Saat ini pakai <strong>1 Rekening Utama</strong>. Tambah dompet jika butuh rekening fisik terpisah (mis. Cash, E-Wallet).
           </p>
+          <form onSubmit={submitNew}>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <input className={input} placeholder="Nama (mis. GoPay)" value={name} onChange={(e) => setName(e.target.value)} required />
+              <input className={input} type="text" inputMode="numeric" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(e.target.value)} />
+              <div className="flex flex-wrap items-center gap-1.5">
+                {WALLET_COLORS.map((c) => (
+                  <button key={c} type="button" onClick={() => setColor(c)} className={`h-6 w-6 rounded-full ${color === c ? 'ring-2 ring-slate-400 ring-offset-2' : ''}`} style={{ backgroundColor: c }} aria-label={`Warna ${c}`} />
+                ))}
+              </div>
+            </div>
+            <div className="mt-3 flex justify-end">
+              <button type="submit" className={btn.primary}>+ Tambah</button>
+            </div>
+          </form>
         </div>
       ) : (
         <form onSubmit={submitNew} className="rounded-2xl border-2 border-carbon bg-sky/50 p-4 dark:border-white/20 dark:bg-white/5">
