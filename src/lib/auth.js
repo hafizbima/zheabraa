@@ -15,6 +15,8 @@ const MAP = {
   'weak_password': 'Password minimal 6 karakter',
   'validation_failed': 'Format email tidak valid',
   'rate_limit': 'Terlalu banyak percobaan, coba lagi nanti',
+  'email_address_invalid': 'Format email tidak valid',
+  'over_email_send_rate_limit': 'Tidak bisa kirim email konfirmasi (batas pengiriman tercapai). Atur SMTP di Supabase atau nonaktifkan konfirmasi email.',
 }
 
 const MESSAGE_PATTERNS = [
