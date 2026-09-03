@@ -46,13 +46,24 @@ export function StoreProvider({ children }) {
   const refresh = useCallback(async () => {
     if (!user) return
     try {
-      const d = await backend.loadAll(user.uid)
+      // timeout 15 detik biar loading tidak menggantung
+      const d = await Promise.race([
+        backend.loadAll(user.uid),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('Waktu habis')), 15000)),
+      ])
       setWallets(d.wallets || [])
       setMonths(d.months || {})
       setTemplates(d.templates || [])
       setWalletsReceived(true)
     } catch (e) {
-      report(e, 'Gagal memuat data')
+      const msg = String(e?.message || e?.code || '')
+      if (msg.includes('PGRST303') || msg.includes('JWT issued at future')) {
+        report(e, 'Konfigurasi tidak valid (JWT). Setel ulang anon key di Supabase Dashboard > Settings > API > Reset anon key, lalu update .env & Vercel env.')
+      } else if (msg.includes('Waktu habis')) {
+        report(e, 'Memuat data terlalu lama. Periksa koneksi internet atau setel ulang kunci Supabase.')
+      } else {
+        report(e, 'Gagal memuat data')
+      }
     }
   }, [user, report])
 
