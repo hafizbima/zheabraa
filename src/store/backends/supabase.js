@@ -9,7 +9,7 @@ function needClient() {
 // --- row <-> shape mapping ---
 const WALLET_FIELDS = { name: 'name', color: 'color', openingBalance: 'opening_balance', order: 'sort_order', deleted: 'deleted' }
 const MONTH_FIELDS = { label: 'label', carryOver: 'carry_over', incomes: 'incomes', note: 'note', createdAt: 'created_at' }
-const CAT_FIELDS = { name: 'name', budgetAmount: 'budget_amount', goalAmount: 'goal_amount', color: 'color', key: 'key', order: 'sort_order' }
+const CAT_FIELDS = { name: 'name', budgetAmount: 'budget_amount', goalAmount: 'goal_amount', savedAmount: 'saved_amount', color: 'color', key: 'key', order: 'sort_order' }
 const TX_FIELDS = { date: 'date', amount: 'amount', type: 'type', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', createdAt: 'created_at' }
 const TEMPLATE_FIELDS = { dayOfMonth: 'day_of_month', type: 'type', amount: 'amount', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', active: 'active', createdAt: 'created_at' }
 
@@ -27,7 +27,7 @@ function mapMonth(r) {
   }
 }
 function mapCategory(r) {
-  return { id: r.id, name: r.name, budgetAmount: r.budget_amount, goalAmount: Number(r.goal_amount) || 0, color: r.color, key: r.key || null, order: r.sort_order }
+  return { id: r.id, name: r.name, budgetAmount: r.budget_amount, goalAmount: Number(r.goal_amount) || 0, savedAmount: Number(r.saved_amount) || 0, color: r.color, key: r.key || null, order: r.sort_order }
 }
 function mapTransaction(r) {
   return {
@@ -356,6 +356,7 @@ export async function ensureSeeded(uid) {
       name: c.name,
       key: c.key || null,
       budget_amount: c.budgetAmount,
+      saved_amount: c.savedAmount || 0,
       color: c.color,
       sort_order: c.order,
     }))
@@ -505,6 +506,7 @@ export async function ensureMonth(uid, mId) {
     name: c.name,
     key: c.key || null,
     budget_amount: c.budgetAmount,
+    saved_amount: c.savedAmount || 0,
     color: c.color,
     sort_order: c.order,
   }))
@@ -537,6 +539,7 @@ export async function createNextMonth(uid, mId, carryOver, cats) {
     name: c.name,
     key: c.key || null,
     budget_amount: c.budgetAmount || 0,
+    saved_amount: c.savedAmount || 0,
     color: c.color,
     sort_order: c.order || 0,
   }))

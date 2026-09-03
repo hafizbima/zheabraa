@@ -17,6 +17,8 @@ export function defaultCategories() {
     name,
     key: slugify(name),
     budgetAmount: 0,
+    goalAmount: 0,
+    savedAmount: 0,
     color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
     order: i,
   }))

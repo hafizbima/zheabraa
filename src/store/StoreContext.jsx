@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import backend from './backend.js'
-import { monthIdOf, addMonths, labelOf } from '../lib/dates.js'
+import { monthIdOf, addMonths, labelOf, todayISO } from '../lib/dates.js'
 import { uid, slugify } from '../lib/id.js'
-import { monthLeftTotal } from '../lib/calc.js'
+import { monthLeftTotal, categoryUsed, carryOverAmount } from '../lib/calc.js'
 import { friendlyAuthError } from '../lib/auth.js'
 
 const StoreContext = createContext(null)
@@ -193,8 +193,16 @@ export function StoreProvider({ children }) {
     if (!user) return
     const cur = months[currentMonthId]
     const nextId = addMonths(currentMonthId, 1)
-    const carry = cur ? monthLeftTotal(cur) : 0
-    const cats = (cur?.categories || []).map((c) => ({ ...c, budgetAmount: 0 }))
+    const carry = cur ? carryOverAmount(cur) : 0
+    const txs = cur?.transactions || []
+    const cats = (cur?.categories || []).map((c) => {
+      const sisa = Math.max(0, (c.budgetAmount || 0) - Math.max(0, categoryUsed(c.id, txs)))
+      return {
+        ...c,
+        budgetAmount: 0,
+        savedAmount: (c.goalAmount > 0 ? (c.savedAmount || 0) + sisa : c.savedAmount || 0),
+      }
+    })
     backend.createNextMonth(user.uid, nextId, carry, cats).then(() => refresh()).catch(console.error)
     setCurrentMonthId(nextId)
   }, [user, months, currentMonthId, refresh])
@@ -382,6 +390,25 @@ export function StoreProvider({ children }) {
     [user, report],
   )
 
+  // tabungan manual: keluarkan dari uang bebas (expense) lalu tambah ke savedAmount
+  const saveToGoal = useCallback(
+    (mId, categoryId, amount) => {
+      if (!user || amount <= 0) return
+      const cat = (months[mId]?.categories || []).find((c) => c.id === categoryId)
+      if (!cat) return
+      addTransaction(mId, {
+        date: todayISO(),
+        type: 'expense',
+        amount,
+        categoryId: null,
+        walletId: wallets[0]?.id || null,
+        description: `Menabung ke ${cat.name}`,
+      })
+      updateCategory(mId, categoryId, { savedAmount: (cat.savedAmount || 0) + amount })
+    },
+    [user, months, wallets, addTransaction, updateCategory],
+  )
+
   // --- recurring templates ---
   const refreshTemplates = useCallback(() => {
     if (!user) return
@@ -467,6 +494,7 @@ login,
       addTransaction,
       updateTransaction,
       removeTransaction,
+      saveToGoal,
       templates,
       addTemplate,
       updateTemplate,
@@ -478,7 +506,7 @@ login,
       addWallet, updateWallet, deleteWallet,
       addIncome, updateIncome, removeIncome, setCarryOver, setMonthNote,
       addCategory, updateCategory, removeCategory,
-      addTransaction, updateTransaction, removeTransaction,
+      addTransaction, updateTransaction, removeTransaction, saveToGoal,
       templates, addTemplate, updateTemplate, removeTemplate,
     ],
   )

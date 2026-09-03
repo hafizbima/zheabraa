@@ -12,6 +12,8 @@ import {
   monthLeftTotal,
   walletBalance,
   singleWalletBalance,
+  goalSaved,
+  carryOverAmount,
 } from '../src/lib/calc.js'
 
 const walletA = { id: 'w1', name: 'Cash', openingBalance: 100000 }
@@ -158,5 +160,49 @@ describe('calc', () => {
     expect(categoryUsed('c1', month.transactions)).toBe(0)
     expect(categoryLeft({ id: 'c1', budgetAmount: 50000 }, month.transactions)).toBe(50000)
     expect(monthLeftTotal(month)).toBe(100000)
+  })
+
+  it('goalSaved = savedAmount + sisa budget bulan ini', () => {
+    const cat = { id: 'c1', goalAmount: 1000000, savedAmount: 600000, budgetAmount: 200000 }
+    const txs = [
+      { categoryId: 'c1', type: 'expense', amount: 50000 },
+      { categoryId: 'c1', type: 'expense', amount: 100000 },
+      { categoryId: null, type: 'expense', amount: 99999 }, // uang bebas, bukan pocket
+    ]
+    const g = goalSaved(cat, txs)
+    expect(g.saved).toBe(600000 + 50000) // sisa budget = 200k - 150k = 50k
+    expect(g.goal).toBe(1000000)
+    expect(g.done).toBe(false)
+    // over target
+    const g2 = goalSaved({ ...cat, savedAmount: 990000 }, txs)
+    expect(g2.done).toBe(true)
+  })
+
+  it('goalSaved > goal tetap dilaporkan (terus menabung)', () => {
+    const cat = { id: 'c1', goalAmount: 100000, savedAmount: 120000, budgetAmount: 0 }
+    const g = goalSaved(cat, [])
+    expect(g.saved).toBe(120000)
+    expect(g.done).toBe(true)
+    expect(g.pct).toBe(100)
+  })
+
+  it('carryOverAmount tidak menghitung kategori bertarget (tabungan dipisah)', () => {
+    const month = {
+      incomes: [{ id: 'i1', amount: 1000000 }],
+      carryOver: 0,
+      categories: [
+        { id: 'c1', goalAmount: 1000000, budgetAmount: 500000 }, // tabungan — tidak masuk carry
+        { id: 'c2', budgetAmount: 300000 },
+      ],
+      transactions: [
+        { categoryId: 'c1', type: 'expense', amount: 100000 },
+        { categoryId: 'c2', type: 'expense', amount: 50000 },
+        { categoryId: null, type: 'expense', amount: 20000 },
+      ],
+    }
+    // sisa c2 = 300k-50k = 250k; uang bebas = 1jt - 800k - 20k = 180k
+    expect(carryOverAmount(month)).toBe(250000 + 180000)
+    // bandingkan dengan monthLeftTotal (yang masih menghitung tabungan c1)
+    expect(monthLeftTotal(month)).toBe(250000 + 400000 + 180000)
   })
 })

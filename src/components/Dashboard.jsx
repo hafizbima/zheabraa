@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
-import { formatRupiah } from '../lib/money.js'
+import { formatRupiah, toInt } from '../lib/money.js'
 import { formatDate, todayISO } from '../lib/dates.js'
 import {
   totalInflow,
@@ -10,6 +10,7 @@ import {
   freePool,
   categoryStatus,
   categoryLeft,
+  goalSaved,
   walletBalance,
   singleWalletBalance,
   allTransactions,
@@ -51,6 +52,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     removeIncome,
     setCarryOver,
     setMonthNote,
+    saveToGoal,
     notify,
   } = useStore()
 
@@ -61,6 +63,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const [carryDraft, setCarryDraft] = useState('')
   const [noteDraft, setNoteDraft] = useState('')
   const [quick, setQuick] = useState('')
+  const [saveCat, setSaveCat] = useState(null)
+  const [saveAmount, setSaveAmount] = useState('')
   const notifiedOver = useRef(new Set())
 
   useEffect(() => {
@@ -153,16 +157,6 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
   const commitNote = () => {
     setMonthNote(currentMonthId, noteDraft.trim())
-  }
-
-  const goalSavedFor = (catId) => {
-    if (!catId) return 0
-    let total = 0
-    for (const mId of Object.keys(months)) {
-      const c = (months[mId]?.categories || []).find((x) => x.id === catId)
-      if (c) total += c.budgetAmount || 0
-    }
-    return total
   }
 
 const input =
@@ -379,14 +373,15 @@ const input =
           const { used, budget, status, pct } = categoryStatus(cat, txs)
           const left = categoryLeft(cat, txs)
           const goal = cat.goalAmount > 0 ? cat.goalAmount : 0
-          const goalSaved = goalSavedFor(cat.id)
-          const goalPct = goal ? Math.max(0, Math.min(100, Math.round((goalSaved / goal) * 100))) : 0
-          const goalDone = goal > 0 && goalSaved >= goal
+          const gs = goalSaved(cat, txs)
+          const savedAmt = gs.saved
+          const goalPct = goal ? Math.min(100, Math.round((savedAmt / goal) * 100)) : 0
+          const goalDone = goal > 0 && savedAmt >= goal
           return (
-            <button
+            <div
               key={cat.id}
               onClick={() => onNewTx({ categoryId: cat.id })}
-              className="block w-full rounded-2xl border-2 border-carbon bg-paper p-4 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-carbon-sm active:scale-[0.99] dark:border-white/30 dark:bg-slate-900 dark:hover:bg-slate-800"
+              className="block w-full cursor-pointer rounded-2xl border-2 border-carbon bg-paper p-4 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-carbon-sm active:scale-[0.99] dark:border-white/30 dark:bg-slate-900 dark:hover:bg-slate-800"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2.5">
@@ -415,16 +410,25 @@ const input =
               )}
               {goal > 0 && (
                 <div className="mt-2.5">
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span>Terkumpul {formatRupiah(goalSaved)}</span>
-                    <span>{goalPct}%</span>
+                  <div className="flex items-center justify-between gap-2 text-[11px] text-slate-400">
+                    <span>Terkumpul {formatRupiah(savedAmt)} / {formatRupiah(goal)}</span>
+                    <span className="flex items-center gap-2">
+                      <span>{goalPct}%</span>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setSaveCat(cat); setSaveAmount('') }}
+                        className="rounded-full border border-carbon bg-sunburst/50 px-2 py-0.5 text-[10px] font-semibold text-carbon transition hover:bg-sunburst dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
+                      >
+                        + Simpan
+                      </button>
+                    </span>
                   </div>
                   <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full border border-black/20 bg-black/5 dark:border-white/20 dark:bg-white/10">
                     <div className={`h-full rounded-full ${goalDone ? 'bg-mint' : 'bg-violet'} transition-all`} style={{ width: `${goalPct}%` }} />
                   </div>
                 </div>
               )}
-            </button>
+            </div>
           )
         })}
         {(month.categories || []).length === 0 && (
@@ -530,6 +534,45 @@ const input =
     </div>
 
     {reallocOpen && <ReallocateForm onClose={() => setReallocOpen(false)} />}
+
+    {saveCat && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-carbon/60 backdrop-blur-sm" onClick={() => setSaveCat(null)} />
+        <div className="modal-panel relative z-10 w-full max-w-sm rounded-2xl border-2 border-carbon bg-paper p-5 dark:border-white/30 dark:bg-slate-900">
+          <h3 className="text-lg font-bold text-carbon dark:text-white">Simpan ke {saveCat.name}</h3>
+          <p className="mt-1 text-xs text-slate-400">Uang akan dikeluarkan dari Uang Bebas dan ditambahkan ke tabungan.</p>
+          <div className="mt-3">
+            <input
+              className={input}
+              type="text" inputMode="numeric"
+              placeholder="Nominal (Rp)"
+              value={saveAmount}
+              onChange={(e) => setSaveAmount(e.target.value)}
+              autoFocus
+            />
+            {saveAmount && toInt(saveAmount) > 0 && (
+              <p className="mt-1 text-xs text-slate-400">{formatRupiah(toInt(saveAmount))}</p>
+            )}
+          </div>
+          <div className="mt-4 flex justify-end gap-2">
+            <button onClick={() => setSaveCat(null)} className={btn.neutral}>Batal</button>
+            <button
+              onClick={() => {
+                const amt = toInt(saveAmount)
+                if (amt <= 0) return
+                saveToGoal(currentMonthId, saveCat.id, amt)
+                setSaveCat(null)
+                setSaveAmount('')
+              }}
+              disabled={!saveAmount || toInt(saveAmount) <= 0}
+              className={btn.primary}
+            >
+              Simpan
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
   </>
   )
 }

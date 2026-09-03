@@ -271,6 +271,10 @@ export default function CategoryManager({ onClose }) {
                   placeholder="Target"
                 />
               </div>
+              <div className="w-28 shrink-0 text-right">
+                <p className="mb-1 text-xs text-slate-400">terkumpul</p>
+                <p className="text-sm font-medium text-violet dark:text-lavender">{formatRupiah(d.savedAmount || 0)}</p>
+              </div>
               <div className="w-24 shrink-0 text-right">
                 <p className="mb-1 text-xs text-slate-400">terpakai</p>
                 <p className="text-sm font-medium text-carbon dark:text-white">{formatRupiah(used)}</p>

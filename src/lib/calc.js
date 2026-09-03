@@ -59,6 +59,15 @@ export function monthLeftTotal(month) {
   return catLeft + freeLeft(month)
 }
 
+// carry-over bulan berikutnya: kategori biasa (bukan tabungan) + uang bebas
+export function carryOverAmount(month) {
+  const txs = month.transactions || []
+  const catLeft = (month.categories || [])
+    .filter((c) => !(c.goalAmount > 0))
+    .reduce((a, c) => a + categoryLeft(c, txs), 0)
+  return catLeft + freeLeft(month)
+}
+
 export function walletBalance(wallet, allTransactions) {
   let inflow = 0
   let outflow = 0
@@ -108,4 +117,11 @@ export function categoryStatus(category, transactions) {
   const pct = Math.max(0, Math.min(100, Math.round((used / budget) * 100)))
   const status = used > budget ? 'over' : used >= budget * 0.8 ? 'warn' : 'ok'
   return { used, budget, status, pct }
+}
+
+// Tabungan: saldo terkumpul = savedAmount (bulan lalu) + (budget − used bulan ini)
+export function goalSaved(category, transactions) {
+  const saved = (category.savedAmount || 0) + Math.max(0, (category.budgetAmount || 0) - Math.max(0, categoryUsed(category.id, transactions)))
+  const goal = category.goalAmount || 0
+  return { saved, goal, pct: goal > 0 ? Math.min(100, Math.round((saved / goal) * 100)) : 0, done: goal > 0 && saved >= goal }
 }

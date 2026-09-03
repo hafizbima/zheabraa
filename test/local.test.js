@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import * as local from '../src/store/backends/local.js'
+import { monthIdOf, addMonths } from '../src/lib/dates.js'
 
 function getDetail(mId) {
   let data = null
@@ -10,16 +11,24 @@ function getDetail(mId) {
   return data || { categories: [], transactions: [] }
 }
 
+// pakai bulan berjalan & bulan depan supaya tidak bergantung tanggal
+const now = new Date()
+const curMonth = monthIdOf(now)
+const nextMonth = addMonths(curMonth, 1)
+const todayDay = now.getDate()
+const curYear = now.getFullYear()
+
 beforeEach(() => {
   local.reset()
 })
 
 describe('recurring templates (local backend)', () => {
   it('generates recurring expense transactions for current and future months', async () => {
-    local.ensureMonth('u1', '2026-08')
+    const day = Math.min(28, Math.max(1, todayDay))
+    local.ensureMonth('u1', curMonth)
     await local.addTemplate('u1', {
       id: 't1',
-      dayOfMonth: 5,
+      dayOfMonth: day,
       amount: 50000,
       categoryId: null,
       walletId: null,
@@ -27,23 +36,23 @@ describe('recurring templates (local backend)', () => {
       active: true,
       createdAt: Date.now(),
     })
-    await local.applyRecurring('u1', '2026-08')
-    local.ensureMonth('u1', '2026-09')
+    await local.applyRecurring('u1', curMonth)
+    local.ensureMonth('u1', nextMonth)
 
-    const aug = getDetail('2026-08').transactions
-    const sep = getDetail('2026-09').transactions
-    const a = aug.find((t) => t.id === 'recur-t1-2026-08-05')
-    const s = sep.find((t) => t.id === 'recur-t1-2026-09-05')
+    const cur = getDetail(curMonth).transactions
+    const next = getDetail(nextMonth).transactions
+    const a = cur.find((t) => t.id === `recur-t1-${curMonth}-${String(day).padStart(2, '0')}`)
+    const s = next.find((t) => t.id === `recur-t1-${nextMonth}-${String(day).padStart(2, '0')}`)
     expect(a).toBeTruthy()
     expect(a.amount).toBe(50000)
     expect(a.type).toBe('expense')
     expect(a.description).toBe('Bayar Kos')
     expect(s).toBeTruthy()
-    expect(s.date).toBe('2026-09-05')
+    expect(s.date).toBe(`${nextMonth}-${String(day).padStart(2, '0')}`)
   })
 
   it('skips inactive templates and clamps day to 1..28', async () => {
-    local.ensureMonth('u1', '2026-09')
+    local.ensureMonth('u1', nextMonth)
     await local.addTemplate('u1', {
       id: 't-off',
       dayOfMonth: 31,
@@ -60,17 +69,17 @@ describe('recurring templates (local backend)', () => {
       active: true,
       createdAt: Date.now(),
     })
-    await local.applyRecurring('u1', '2026-09')
+    await local.applyRecurring('u1', nextMonth)
 
-    const txs = getDetail('2026-09').transactions
+    const txs = getDetail(nextMonth).transactions
     expect(txs.find((t) => t.id.includes('t-off'))).toBeUndefined()
     const clamped = txs.find((t) => t.id.includes('t-on'))
     expect(clamped).toBeTruthy()
-    expect(clamped.date).toBe('2026-09-28')
+    expect(clamped.date).toBe(`${nextMonth}-28`)
   })
 
   it('applyRecurring is idempotent (does not duplicate)', async () => {
-    local.ensureMonth('u1', '2026-09')
+    local.ensureMonth('u1', nextMonth)
     await local.addTemplate('u1', {
       id: 't1',
       dayOfMonth: 10,
@@ -79,18 +88,19 @@ describe('recurring templates (local backend)', () => {
       active: true,
       createdAt: Date.now(),
     })
-    await local.applyRecurring('u1', '2026-09')
-    await local.applyRecurring('u1', '2026-09')
+    await local.applyRecurring('u1', nextMonth)
+    await local.applyRecurring('u1', nextMonth)
 
-    const txs = getDetail('2026-09').transactions
-    expect(txs.filter((t) => t.id === 'recur-t1-2026-09-10')).toHaveLength(1)
+    const txs = getDetail(nextMonth).transactions
+    expect(txs.filter((t) => t.id === `recur-t1-${nextMonth}-10`)).toHaveLength(1)
   })
 
   it('generates recurring for existing months when subscribed (not only at creation)', async () => {
-    local.ensureMonth('u1', '2026-09')
+    const day = Math.min(28, Math.max(1, todayDay))
+    local.ensureMonth('u1', curMonth)
     await local.addTemplate('u1', {
       id: 't1',
-      dayOfMonth: 3,
+      dayOfMonth: day,
       amount: 40000,
       description: 'Sewa',
       active: true,
@@ -98,18 +108,18 @@ describe('recurring templates (local backend)', () => {
     })
 
     let detail = null
-    const unsub = local.subscribeMonthDetail('u1', '2026-09', (d) => {
+    const unsub = local.subscribeMonthDetail('u1', curMonth, (d) => {
       detail = d
     })
     unsub()
 
-    const rec = detail.transactions.find((t) => t.id === 'recur-t1-2026-09-03')
+    const rec = detail.transactions.find((t) => t.id === `recur-t1-${curMonth}-${String(day).padStart(2, '0')}`)
     expect(rec).toBeTruthy()
     expect(rec.amount).toBe(40000)
   })
 
   it('generates recurring income into month.incomes, idempotently', async () => {
-    local.ensureMonth('u1', '2026-09')
+    local.ensureMonth('u1', nextMonth)
     await local.addTemplate('u1', {
       id: 't-inc',
       type: 'income',
@@ -121,23 +131,23 @@ describe('recurring templates (local backend)', () => {
       active: true,
       createdAt: Date.now(),
     })
-    await local.applyRecurring('u1', '2026-09')
-    await local.applyRecurring('u1', '2026-09')
+    await local.applyRecurring('u1', nextMonth)
+    await local.applyRecurring('u1', nextMonth)
 
     let months = null
     const unsub = local.subscribeMonths('u1', (ms) => {
       months = ms
     })
     unsub()
-    const incs = months.find((m) => m.id === '2026-09').incomes.filter((i) => i.id === 'recur-t-inc-2026-09')
+    const incs = months.find((m) => m.id === nextMonth).incomes.filter((i) => i.id === `recur-t-inc-${nextMonth}`)
     expect(incs).toHaveLength(1)
     expect(incs[0].label).toBe('Gaji')
     expect(incs[0].amount).toBe(15000000)
-    expect(getDetail('2026-09').transactions).toHaveLength(0)
+    expect(getDetail(nextMonth).transactions).toHaveLength(0)
   })
 
   it('generates recurring transfer transactions with from/to wallets', async () => {
-    local.ensureMonth('u1', '2026-09')
+    local.ensureMonth('u1', nextMonth)
     await local.addTemplate('u1', {
       id: 't-tr',
       type: 'transfer',
@@ -150,9 +160,9 @@ describe('recurring templates (local backend)', () => {
       active: true,
       createdAt: Date.now(),
     })
-    await local.applyRecurring('u1', '2026-09')
-    const txs = getDetail('2026-09').transactions
-    const t = txs.find((x) => x.id === 'recur-t-tr-2026-09-10')
+    await local.applyRecurring('u1', nextMonth)
+    const txs = getDetail(nextMonth).transactions
+    const t = txs.find((x) => x.id === `recur-t-tr-${nextMonth}-10`)
     expect(t).toBeTruthy()
     expect(t.type).toBe('transfer')
     expect(t.walletId).toBe('w1')
