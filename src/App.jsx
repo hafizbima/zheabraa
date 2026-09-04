@@ -66,13 +66,11 @@ function Shell() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky via-sky to-[#cfe6ff] dark:from-[#131a33] dark:via-[#131a33] dark:to-[#0f1b3d]">
-      <div className="no-print">
-        <Header
-          view={view}
-          onViewChange={setView}
-          onOpenWallets={() => setWalletOpen(true)}
-        />
-      </div>
+      <Header
+        view={view}
+        onViewChange={setView}
+        onOpenWallets={() => setWalletOpen(true)}
+      />
 
       <main className="mx-auto max-w-3xl px-4 pb-28 pt-5">
         {view === 'dashboard' ? (
