@@ -13,34 +13,8 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
   const [gearOpen, setGearOpen] = useState(false)
   const [confirmNew, setConfirmNew] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [hidden, setHidden] = useState(false)
-  const lastY = useRef(0)
   const restoreRef = useRef(null)
   const monthIds = Object.keys(months).sort().reverse()
-
-  // auto-hide on scroll down, show on scroll up
-  useEffect(() => {
-    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    let ticking = false
-    const onScroll = () => {
-      if (ticking) return
-      ticking = true
-      requestAnimationFrame(() => {
-        const y = window.scrollY
-        if (y <= 10) setHidden(false)
-        else if (y > lastY.current + 8) setHidden(true)
-        else if (y < lastY.current - 8) setHidden(false)
-        lastY.current = y
-        ticking = false
-      })
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    if (menuOpen || gearOpen) setHidden(false)
-  }, [menuOpen, gearOpen])
 
   const onToggleTheme = (e) => {
     if (
@@ -89,7 +63,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
 
   return (
     <header
-      className={`sticky top-0 z-30 border-b will-change-transform transition-transform duration-300 ${hidden ? '-translate-y-full' : 'translate-y-0'} ${isDark ? 'border-[#24305a] bg-[#0f1b3d]' : 'border-carbon bg-paper'}`}
+      className={`sticky top-0 z-30 border-b ${isDark ? 'border-[#24305a] bg-[#0f1b3d]' : 'border-carbon bg-paper'}`}
     >
       <div className="mx-auto max-w-3xl px-4">
         {/* Header row — logo kiri, toggle + gear kanan (30x30 transparan) */}
