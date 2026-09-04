@@ -118,7 +118,7 @@ describe('recurring templates (local backend)', () => {
     expect(rec.amount).toBe(40000)
   })
 
-  it('generates recurring income into month.incomes, idempotently', async () => {
+  it('generates recurring income as income transactions, idempotently', async () => {
     local.ensureMonth('u1', nextMonth)
     await local.addTemplate('u1', {
       id: 't-inc',
@@ -134,16 +134,12 @@ describe('recurring templates (local backend)', () => {
     await local.applyRecurring('u1', nextMonth)
     await local.applyRecurring('u1', nextMonth)
 
-    let months = null
-    const unsub = local.subscribeMonths('u1', (ms) => {
-      months = ms
-    })
-    unsub()
-    const incs = months.find((m) => m.id === nextMonth).incomes.filter((i) => i.id === `recur-t-inc-${nextMonth}`)
+    const txs = getDetail(nextMonth).transactions
+    const incs = txs.filter((t) => t.id === `recur-t-inc-${nextMonth}`)
     expect(incs).toHaveLength(1)
-    expect(incs[0].label).toBe('Gaji')
+    expect(incs[0].type).toBe('income')
     expect(incs[0].amount).toBe(15000000)
-    expect(getDetail(nextMonth).transactions).toHaveLength(0)
+    expect(incs[0].description).toBe('Gaji')
   })
 
   it('generates recurring transfer transactions with from/to wallets', async () => {

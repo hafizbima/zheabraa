@@ -74,12 +74,13 @@ export default function Stats() {
           }
           continue
         }
+        if (t.type === 'income') continue // income bukan belanja
         if (t.type === 'refund') net -= t.amount || 0
         else net += t.amount || 0
         const wid = t.walletId ?? (isSingle ? primaryId : null)
         if (wid) {
           walMap[wid] ||= { in: 0, out: 0 }
-          if (t.type === 'refund') walMap[wid].in += t.amount || 0
+          if (t.type === 'refund' || t.type === 'income') walMap[wid].in += t.amount || 0
           else walMap[wid].out += t.amount || 0
         }
       }

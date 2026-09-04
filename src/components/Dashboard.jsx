@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah, toInt } from '../lib/money.js'
-import { formatDate, todayISO } from '../lib/dates.js'
 import {
   totalInflow,
   totalAllocated,
@@ -9,8 +8,6 @@ import {
   freeMoneySpent,
   freePool,
   categoryStatus,
-  categoryLeft,
-  goalSaved,
   walletBalance,
   singleWalletBalance,
   allTransactions,
@@ -18,6 +15,9 @@ import {
 import DonutChart from './DonutChart.jsx'
 import ReallocateForm from './ReallocateForm.jsx'
 import EmptyState from './EmptyState.jsx'
+import QuickAdd from './QuickAdd.jsx'
+import PocketCard from './PocketCard.jsx'
+import SaveGoalModal from './SaveGoalModal.jsx'
 import { btn } from '../lib/buttons.js'
 
 function Card({ label, value, sub, accent, tint }) {
@@ -62,9 +62,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const [incomeAmount, setIncomeAmount] = useState('')
   const [carryDraft, setCarryDraft] = useState('')
   const [noteDraft, setNoteDraft] = useState('')
-  const [quick, setQuick] = useState('')
   const [saveCat, setSaveCat] = useState(null)
-  const [saveAmount, setSaveAmount] = useState('')
   const notifiedOver = useRef(new Set())
 
   useEffect(() => {
@@ -114,25 +112,6 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
   const upcomingBills = templates.filter((t) => t.type === 'bill' && t.active !== false)
 
-  const quickSubmit = (e) => {
-    e.preventDefault()
-    const q = quick.trim()
-    if (!q) return
-    // format: "makan 35k" | "makan 35000 skincare" | "gaji 5jt" (income default expense)
-    const m = q.match(/^(.+?)\s+(\d[\d.]*(?:k|rb|jt|juta)?)\s*(?:ke\s*(.+))?$/i)
-    if (!m) return setQuick('')
-    let amount = Number(m[2].replace(/[.,]/g, ''))
-    const suf = (m[2].toLowerCase().match(/(k|rb|jt|juta)$/) || [])[1]
-    if (suf === 'k' || suf === 'rb') amount *= 1000
-    else if (suf === 'jt' || suf === 'juta') amount *= 1000000
-    const catName = m[3]?.trim()
-    const cat = catName
-      ? (month.categories || []).find((c) => c.name.toLowerCase() === catName.toLowerCase())
-      : null
-    onNewTx({ categoryId: cat ? cat.id : undefined, description: m[1].trim(), amount: Math.round(amount) })
-    setQuick('')
-  }
-
   const saveIncome = () => {
     const amount = Math.round(Number(incomeAmount) || 0)
     if (editingIncome) {
@@ -147,7 +126,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
   const editIncome = (inc) => {
     setEditingIncome(inc)
-    setIncomeLabel(inc.label)
+    setIncomeLabel(inc.description)
     setIncomeAmount(String(inc.amount || ''))
   }
 
@@ -159,7 +138,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     setMonthNote(currentMonthId, noteDraft.trim())
   }
 
-const input =
+  const input =
     'rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
   return (
@@ -173,22 +152,7 @@ const input =
         <Card label="Sisa Uang Bebas" value={formatRupiah(left)} sub={`terpakai ${formatRupiah(freeSpent)}`} accent={left < 0 ? 'text-ember' : 'text-carbon dark:text-white'} tint="bg-[#B8B8FF] dark:bg-white/5" />
       </section>
 
-      {/* Quick-add natural language */}
-      <form onSubmit={quickSubmit} className="rounded-2xl border-2 border-carbon bg-paper p-3 dark:border-white/30 dark:bg-slate-900">
-        <div className="flex items-center gap-2">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-slate-400">
-            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <input
-            className="flex-1 bg-transparent text-sm text-carbon outline-none placeholder:text-slate-400 dark:text-white"
-            placeholder='Cepat: "makan 35k skincare" atau "gaji 5jt"'
-            value={quick}
-            onChange={(e) => setQuick(e.target.value)}
-            aria-label="Catat cepat"
-          />
-          <span className="hidden text-[10px] text-slate-400 sm:inline">Enter untuk buka form</span>
-        </div>
-      </form>
+      <QuickAdd categories={month.categories || []} onPick={(prefill) => onNewTx(prefill)} />
 
       {/* Tagihan bulan ini (template tipe bill) */}
       {upcomingBills.length > 0 && (
@@ -221,7 +185,7 @@ const input =
         </section>
       )}
 
-      {/* Budget perlu dicek — mirip Buatin.mba overview */}
+      {/* Budget perlu dicek */}
       {alerts.length > 0 && (
         <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
           <h3 className="font-semibold text-carbon dark:text-white">Budget yang perlu dicek</h3>
@@ -266,10 +230,10 @@ const input =
         </div>
 
         <div className="mt-3 space-y-2">
-          {(month.incomes || []).map((inc) => (
+          {(month.transactions || []).filter((t) => t.type === 'income').map((inc) => (
             <div key={inc.id} className="flex items-center justify-between rounded-xl border border-carbon bg-lavender/50 px-3 py-2 dark:border-white/20 dark:bg-white/5">
               <div>
-                <p className="text-sm font-medium text-carbon dark:text-white">{inc.label}</p>
+                <p className="text-sm font-medium text-carbon dark:text-white">{inc.description}</p>
                 <p className="text-xs text-slate-400">{formatRupiah(inc.amount)}</p>
               </div>
               <div className="flex gap-1">
@@ -290,7 +254,6 @@ const input =
             </div>
             <div className="flex items-center gap-2">
               <input
-                // type="number"
                 min="0"
                 inputMode="numeric"
                 className={input + ' w-32 text-right'}
@@ -343,7 +306,7 @@ const input =
         </section>
       )}
 
-      {/* Kategori progress — sekat virtual dari 1 rekening */}
+      {/* Pocket */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
@@ -352,10 +315,10 @@ const input =
           </div>
           <div className="flex gap-3">
             {(month.categories || []).length > 0 && (
-            <button onClick={() => setReallocOpen(true)} className={btn.subtle}>
-              Re-alokasi
-            </button>
-          )}
+              <button onClick={() => setReallocOpen(true)} className={btn.subtle}>
+                Re-alokasi
+              </button>
+            )}
             <button onClick={onManageRecurring} className={btn.subtle}>
               Transaksi Berulang
             </button>
@@ -366,71 +329,18 @@ const input =
         </div>
         {allocated > inflow && (
           <p className="rounded-xl border border-sunburst bg-sunburst/30 px-3 py-2 text-xs text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
-            Alokasi pocket ({formatRupiah(allocated)}) melebihi pemasukan ({formatRupiah(inflow)}). Kurangi budget atau tambah pemasukan. — ponytail: warning saja, enforce kalau diminta
+            Alokasi pocket ({formatRupiah(allocated)}) melebihi pemasukan ({formatRupiah(inflow)}). Kurangi budget atau tambah pemasukan.
           </p>
         )}
-        {(month.categories || []).map((cat) => {
-          const { used, budget, status, pct } = categoryStatus(cat, txs)
-          const left = categoryLeft(cat, txs)
-          const goal = cat.goalAmount > 0 ? cat.goalAmount : 0
-          const gs = goalSaved(cat, txs)
-          const savedAmt = gs.saved
-          const goalPct = goal ? Math.min(100, Math.round((savedAmt / goal) * 100)) : 0
-          const goalDone = goal > 0 && savedAmt >= goal
-          return (
-            <div
-              key={cat.id}
-              onClick={() => onNewTx({ categoryId: cat.id })}
-              className="block w-full cursor-pointer rounded-2xl border-2 border-carbon bg-paper p-4 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-carbon-sm active:scale-[0.99] dark:border-white/30 dark:bg-slate-900 dark:hover:bg-slate-800"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <span className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
-                  <span className="truncate font-medium text-carbon dark:text-white">{cat.name}</span>
-                  {goal > 0 && (
-                    <span className={`shrink-0 rounded-full border border-carbon px-2 py-0.5 text-[10px] font-semibold ${goalDone ? 'bg-mint/70 text-carbon' : 'bg-sky/70 text-carbon'}`}>
-                      {goalDone ? 'Target Tercapai' : `Target ${formatRupiah(goal)}`}
-                    </span>
-                  )}
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-carbon dark:text-white">
-                    {formatRupiah(used)}
-                    {budget > 0 && <span className="font-normal text-slate-400"> / {formatRupiah(budget)}</span>}
-                  </p>
-                  <p className={`text-[11px] font-medium ${status === 'over' ? 'text-ember' : status === 'warn' ? 'text-brand-600' : 'text-slate-400'}`}>
-                    sisa {formatRupiah(left)}
-                  </p>
-                </div>
-              </div>
-              {budget > 0 && (
-                <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full border border-black/20 bg-black/5 dark:border-white/20 dark:bg-white/10">
-                  <div className={`h-full rounded-full ${statusStyles(status)} transition-all`} style={{ width: `${pct}%` }} />
-                </div>
-              )}
-              {goal > 0 && (
-                <div className="mt-2.5">
-                  <div className="flex items-center justify-between gap-2 text-[11px] text-slate-400">
-                    <span>Terkumpul {formatRupiah(savedAmt)} / {formatRupiah(goal)}</span>
-                    <span className="flex items-center gap-2">
-                      <span>{goalPct}%</span>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setSaveCat(cat); setSaveAmount('') }}
-                        className="rounded-full border border-carbon bg-sunburst/50 px-2 py-0.5 text-[10px] font-semibold text-carbon transition hover:bg-sunburst dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
-                      >
-                        + Simpan
-                      </button>
-                    </span>
-                  </div>
-                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full border border-black/20 bg-black/5 dark:border-white/20 dark:bg-white/10">
-                    <div className={`h-full rounded-full ${goalDone ? 'bg-mint' : 'bg-violet'} transition-all`} style={{ width: `${goalPct}%` }} />
-                  </div>
-                </div>
-              )}
-            </div>
-          )
-        })}
+        {(month.categories || []).map((cat) => (
+          <PocketCard
+            key={cat.id}
+            cat={cat}
+            txs={txs}
+            onClick={() => onNewTx({ categoryId: cat.id })}
+            onSave={(c) => setSaveCat(c)}
+          />
+        ))}
         {(month.categories || []).length === 0 && (
           <EmptyState
             title="Belum ada pocket"
@@ -448,9 +358,9 @@ const input =
       <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-carbon dark:text-white">Transaksi Berulang</h3>
-            <button onClick={onManageRecurring} className={btn.subtle}>
-              Kelola
-            </button>
+          <button onClick={onManageRecurring} className={btn.subtle}>
+            Kelola
+          </button>
         </div>
         <div className="mt-3 space-y-2">
           {templates.length === 0 && (
@@ -481,7 +391,7 @@ const input =
         </div>
       </section>
 
-      {/* Rekening / Dompet — 1 rekening = single card, >1 fallback ke grid lama */}
+      {/* Rekening / Dompet */}
       <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-carbon dark:text-white">{wallets.length === 1 ? 'Rekening Utama' : 'Dompet'}</h3>
@@ -536,42 +446,11 @@ const input =
     {reallocOpen && <ReallocateForm onClose={() => setReallocOpen(false)} />}
 
     {saveCat && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-carbon/60 backdrop-blur-sm" onClick={() => setSaveCat(null)} />
-        <div className="modal-panel relative z-10 w-full max-w-sm rounded-2xl border-2 border-carbon bg-paper p-5 dark:border-white/30 dark:bg-slate-900">
-          <h3 className="text-lg font-bold text-carbon dark:text-white">Simpan ke {saveCat.name}</h3>
-          <p className="mt-1 text-xs text-slate-400">Uang akan dikeluarkan dari Uang Bebas dan ditambahkan ke tabungan.</p>
-          <div className="mt-3">
-            <input
-              className={input}
-              type="text" inputMode="numeric"
-              placeholder="Nominal (Rp)"
-              value={saveAmount}
-              onChange={(e) => setSaveAmount(e.target.value)}
-              autoFocus
-            />
-            {saveAmount && toInt(saveAmount) > 0 && (
-              <p className="mt-1 text-xs text-slate-400">{formatRupiah(toInt(saveAmount))}</p>
-            )}
-          </div>
-          <div className="mt-4 flex justify-end gap-2">
-            <button onClick={() => setSaveCat(null)} className={btn.neutral}>Batal</button>
-            <button
-              onClick={() => {
-                const amt = toInt(saveAmount)
-                if (amt <= 0) return
-                saveToGoal(currentMonthId, saveCat.id, amt)
-                setSaveCat(null)
-                setSaveAmount('')
-              }}
-              disabled={!saveAmount || toInt(saveAmount) <= 0}
-              className={btn.primary}
-            >
-              Simpan
-            </button>
-          </div>
-        </div>
-      </div>
+      <SaveGoalModal
+        cat={saveCat}
+        onClose={() => setSaveCat(null)}
+        onSubmit={(amt) => saveToGoal(currentMonthId, saveCat.id, amt)}
+      />
     )}
   </>
   )

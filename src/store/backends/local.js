@@ -43,7 +43,25 @@ function migrate(raw) {
       createdAt: m.createdAt || Date.now(),
     }
     if (Array.isArray(m.categories)) categories[id] = m.categories
-    if (Array.isArray(m.transactions)) transactions[id] = m.transactions
+    // migrasi incomes jsonb → transaksi type='income' (sekali jalan, idempoten)
+    const txs = Array.isArray(m.transactions) ? [...m.transactions] : []
+    if (Array.isArray(m.incomes)) {
+      for (const inc of m.incomes) {
+        if (!inc || txs.some((t) => t.id === inc.id)) continue
+        txs.push({
+          id: inc.id,
+          date: `${id}-01`,
+          type: 'income',
+          amount: inc.amount || 0,
+          categoryId: null,
+          walletId: null,
+          toWalletId: null,
+          description: inc.label || 'Pemasukan',
+          createdAt: Date.now(),
+        })
+      }
+    }
+    transactions[id] = txs
   }
   return { wallets: raw.wallets || [], months, categories, transactions, templates: raw.templates || [] }
 }
@@ -225,15 +243,24 @@ function generateRecurring(uid, mId) {
   const month = store.months[mId]
   store.transactions[mId] = store.transactions[mId] || []
   let changed = false
-  const incomes = (month && Array.isArray(month.incomes)) ? month.incomes : []
   for (const t of store.templates) {
     if (!t.active) continue
     const day = Math.min(28, Math.max(1, t.dayOfMonth || 1))
     if (mId === curMonth && day > todayDay) continue
     if (t.type === 'income') {
       const id = `recur-${t.id}-${mId}`
-      if (incomes.some((i) => i.id === id)) continue
-      incomes.push({ id, label: t.description || 'Pemasukan berulang', amount: t.amount || 0 })
+      if (store.transactions[mId].some((x) => x.id === id)) continue
+      store.transactions[mId].unshift({
+        id,
+        date: `${mId}-01`,
+        type: 'income',
+        amount: t.amount || 0,
+        categoryId: null,
+        walletId: null,
+        toWalletId: null,
+        description: t.description || 'Pemasukan berulang',
+        createdAt: Date.now(),
+      })
       changed = true
       continue
     }
@@ -267,7 +294,6 @@ function generateRecurring(uid, mId) {
     changed = true
   }
   if (changed) {
-    if (month) month.incomes = incomes
     persist()
     emitDetail(mId)
     emitMonths()

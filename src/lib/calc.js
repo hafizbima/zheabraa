@@ -13,8 +13,11 @@ export function categoryLeft(category, transactions) {
   return (category.budgetAmount || 0) - categoryUsed(category.id, transactions)
 }
 
+// income = transaksi type='income' (satu sumber kebenaran, masuk Riwayat native)
 export function totalIncome(month) {
-  return (month.incomes || []).reduce((a, i) => a + (i.amount || 0), 0)
+  return (month.transactions || [])
+    .filter((t) => t.type === 'income')
+    .reduce((a, t) => a + (t.amount || 0), 0)
 }
 
 export function totalInflow(month) {
@@ -78,14 +81,14 @@ export function walletBalance(wallet, allTransactions) {
       continue
     }
     if (tx.walletId !== wallet.id) continue
-    if (tx.type === 'refund') inflow += tx.amount || 0
+    if (tx.type === 'refund' || tx.type === 'income') inflow += tx.amount || 0
     else outflow += tx.amount || 0
   }
   return (wallet.openingBalance || 0) + inflow - outflow
 }
 
-// Mode 1 rekening: semua uang ada di satu dompet → transaksi tanpa walletId,
-// income bulan (month.incomes) ikut mengkredit saldo rekening.
+// Mode 1 rekening: semua uang ada di satu dompet → transaksi tanpa walletId
+// dianggap milik rekening utama (income kini transaksi type='income', bukan jsonb)
 export function singleWalletBalance(wallet, months) {
   let inflow = 0
   let outflow = 0
@@ -99,11 +102,10 @@ export function singleWalletBalance(wallet, months) {
     }
     const wid = tx.walletId ?? wallet.id
     if (wid !== wallet.id) continue
-    if (tx.type === 'refund') inflow += tx.amount || 0
+    if (tx.type === 'refund' || tx.type === 'income') inflow += tx.amount || 0
     else outflow += tx.amount || 0
   }
-  const income = Object.values(months).reduce((a, m) => a + totalIncome(m), 0)
-  return (wallet.openingBalance || 0) + inflow - outflow + income
+  return (wallet.openingBalance || 0) + inflow - outflow
 }
 
 export function allTransactions(months) {

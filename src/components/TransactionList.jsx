@@ -42,15 +42,19 @@ export default function TransactionList({ onEditTx }) {
   const catName = (t) =>
     t.type === 'transfer'
       ? 'Transfer Dompet'
-      : t.categoryId == null
-        ? 'Uang Bebas'
-        : categories.find((c) => c.id === t.categoryId)?.name || '—'
+      : t.type === 'income'
+        ? 'Pemasukan'
+        : t.categoryId == null
+          ? 'Uang Bebas'
+          : categories.find((c) => c.id === t.categoryId)?.name || '—'
   const catColor = (t) =>
     t.type === 'transfer'
       ? '#0ea5e9'
-      : t.categoryId == null
-        ? '#64748b'
-        : categories.find((c) => c.id === t.categoryId)?.color || '#64748b'
+      : t.type === 'income'
+        ? '#55db9c'
+        : t.categoryId == null
+          ? '#64748b'
+          : categories.find((c) => c.id === t.categoryId)?.color || '#64748b'
   const walletName = (id) => (id ? wallets.find((w) => w.id === id)?.name || '—' : null)
 
   const hasFilter =
@@ -85,11 +89,13 @@ export default function TransactionList({ onEditTx }) {
     const q = search.trim().toLowerCase()
     return txs
       .filter((t) => {
-        if (
-          filterCategory === 'free'
-            ? t.categoryId != null || t.type === 'transfer'
-            : filterCategory !== 'all' && t.categoryId !== filterCategory
-        ) {
+        if (filterCategory === 'free') {
+          if (t.categoryId != null || t.type === 'transfer' || t.type === 'income') return false
+        } else if (filterCategory === 'income') {
+          if (t.type !== 'income') return false
+        } else if (filterCategory === 'tabungan') {
+          if (t.type !== 'expense' || !(t.description || '').startsWith('Menabung ke ')) return false
+        } else if (filterCategory !== 'all' && t.categoryId !== filterCategory) {
           return false
         }
         if (
@@ -152,6 +158,8 @@ export default function TransactionList({ onEditTx }) {
           <select className={input} value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
             <option value="all">Semua kategori</option>
             <option value="free">Uang Bebas</option>
+            <option value="income">Pemasukan</option>
+            <option value="tabungan">Tabungan</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -189,7 +197,7 @@ export default function TransactionList({ onEditTx }) {
               for (const t of filtered) {
                 rows.push([
                   t.date,
-                  t.type === 'transfer' ? 'Transfer' : t.type === 'refund' ? 'Refund' : 'Pengeluaran',
+                  t.type === 'transfer' ? 'Transfer' : t.type === 'refund' ? 'Refund' : t.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
                   catName(t),
                   t.type === 'transfer'
                     ? `${walletName(t.walletId) || '—'} → ${walletName(t.toWalletId) || '—'}`
@@ -206,27 +214,6 @@ export default function TransactionList({ onEditTx }) {
           </button>
         </div>
       </section>
-
-      {/* Pemasukan bulan ini (income bukan transaksi wallet — tampil derived) */}
-      {!hasFilter && (month?.incomes || []).length > 0 && (
-        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-carbon dark:text-white">Pemasukan Bulan Ini</h3>
-            <span className="text-sm font-bold text-mint">+{formatRupiah((month.incomes || []).reduce((a, i) => a + (i.amount || 0), 0))}</span>
-          </div>
-          <div className="mt-3 space-y-2">
-            {(month.incomes || []).map((inc) => (
-              <div key={inc.id} className="flex items-center justify-between rounded-xl border border-carbon bg-lavender/40 px-3 py-2 dark:border-white/20 dark:bg-white/5">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-carbon dark:text-white">{inc.label}</p>
-                  <p className="text-xs text-slate-400">{wallets.length === 1 ? wallets[0].name : '—'} • mengkredit saldo</p>
-                </div>
-                <p className="shrink-0 text-sm font-semibold text-mint">+{formatRupiah(inc.amount)}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* Cari global — hasil dari semua bulan */}
       {globalSearch.trim() && (
@@ -251,8 +238,8 @@ export default function TransactionList({ onEditTx }) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-sm font-semibold ${isTransfer ? 'text-violet dark:text-lavender' : tx.type === 'refund' ? 'text-mint' : 'text-ember'}`}>
-                        {isTransfer ? '⇄ ' : tx.type === 'refund' ? '+' : '−'}{formatRupiah(tx.amount)}
+                      <p className={`text-sm font-semibold ${isTransfer ? 'text-violet dark:text-lavender' : tx.type === 'refund' || tx.type === 'income' ? 'text-mint' : 'text-ember'}`}>
+                        {isTransfer ? '⇄ ' : tx.type === 'refund' || tx.type === 'income' ? '+' : '−'}{formatRupiah(tx.amount)}
                       </p>
                       <div className="mt-0.5 flex justify-end gap-1">
                         <button onClick={() => onEditTx(mId, tx)} className={btn.subtle}>Ubah</button>
@@ -306,8 +293,8 @@ export default function TransactionList({ onEditTx }) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-sm font-semibold ${isTransfer ? 'text-violet dark:text-lavender' : t.type === 'refund' ? 'text-mint' : 'text-ember'}`}>
-                        {isTransfer ? '⇄ ' : t.type === 'refund' ? '+' : '−'}{formatRupiah(t.amount)}
+                      <p className={`text-sm font-semibold ${isTransfer ? 'text-violet dark:text-lavender' : t.type === 'refund' || t.type === 'income' ? 'text-mint' : 'text-ember'}`}>
+                        {isTransfer ? '⇄ ' : t.type === 'refund' || t.type === 'income' ? '+' : '−'}{formatRupiah(t.amount)}
                       </p>
                       <div className="mt-0.5 flex justify-end gap-1">
                         <button onClick={() => onEditTx(viewMonth, t)} className={btn.subtle}>

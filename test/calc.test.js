@@ -40,10 +40,10 @@ describe('calc', () => {
     expect(categoryLeft({ id: 'c1', budgetAmount: 100000 }, txs)).toBe(75000)
 
     const month = {
-      incomes: [{ id: 'i1', amount: 100000 }],
       carryOver: 0,
       categories: [],
       transactions: [
+        { categoryId: null, type: 'income', amount: 100000, date: '2026-08-01' },
         { categoryId: null, type: 'expense', amount: 30000 },
         { categoryId: null, type: 'refund', amount: 12000 },
       ],
@@ -66,13 +66,13 @@ describe('calc', () => {
 
   it('free money = inflow - allocated, reduced by free expenses', () => {
     const month = {
-      incomes: [{ id: 'i1', amount: 3191000 }],
       carryOver: 51406,
       categories: [
         { id: 'c1', budgetAmount: 2650000 },
         { id: 'c2', budgetAmount: 0 },
       ],
       transactions: [
+        { categoryId: null, type: 'income', amount: 3191000, date: '2026-08-01' },
         { categoryId: null, type: 'expense', amount: 25000 },
         { categoryId: null, type: 'refund', amount: 10000 },
         { categoryId: 'c1', type: 'expense', amount: 50000 },
@@ -113,16 +113,18 @@ describe('calc', () => {
     expect(walletBalance(walletB, txs)).toBe(50000 + 30000)
   })
 
-  it('singleWalletBalance credits income and counts untracked (null walletId) txs', () => {
+  it('singleWalletBalance credits income (transaksi) and counts untracked (null walletId) txs', () => {
     const primary = { id: 'w1', name: 'Rekening Utama', openingBalance: 0 }
     const months = {
       '2026-08': {
-        incomes: [{ id: 'i1', amount: 1000000 }],
-        transactions: [{ walletId: 'w1', type: 'expense', amount: 200000 }],
+        transactions: [
+          { walletId: 'w1', type: 'income', amount: 1000000, date: '2026-08-01' },
+          { walletId: 'w1', type: 'expense', amount: 200000 },
+        ],
       },
       '2026-09': {
-        incomes: [{ id: 'i2', amount: 500000 }],
         transactions: [
+          { walletId: null, type: 'income', amount: 500000, date: '2026-09-01' },
           { walletId: null, type: 'expense', amount: 75000 },
           { walletId: 'w1', type: 'refund', amount: 10000 },
         ],
@@ -136,7 +138,6 @@ describe('calc', () => {
     const primary = { id: 'w1', name: 'Rekening Utama', openingBalance: 100000 }
     const months = {
       '2026-08': {
-        incomes: [],
         transactions: [
           { walletId: 'w2', type: 'expense', amount: 50000 },
           { walletId: 'w1', type: 'expense', amount: 10000 },
@@ -148,10 +149,10 @@ describe('calc', () => {
 
   it('transfer does not affect pocket or free money', () => {
     const month = {
-      incomes: [{ id: 'i1', amount: 100000 }],
       carryOver: 0,
       categories: [{ id: 'c1', budgetAmount: 50000 }],
       transactions: [
+        { categoryId: null, type: 'income', amount: 100000, date: '2026-08-01' },
         { categoryId: null, type: 'transfer', amount: 30000, walletId: 'w1', toWalletId: 'w2' },
       ],
     }
@@ -188,13 +189,13 @@ describe('calc', () => {
 
   it('carryOverAmount tidak menghitung kategori bertarget (tabungan dipisah)', () => {
     const month = {
-      incomes: [{ id: 'i1', amount: 1000000 }],
       carryOver: 0,
       categories: [
         { id: 'c1', goalAmount: 1000000, budgetAmount: 500000 }, // tabungan — tidak masuk carry
         { id: 'c2', budgetAmount: 300000 },
       ],
       transactions: [
+        { categoryId: null, type: 'income', amount: 1000000, date: '2026-08-01' },
         { categoryId: 'c1', type: 'expense', amount: 100000 },
         { categoryId: 'c2', type: 'expense', amount: 50000 },
         { categoryId: null, type: 'expense', amount: 20000 },

@@ -112,16 +112,22 @@ async function applyRecurringForMonth(uid, mId) {
   const curMonth = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`
   const todayDay = now.getDate()
   const txRows = []
-  const incomeRows = []
   for (const t of data || []) {
     const day = Math.min(28, Math.max(1, t.day_of_month))
     if (mId < curMonth) continue
     if (mId === curMonth && day > todayDay) continue
     if (t.type === 'income') {
-      incomeRows.push({
+      txRows.push({
         id: `recur-${t.id}-${mId}`,
-        label: t.description || 'Pemasukan berulang',
+        user_id: uid,
+        month_id: mId,
+        date: `${mId}-01`,
         amount: t.amount || 0,
+        type: 'income',
+        category_id: null,
+        wallet_id: null,
+        description: t.description || 'Pemasukan berulang',
+        created_at: Date.now(),
       })
       continue
     }
@@ -157,19 +163,6 @@ async function applyRecurringForMonth(uid, mId) {
   let generated = false
   if (txRows.length) {
     const res = await supabase.from('transactions').upsert(txRows)
-    if (res.error) throw res.error
-    generated = true
-  }
-  if (incomeRows.length) {
-    const list = await supabase.from('months').select('*').eq('id', mId).eq('user_id', uid)
-    if (list.error) throw list.error
-    const existing = Array.isArray(list.data?.[0]?.incomes) ? list.data[0].incomes : []
-    const ids = new Set(incomeRows.map((i) => i.id))
-    const res = await supabase
-      .from('months')
-      .update({ incomes: existing.filter((i) => !ids.has(i.id)).concat(incomeRows) })
-      .eq('id', mId)
-      .eq('user_id', uid)
     if (res.error) throw res.error
     generated = true
   }

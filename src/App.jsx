@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard.jsx'
 import TransactionList from './components/TransactionList.jsx'
 import TransactionForm from './components/TransactionForm.jsx'
 import Stats from './components/Stats.jsx'
+import Report from './components/Report.jsx'
 import CategoryManager from './components/CategoryManager.jsx'
 import WalletManager from './components/WalletManager.jsx'
 import RecurringManager from './components/RecurringManager.jsx'
@@ -65,11 +66,13 @@ function Shell() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky via-sky to-[#cfe6ff] dark:from-[#131a33] dark:via-[#131a33] dark:to-[#0f1b3d]">
-      <Header
-        view={view}
-        onViewChange={setView}
-        onOpenWallets={() => setWalletOpen(true)}
-      />
+      <div className="no-print">
+        <Header
+          view={view}
+          onViewChange={setView}
+          onOpenWallets={() => setWalletOpen(true)}
+        />
+      </div>
 
       <main className="mx-auto max-w-3xl px-4 pb-28 pt-5">
         {view === 'dashboard' ? (
@@ -82,6 +85,8 @@ function Shell() {
           />
         ) : view === 'stats' ? (
           <Stats />
+        ) : view === 'report' ? (
+          <Report />
         ) : (
           <TransactionList onEditTx={openEditTx} />
         )}
@@ -90,7 +95,7 @@ function Shell() {
       {/* FAB */}
       <button
         onClick={() => openNewTx(null)}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border-2 border-carbon bg-paper text-2xl text-carbon shadow-carbon transition hover:bg-mist active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
+        className="no-print fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border-2 border-carbon bg-paper text-2xl text-carbon shadow-carbon transition hover:bg-mist active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
         aria-label="Tambah transaksi"
       >
         +

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react'
 import backend from './backend.js'
 import { monthIdOf, addMonths, labelOf, todayISO } from '../lib/dates.js'
 import { uid, slugify } from '../lib/id.js'
@@ -67,6 +67,15 @@ export function StoreProvider({ children }) {
     }
   }, [user, report])
 
+  // helper tunggal: jalankan mutasi backend → refresh data → toast kalau gagal
+  const mutate = useCallback(
+    (promise, errMsg) => {
+      if (!user) return Promise.resolve()
+      return promise.then(() => refresh()).catch((e) => report(e, errMsg))
+    },
+    [user, refresh, report],
+  )
+
   useEffect(() => {
     if (!user) {
       setWallets([])
@@ -82,55 +91,6 @@ export function StoreProvider({ children }) {
   const ready =
     authReady &&
     (!user || (walletsReceived && !!currentMonth?.categories && !!currentMonth?.transactions))
-
-  // ponytail: auto-repair sekali per sesi, hanya bulan berjalan & 1 bulan sebelumnya (data lama yang tak aktif tidak disentuh)
-  const repairedRef = useRef(new Set())
-  useEffect(() => {
-    if (!user) return
-    if (!Object.keys(months).length) return
-    const scope = new Set([currentMonthId, addMonths(currentMonthId, -1)])
-    for (const mId of scope) {
-      const cats = months[mId]?.categories || []
-      const catIds = new Set(cats.map((c) => c.id))
-      for (const t of months[mId]?.transactions || []) {
-        if (repairedRef.current.has(t.id)) continue
-        if (!t.date) continue
-        const target = t.date.slice(0, 7)
-        // 1) bulan di tanggal != bulan penyimpanan → pindahkan + map pocket by nama
-        if (target !== mId) {
-          const sourceCat = t.categoryId
-            ? Object.values(months)
-                .flatMap((mm) => mm.categories || [])
-                .find((c) => c.id === t.categoryId)
-            : null
-          let resolvedCatId = t.categoryId
-          if (sourceCat) {
-            const targetCats = months[target]?.categories || []
-            const match = targetCats.find((c) => catKey(c) === catKey(sourceCat))
-            resolvedCatId = match ? match.id : null
-          }
-          repairedRef.current.add(t.id)
-          backend.removeTransaction(user.uid, mId, t.id).catch(console.error)
-          backend.ensureMonth(user.uid, target).catch(() => {})
-          backend.setTransaction(user.uid, target, { ...t, categoryId: resolvedCatId }).catch(console.error)
-          continue
-        }
-        // 2) categoryId ada tapi tidak di bulan ini → map by nama (Skincare tiap bulan id beda)
-        if (t.categoryId && !catIds.has(t.categoryId)) {
-          const sourceCat = Object.values(months)
-            .flatMap((mm) => mm.categories || [])
-            .find((c) => c.id === t.categoryId)
-          if (sourceCat) {
-            const match = cats.find((c) => catKey(c) === catKey(sourceCat))
-            if (match) {
-              repairedRef.current.add(t.id)
-              backend.updateTransaction(user.uid, mId, t.id, { categoryId: match.id }).catch(console.error)
-            }
-          }
-        }
-      }
-    }
-  }, [user, months, currentMonthId])
 
   // --- auth actions ---
   const login = useCallback(async (email, password) => {
@@ -184,9 +144,9 @@ export function StoreProvider({ children }) {
     (mId) => {
       if (!user) return
       setCurrentMonthId(mId)
-      backend.ensureMonth(user.uid, mId).then(() => refresh()).catch(console.error)
+      mutate(backend.ensureMonth(user.uid, mId), 'Gagal menyiapkan bulan')
     },
-    [user, refresh],
+    [user, mutate],
   )
 
   const startNewMonth = useCallback(() => {
@@ -203,64 +163,63 @@ export function StoreProvider({ children }) {
         savedAmount: (c.goalAmount > 0 ? (c.savedAmount || 0) + sisa : c.savedAmount || 0),
       }
     })
-    backend.createNextMonth(user.uid, nextId, carry, cats).then(() => refresh()).catch(console.error)
+    mutate(backend.createNextMonth(user.uid, nextId, carry, cats), 'Gagal membuat bulan baru')
     setCurrentMonthId(nextId)
-  }, [user, months, currentMonthId, refresh])
+  }, [user, months, currentMonthId, mutate])
 
-  // --- incomes ---
+  // --- incomes (sekarang transaksi type='income' — satu sumber kebenaran, masuk Riwayat) ---
   const addIncome = useCallback(
     (mId, data) => {
       if (!user) return
-      const meta = monthMeta(mId)
-      const inc = { id: uid(), label: data.label || 'Pemasukan', amount: data.amount || 0 }
-      backend
-        .setMonth(user.uid, { ...meta, incomes: [...meta.incomes, inc] })
-        .then(() => refresh()).catch((e) => report(e, 'Gagal menyimpan pemasukan'))
+      const tx = {
+        id: uid(),
+        createdAt: Date.now(),
+        date: `${mId}-01`,
+        type: 'income',
+        amount: data.amount || 0,
+        categoryId: null,
+        walletId: wallets[0]?.id || null,
+        toWalletId: null,
+        description: data.label || 'Pemasukan',
+      }
+      mutate(backend.setTransaction(user.uid, mId, tx), 'Gagal menyimpan pemasukan')
     },
-    [user, monthMeta, report],
+    [user, wallets, mutate],
   )
 
   const updateIncome = useCallback(
     (mId, incomeId, patch) => {
       if (!user) return
-      const meta = monthMeta(mId)
-      const incomes = meta.incomes.map((i) => (i.id === incomeId ? { ...i, ...patch } : i))
-      backend
-        .setMonth(user.uid, { ...meta, incomes })
-        .then(() => refresh()).catch((e) => report(e, 'Gagal mengubah pemasukan'))
+      mutate(
+        backend.updateTransaction(user.uid, mId, incomeId, { description: patch.label, amount: patch.amount }),
+        'Gagal mengubah pemasukan',
+      )
     },
-    [user, monthMeta, report],
+    [user, mutate],
   )
 
   const removeIncome = useCallback(
     (mId, incomeId) => {
       if (!user) return
-      const meta = monthMeta(mId)
-      backend
-        .setMonth(user.uid, { ...meta, incomes: meta.incomes.filter((i) => i.id !== incomeId) })
-        .then(() => refresh()).catch((e) => report(e, 'Gagal menghapus pemasukan'))
+      mutate(backend.removeTransaction(user.uid, mId, incomeId), 'Gagal menghapus pemasukan')
     },
-    [user, monthMeta, report],
+    [user, mutate],
   )
 
   const setCarryOver = useCallback(
     (mId, value) => {
       if (!user) return
-      backend
-        .setMonth(user.uid, { ...monthMeta(mId), carryOver: value })
-        .then(() => refresh()).catch((e) => report(e, 'Gagal menyimpan carry-over'))
+      mutate(backend.setMonth(user.uid, { ...monthMeta(mId), carryOver: value }), 'Gagal menyimpan carry-over')
     },
-    [user, monthMeta, report],
+    [user, monthMeta, mutate],
   )
 
   const setMonthNote = useCallback(
     (mId, note) => {
       if (!user) return
-      backend
-        .setMonth(user.uid, { ...monthMeta(mId), note: note || '' })
-        .then(() => refresh()).catch((e) => report(e, 'Gagal menyimpan catatan'))
+      mutate(backend.setMonth(user.uid, { ...monthMeta(mId), note: note || '' }), 'Gagal menyimpan catatan')
     },
-    [user, monthMeta, report],
+    [user, monthMeta, mutate],
   )
 
   // --- wallets ---
@@ -274,25 +233,25 @@ export function StoreProvider({ children }) {
         openingBalance: data.openingBalance || 0,
         order: wallets.length,
       }
-      backend.setWallet(user.uid, w).then(() => refresh()).catch((e) => report(e, 'Gagal menambah dompet'))
+      mutate(backend.setWallet(user.uid, w), 'Gagal menambah dompet')
     },
-    [user, wallets, report],
+    [user, wallets, mutate],
   )
 
   const updateWallet = useCallback(
     (id, patch) => {
       if (!user) return
-      backend.updateWallet(user.uid, id, patch).then(() => refresh()).catch((e) => report(e, 'Gagal mengubah dompet'))
+      mutate(backend.updateWallet(user.uid, id, patch), 'Gagal mengubah dompet')
     },
-    [user, report],
+    [user, mutate],
   )
 
   const deleteWallet = useCallback(
     (id) => {
       if (!user) return
-      backend.removeWallet(user.uid, id).then(() => refresh()).catch((e) => report(e, 'Gagal menghapus dompet'))
+      mutate(backend.removeWallet(user.uid, id), 'Gagal menghapus dompet')
     },
-    [user, report],
+    [user, mutate],
   )
 
   // --- categories ---
@@ -306,28 +265,29 @@ export function StoreProvider({ children }) {
         key: slugify(data.name),
         budgetAmount: data.budgetAmount || 0,
         goalAmount: data.goalAmount || 0,
+        savedAmount: data.savedAmount || 0,
         color: data.color,
         order: cats.length,
       }
-      backend.setCategory(user.uid, mId, cat).then(() => refresh()).catch((e) => report(e, 'Gagal menambah kategori'))
+      mutate(backend.setCategory(user.uid, mId, cat), 'Gagal menambah kategori')
     },
-    [user, months, report],
+    [user, months, mutate],
   )
 
   const updateCategory = useCallback(
     (mId, categoryId, patch) => {
       if (!user) return Promise.resolve()
-      return backend.updateCategory(user.uid, mId, categoryId, patch).then(() => refresh()).catch((e) => report(e, 'Gagal mengubah kategori'))
+      return mutate(backend.updateCategory(user.uid, mId, categoryId, patch), 'Gagal mengubah kategori')
     },
-    [user, report],
+    [user, mutate],
   )
 
   const removeCategory = useCallback(
     (mId, categoryId) => {
       if (!user) return
-      backend.removeCategory(user.uid, mId, categoryId).then(() => refresh()).catch((e) => report(e, 'Gagal menghapus kategori'))
+      mutate(backend.removeCategory(user.uid, mId, categoryId), 'Gagal menghapus kategori')
     },
-    [user, report],
+    [user, mutate],
   )
 
   // --- transactions ---
@@ -348,9 +308,9 @@ export function StoreProvider({ children }) {
       }
       const tx = { id: uid(), createdAt: Date.now(), ...data, categoryId: resolvedCatId }
       if (targetId !== mId) backend.ensureMonth(user.uid, targetId).catch(console.error)
-      backend.setTransaction(user.uid, targetId, tx).then(() => refresh()).catch((e) => report(e, 'Gagal menyimpan transaksi'))
+      mutate(backend.setTransaction(user.uid, targetId, tx), 'Gagal menyimpan transaksi')
     },
-    [user, months, report],
+    [user, months, mutate],
   )
 
   const updateTransaction = useCallback(
@@ -371,23 +331,24 @@ export function StoreProvider({ children }) {
             else if (match) resolvedCatId = match.id
           }
           const newTx = { ...oldTx, ...patch, categoryId: resolvedCatId }
+          // ponytail: pindah bulan = remove + set (2 call), tanpa atomicity — cukup untuk app personal
           backend.removeTransaction(user.uid, mId, txId).catch(console.error)
           backend.ensureMonth(user.uid, targetId).catch(console.error)
-          backend.setTransaction(user.uid, targetId, newTx).catch(console.error)
+          mutate(backend.setTransaction(user.uid, targetId, newTx), 'Gagal menyimpan transaksi')
           return
         }
       }
-      backend.updateTransaction(user.uid, mId, txId, patch).then(() => refresh()).catch((e) => report(e, 'Gagal menyimpan transaksi'))
+      mutate(backend.updateTransaction(user.uid, mId, txId, patch), 'Gagal menyimpan transaksi')
     },
-    [user, months, report],
+    [user, months, mutate],
   )
 
   const removeTransaction = useCallback(
     (mId, txId) => {
       if (!user) return
-      backend.removeTransaction(user.uid, mId, txId).then(() => refresh()).catch((e) => report(e, 'Gagal menghapus transaksi'))
+      mutate(backend.removeTransaction(user.uid, mId, txId), 'Gagal menghapus transaksi')
     },
-    [user, report],
+    [user, mutate],
   )
 
   // tabungan manual: keluarkan dari uang bebas (expense) lalu tambah ke savedAmount
@@ -410,14 +371,6 @@ export function StoreProvider({ children }) {
   )
 
   // --- recurring templates ---
-  const refreshTemplates = useCallback(() => {
-    if (!user) return
-    backend
-      .listTemplates(user.uid)
-      .then((list) => setTemplates(list))
-      .catch(console.error)
-  }, [user])
-
   const addTemplate = useCallback(
     (data) => {
       if (!user) return
@@ -433,33 +386,31 @@ export function StoreProvider({ children }) {
         active: data.active !== false,
         createdAt: Date.now(),
       }
-      backend
-        .addTemplate(user.uid, t)
-        .then(() => backend.applyRecurring(user.uid, currentMonthId))
-        .then(() => refresh()).catch((e) => report(e, 'Gagal menyimpan template'))
-        .finally(refreshTemplates)
+      mutate(
+        backend.addTemplate(user.uid, t).then(() => backend.applyRecurring(user.uid, currentMonthId)),
+        'Gagal menyimpan template',
+      )
     },
-    [user, currentMonthId, refreshTemplates, report],
+    [user, currentMonthId, mutate],
   )
 
   const updateTemplate = useCallback(
     (id, patch) => {
       if (!user) return
-      backend
-        .updateTemplate(user.uid, id, patch)
-        .then(() => backend.applyRecurring(user.uid, currentMonthId))
-        .then(() => refresh()).catch((e) => report(e, 'Gagal menyimpan template'))
-        .finally(refreshTemplates)
+      mutate(
+        backend.updateTemplate(user.uid, id, patch).then(() => backend.applyRecurring(user.uid, currentMonthId)),
+        'Gagal menyimpan template',
+      )
     },
-    [user, currentMonthId, refreshTemplates, report],
+    [user, currentMonthId, mutate],
   )
 
   const removeTemplate = useCallback(
     (id) => {
       if (!user) return
-      backend.removeTemplate(user.uid, id).then(refreshTemplates).then(() => refresh()).catch((e) => report(e, 'Gagal menghapus template'))
+      mutate(backend.removeTemplate(user.uid, id), 'Gagal menghapus template')
     },
-    [user, refreshTemplates, report],
+    [user, mutate],
   )
 
 const value = useMemo(
