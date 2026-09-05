@@ -332,15 +332,19 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             Alokasi pocket ({formatRupiah(allocated)}) melebihi pemasukan ({formatRupiah(inflow)}). Kurangi budget atau tambah pemasukan.
           </p>
         )}
-        {(month.categories || []).map((cat) => (
-          <PocketCard
-            key={cat.id}
-            cat={cat}
-            txs={txs}
-            onClick={() => onNewTx({ categoryId: cat.id })}
-            onSave={(c) => setSaveCat(c)}
-          />
-        ))}
+        {(month.categories || []).length > 0 && (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {(month.categories || []).map((cat) => (
+              <PocketCard
+                key={cat.id}
+                cat={cat}
+                txs={txs}
+                onClick={() => onNewTx({ categoryId: cat.id })}
+                onSave={(c) => setSaveCat(c)}
+              />
+            ))}
+          </div>
+        )}
         {(month.categories || []).length === 0 && (
           <EmptyState
             title="Belum ada pocket"
