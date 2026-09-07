@@ -416,7 +416,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
               <span className="rounded-full border border-carbon/20 bg-white px-2 py-0.5 text-[10px] font-semibold text-carbon dark:border-white/20 dark:bg-white/10 dark:text-white">sekat virtual</span>
             </div>
             <p className="mt-2 text-3xl font-bold tracking-tight text-carbon dark:text-white">{formatRupiah(primaryBalance)}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">saldo saat ini — pocket adalah sekat virtual dari rekening ini</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">saldo saat ini — Uang Bebas = A langsung, Pocket = child A</p>
             <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
               <div className="rounded-lg bg-white/70 px-2 py-1.5 dark:bg-white/10">
                 <p className="text-slate-500 dark:text-slate-400">Teralokasi</p>

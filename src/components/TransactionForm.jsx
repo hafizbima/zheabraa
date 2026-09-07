@@ -3,6 +3,7 @@ import Modal from './Modal.jsx'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah, toInt } from '../lib/money.js'
 import { todayISO } from '../lib/dates.js'
+import { categoryLeft, goalSaved } from '../lib/calc.js'
 import { btn } from '../lib/buttons.js'
 
 export default function TransactionForm({ monthId, transaction, prefill, onClose }) {
@@ -33,6 +34,18 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const targetMonth = date ? date.slice(0, 7) : monthId
   const monthMismatch = targetMonth !== monthId
   const categorySourceMonth = months[targetMonth] || month
+  // sisa dana pocket yang dipilih (di bulan tujuan):
+  // pocket tabungan (bertarget) → saldo tabungan; pocket biasa → sisa budget
+  const selectedCat = !isTransfer && !isFree
+    ? (categorySourceMonth?.categories || []).find((c) => c.id === categoryId)
+    : null
+  const catSisa = selectedCat
+    ? (selectedCat.goalAmount > 0
+        ? goalSaved(selectedCat, categorySourceMonth?.transactions || []).saved
+        : categoryLeft(selectedCat, categorySourceMonth?.transactions || []))
+    : null
+  const amt = toInt(amount)
+  const overPocket = selectedCat && amt > 0 && amt > catSisa
   const input =
     'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2.5 text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
@@ -179,12 +192,33 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
             <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Kategori / Pocket {monthMismatch && `— pocket bulan ${targetMonth}`}</label>
             <select className={input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
               <option value="free">Uang Bebas (tidak dari pocket)</option>
-              {(categorySourceMonth?.categories || []).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {(categorySourceMonth?.categories || []).map((c) => {
+                const sisa = c.goalAmount > 0
+                  ? goalSaved(c, categorySourceMonth?.transactions || []).saved
+                  : categoryLeft(c, categorySourceMonth?.transactions || [])
+                return (
+                  <option key={c.id} value={c.id}>
+                    {c.name} — sisa {formatRupiah(sisa)}
+                  </option>
+                )
+              })}
             </select>
+            {isFree ? (
+              <p className="mt-1 text-[11px] text-slate-400">
+                Sweep/pindah dana di myBCA tidak perlu dicatat — cukup pilih pocket asal dananya di sini.
+              </p>
+            ) : selectedCat && (
+              <p className="mt-1 text-[11px] text-slate-400">
+                {selectedCat.goalAmount > 0
+                  ? <>Pocket tabungan — uang keluar dari tabungan ini. Sisa tabungan: <strong>{formatRupiah(catSisa)}</strong>.</>
+                  : <>Tidak perlu sweep ke rekening utama dulu — cukup pilih pocket ini & nominal. Sisa: <strong>{formatRupiah(catSisa)}</strong>.</>}
+              </p>
+            )}
+            {overPocket && (
+              <p className="mt-1 rounded-lg border border-sunburst bg-sunburst/30 px-2 py-1 text-[11px] text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
+                Nominal melebihi sisa pocket ({formatRupiah(catSisa)}) — masih bisa disimpan, sisa pocket akan minus.
+              </p>
+            )}
           </div>
         )}
 
