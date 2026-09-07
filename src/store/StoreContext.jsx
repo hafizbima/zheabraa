@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react'
+﻿import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react'
 import backend from './backend.js'
 import { monthIdOf, addMonths, labelOf, todayISO } from '../lib/dates.js'
 import { uid, slugify } from '../lib/id.js'
@@ -67,7 +67,7 @@ export function StoreProvider({ children }) {
     }
   }, [user, report])
 
-  // helper tunggal: jalankan mutasi backend → refresh data → toast kalau gagal
+  // helper tunggal: jalankan mutasi backend â†’ refresh data â†’ toast kalau gagal
   const mutate = useCallback(
     (promise, errMsg) => {
       if (!user) return Promise.resolve()
@@ -167,7 +167,7 @@ export function StoreProvider({ children }) {
     setCurrentMonthId(nextId)
   }, [user, months, currentMonthId, mutate])
 
-  // --- incomes (sekarang transaksi type='income' — satu sumber kebenaran, masuk Riwayat) ---
+  // --- incomes (sekarang transaksi type='income' â€” satu sumber kebenaran, masuk Riwayat) ---
   const addIncome = useCallback(
     (mId, data) => {
       if (!user) return
@@ -331,7 +331,7 @@ export function StoreProvider({ children }) {
             else if (match) resolvedCatId = match.id
           }
           const newTx = { ...oldTx, ...patch, categoryId: resolvedCatId }
-          // ponytail: pindah bulan = remove + set (2 call), tanpa atomicity — cukup untuk app personal
+          // ponytail: pindah bulan = remove + set (2 call), tanpa atomicity â€” cukup untuk app personal
           backend.removeTransaction(user.uid, mId, txId).catch(console.error)
           backend.ensureMonth(user.uid, targetId).catch(console.error)
           mutate(backend.setTransaction(user.uid, targetId, newTx), 'Gagal menyimpan transaksi')
@@ -370,6 +370,25 @@ export function StoreProvider({ children }) {
     [user, months, wallets, addTransaction, updateCategory],
   )
 
+  // tarik tabungan: uang keluar dari rekening (expense di pocket tabungan) + savedAmount berkurang
+  const useGoal = useCallback(
+    (mId, categoryId, amount, description) => {
+      if (!user || amount <= 0) return
+      const cat = (months[mId]?.categories || []).find((c) => c.id === categoryId)
+      if (!cat) return
+      addTransaction(mId, {
+        date: todayISO(),
+        type: 'expense',
+        amount,
+        categoryId,
+        walletId: wallets[0]?.id || null,
+        description: description || `Pakai tabungan ${cat.name}`,
+      })
+      updateCategory(mId, categoryId, { savedAmount: Math.max(0, (cat.savedAmount || 0) - amount) })
+    },
+    [user, months, wallets, addTransaction, updateCategory],
+  )
+
   // --- recurring templates ---
   const addTemplate = useCallback(
     (data) => {
@@ -384,6 +403,7 @@ export function StoreProvider({ children }) {
         toWalletId: data.toWalletId || null,
         description: data.description || '',
         active: data.active !== false,
+        skipMonths: Array.isArray(data.skipMonths) ? data.skipMonths : [],
         createdAt: Date.now(),
       }
       mutate(
@@ -446,6 +466,7 @@ login,
       updateTransaction,
       removeTransaction,
       saveToGoal,
+      useGoal,
       templates,
       addTemplate,
       updateTemplate,
@@ -457,7 +478,7 @@ login,
       addWallet, updateWallet, deleteWallet,
       addIncome, updateIncome, removeIncome, setCarryOver, setMonthNote,
       addCategory, updateCategory, removeCategory,
-      addTransaction, updateTransaction, removeTransaction, saveToGoal,
+      addTransaction, updateTransaction, removeTransaction, saveToGoal, useGoal,
       templates, addTemplate, updateTemplate, removeTemplate,
     ],
   )

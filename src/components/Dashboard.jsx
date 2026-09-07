@@ -8,6 +8,7 @@ import {
   freeMoneySpent,
   freePool,
   categoryStatus,
+  goalSaved,
   walletBalance,
   singleWalletBalance,
   allTransactions,
@@ -53,6 +54,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     setCarryOver,
     setMonthNote,
     saveToGoal,
+    useGoal,
     notify,
   } = useStore()
 
@@ -62,7 +64,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const [incomeAmount, setIncomeAmount] = useState('')
   const [carryDraft, setCarryDraft] = useState('')
   const [noteDraft, setNoteDraft] = useState('')
-  const [saveCat, setSaveCat] = useState(null)
+  const [saveModal, setSaveModal] = useState(null) // { cat, mode: 'nabung' | 'pakai' }
   const notifiedOver = useRef(new Set())
 
   useEffect(() => {
@@ -340,7 +342,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                 cat={cat}
                 txs={txs}
                 onClick={() => onNewTx({ categoryId: cat.id })}
-                onSave={(c) => setSaveCat(c)}
+                onSave={(c) => setSaveModal({ cat: c, mode: 'nabung' })}
+            onUse={(c) => setSaveModal({ cat: c, mode: 'pakai' })}
               />
             ))}
           </div>
@@ -449,11 +452,16 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
     {reallocOpen && <ReallocateForm onClose={() => setReallocOpen(false)} />}
 
-    {saveCat && (
+    {saveModal && (
       <SaveGoalModal
-        cat={saveCat}
-        onClose={() => setSaveCat(null)}
-        onSubmit={(amt) => saveToGoal(currentMonthId, saveCat.id, amt)}
+        cat={saveModal.cat}
+        mode={saveModal.mode}
+        available={goalSaved(saveModal.cat, txs).saved}
+        onClose={() => setSaveModal(null)}
+        onSubmit={(amt, desc) => {
+          if (saveModal.mode === 'pakai') useGoal(currentMonthId, saveModal.cat.id, amt, desc || undefined)
+          else saveToGoal(currentMonthId, saveModal.cat.id, amt)
+        }}
       />
     )}
   </>

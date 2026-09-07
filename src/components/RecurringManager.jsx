@@ -15,7 +15,7 @@ const TYPES = [
 const typeMeta = (k) => TYPES.find((t) => t.key === k) || TYPES[0]
 
 export default function RecurringManager({ onClose }) {
-  const { templates, currentMonth: month, wallets, addTemplate, updateTemplate, removeTemplate } = useStore()
+  const { templates, currentMonth: month, currentMonthId, wallets, addTemplate, updateTemplate, removeTemplate } = useStore()
   const [day, setDay] = useState('1')
   const [amount, setAmount] = useState('')
   const [type, setType] = useState('expense')
@@ -54,7 +54,8 @@ export default function RecurringManager({ onClose }) {
       d.walletId !== t.walletId ||
       d.toWalletId !== t.toWalletId ||
       d.description !== t.description ||
-      d.active !== t.active)
+      d.active !== t.active ||
+      (d.skipMonths || []).join() !== (t.skipMonths || []).join())
 
   const dirtyCount = useMemo(() => templates.filter((t) => isDirty(t, drafts[t.id])).length, [templates, drafts])
 
@@ -78,6 +79,7 @@ export default function RecurringManager({ onClose }) {
             toWalletId: d.toWalletId,
             description: d.description,
             active: d.active,
+            skipMonths: d.skipMonths || [],
           })
         }
       }
@@ -220,6 +222,24 @@ export default function RecurringManager({ onClose }) {
                 />
                 Aktif
               </label>
+              <button
+                type="button"
+                onClick={() => {
+                  const arr = [...(d.skipMonths || [])]
+                  const i = arr.indexOf(currentMonthId)
+                  if (i >= 0) arr.splice(i, 1)
+                  else arr.push(currentMonthId)
+                  updateDraft(t.id, { skipMonths: arr })
+                }}
+                className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold transition ${
+                  (d.skipMonths || []).includes(currentMonthId)
+                    ? 'border-carbon bg-sunburst/60 text-carbon'
+                    : 'border-black/20 bg-paper text-slate-500 hover:bg-mist dark:border-white/20 dark:bg-slate-900 dark:text-slate-300'
+                }`}
+                title="Lewati template ini pada bulan berjalan"
+              >
+                ⏸ Skip bulan ini
+              </button>
               <input
                 className={input + ' w-16'}
                 type="text"

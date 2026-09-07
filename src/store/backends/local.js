@@ -247,6 +247,7 @@ function generateRecurring(uid, mId) {
     if (!t.active) continue
     const day = Math.min(28, Math.max(1, t.dayOfMonth || 1))
     if (mId === curMonth && day > todayDay) continue
+    if (Array.isArray(t.skipMonths) && t.skipMonths.includes(mId)) continue // bulan di-skip user
     if (t.type === 'income') {
       const id = `recur-${t.id}-${mId}`
       if (store.transactions[mId].some((x) => x.id === id)) continue

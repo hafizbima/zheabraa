@@ -150,6 +150,23 @@ export default function Stats() {
   const input =
     'rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
+  // perbandingan bulan terakhir vs bulan sebelumnya (butuh minimal 2 bulan)
+  const compare = (() => {
+    const rows = data.rows
+    if (rows.length < 2) return null
+    const cur = rows[rows.length - 1]
+    const prev = rows[rows.length - 2]
+    return {
+      label: cur.label,
+      prevLabel: prev.label,
+      items: [
+        { label: 'Pemasukan', cur: cur.income, prev: prev.income },
+        { label: 'Belanja', cur: cur.spent, prev: prev.spent },
+        { label: 'Sisa', cur: cur.left, prev: prev.left },
+      ],
+    }
+  })()
+
   const granBtn = (key, label) =>
     `rounded-full border px-3 py-1.5 text-xs font-semibold transition ${gran === key ? 'border-carbon bg-carbon text-white dark:border-white dark:bg-white dark:text-carbon' : 'border-carbon bg-paper text-carbon hover:bg-mist dark:border-white/30 dark:bg-slate-900 dark:text-white'}`
 
@@ -202,6 +219,34 @@ export default function Stats() {
           </p>
         </div>
       </section>
+
+      {/* Perbandingan bulan terakhir vs sebelumnya */}
+      {compare && (
+        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+          <h3 className="font-semibold text-carbon dark:text-white">Perbandingan Bulan</h3>
+          <p className="text-xs text-slate-400">{compare.label} vs {compare.prevLabel}</p>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            {compare.items.map((it) => {
+              const diff = it.cur - it.prev
+              const up = diff > 0
+              return (
+                <div key={it.label} className="rounded-xl border border-carbon px-3 py-2 dark:border-white/20 dark:bg-white/5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{it.label}</span>
+                    {diff !== 0 && (
+                      <span className={`text-[10px] font-semibold ${up ? 'text-ember' : 'text-mint'}`}>
+                        {up ? '▲' : '▼'} {formatRupiah(Math.abs(diff))}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm font-bold text-carbon dark:text-white">{formatRupiah(it.cur)}</p>
+                  <p className="text-[10px] text-slate-400">bulan lalu: {formatRupiah(it.prev)}</p>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {data.wals.length > 0 && (
         <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">

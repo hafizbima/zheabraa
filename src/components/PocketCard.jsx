@@ -7,7 +7,7 @@ function statusStyles(status) {
   return 'bg-violet'
 }
 
-export default function PocketCard({ cat, txs, onClick, onSave }) {
+export default function PocketCard({ cat, txs, onClick, onSave, onUse }) {
   const { used, budget, status, pct } = categoryStatus(cat, txs)
   const left = categoryLeft(cat, txs)
   const goal = cat.goalAmount > 0 ? cat.goalAmount : 0
@@ -50,7 +50,7 @@ export default function PocketCard({ cat, txs, onClick, onSave }) {
         <div className="mt-2.5">
           <div className="flex items-center justify-between gap-2 text-[11px] text-slate-400">
             <span>Terkumpul {formatRupiah(savedAmt)} / {formatRupiah(goal)}</span>
-            <span className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5">
               <span>{goalPct}%</span>
               <button
                 type="button"
@@ -59,6 +59,15 @@ export default function PocketCard({ cat, txs, onClick, onSave }) {
               >
                 + Simpan
               </button>
+              {savedAmt > 0 && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onUse(cat) }}
+                  className="rounded-full border border-carbon bg-mint/50 px-2 py-0.5 text-[10px] font-semibold text-carbon transition hover:bg-mint dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
+                >
+                  Gunakan
+                </button>
+              )}
             </span>
           </div>
           <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full border border-black/20 bg-black/5 dark:border-white/20 dark:bg-white/10">

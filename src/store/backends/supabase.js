@@ -11,7 +11,7 @@ const WALLET_FIELDS = { name: 'name', color: 'color', openingBalance: 'opening_b
 const MONTH_FIELDS = { label: 'label', carryOver: 'carry_over', incomes: 'incomes', note: 'note', createdAt: 'created_at' }
 const CAT_FIELDS = { name: 'name', budgetAmount: 'budget_amount', goalAmount: 'goal_amount', savedAmount: 'saved_amount', color: 'color', key: 'key', order: 'sort_order' }
 const TX_FIELDS = { date: 'date', amount: 'amount', type: 'type', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', createdAt: 'created_at' }
-const TEMPLATE_FIELDS = { dayOfMonth: 'day_of_month', type: 'type', amount: 'amount', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', active: 'active', createdAt: 'created_at' }
+const TEMPLATE_FIELDS = { dayOfMonth: 'day_of_month', type: 'type', amount: 'amount', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', active: 'active', skipMonths: 'skip_months', createdAt: 'created_at' }
 
 function mapWallet(r) {
   return { id: r.id, name: r.name, color: r.color, openingBalance: r.opening_balance, order: r.sort_order }
@@ -93,6 +93,7 @@ function mapTemplate(r) {
     toWalletId: r.to_wallet_id,
     description: r.description,
     active: r.active !== false,
+    skipMonths: Array.isArray(r.skip_months) ? r.skip_months : [],
     createdAt: Number(r.created_at) || 0,
   }
 }
@@ -116,6 +117,7 @@ async function applyRecurringForMonth(uid, mId) {
     const day = Math.min(28, Math.max(1, t.day_of_month))
     if (mId < curMonth) continue
     if (mId === curMonth && day > todayDay) continue
+    if (Array.isArray(t.skip_months) && t.skip_months.includes(mId)) continue // bulan di-skip user
     if (t.type === 'income') {
       txRows.push({
         id: `recur-${t.id}-${mId}`,

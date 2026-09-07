@@ -53,16 +53,19 @@ export function categorySpentTotal(transactions) {
     .reduce((a, t) => a + (t.amount || 0), 0)
 }
 
+// total uang tersisa bulan ini: carry pocket biasa + sisa uang bebas + seluruh tabungan
+// (tabungan tetap "uang kamu" — tidak hilang hanya karena dialokasikan ke target)
 export function monthLeftTotal(month) {
   const txs = month.transactions || []
-  const catLeft = (month.categories || []).reduce(
-    (a, c) => a + categoryLeft(c, txs),
-    0,
-  )
-  return catLeft + freeLeft(month)
+  const catLeft = (month.categories || [])
+    .filter((c) => !(c.goalAmount > 0))
+    .reduce((a, c) => a + categoryLeft(c, txs), 0)
+  const savings = (month.categories || []).reduce((a, c) => a + (c.goalAmount > 0 ? goalSaved(c, txs).saved : 0), 0)
+  return catLeft + freeLeft(month) + savings
 }
 
 // carry-over bulan berikutnya: kategori biasa (bukan tabungan) + uang bebas
+// (tabungan dibawa terpisah lewat savedAmount, jadi tidak masuk sini)
 export function carryOverAmount(month) {
   const txs = month.transactions || []
   const catLeft = (month.categories || [])
