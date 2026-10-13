@@ -331,10 +331,8 @@ export function StoreProvider({ children }) {
             else if (match) resolvedCatId = match.id
           }
           const newTx = { ...oldTx, ...patch, categoryId: resolvedCatId }
-          // ponytail: pindah bulan = remove + set (2 call), tanpa atomicity â€” cukup untuk app personal
-          backend.removeTransaction(user.uid, mId, txId).catch(console.error)
-          backend.ensureMonth(user.uid, targetId).catch(console.error)
-          mutate(backend.setTransaction(user.uid, targetId, newTx), 'Gagal menyimpan transaksi')
+          // ponytail: move 2 langkah diikat dalam satu helper (sequence, bukan txn DB)
+          mutate(backend.moveTransaction(user.uid, mId, txId, targetId, newTx), 'Gagal menyimpan transaksi')
           return
         }
       }

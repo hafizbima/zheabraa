@@ -405,6 +405,24 @@ export function removeTransaction(uid, mId, id) {
   return Promise.resolve()
 }
 
+export async function moveTransaction(uid, mId, id, targetId, newTx) {
+  // local-fsafe: hilangkan dari lama, pastikan bulan target ada, lalu set
+  store.transactions[mId] = (store.transactions[mId] || []).filter((t) => t.id !== id)
+  if (!store.months[targetId]) {
+    const blank = createBlankMonth(targetId)
+    store.months[targetId] = { id: blank.id, label: blank.label, carryOver: 0, incomes: blank.incomes, createdAt: blank.createdAt }
+    store.categories[targetId] = blank.categories
+    store.transactions[targetId] = []
+  }
+  store.transactions[targetId] = store.transactions[targetId] || []
+  const i = store.transactions[targetId].findIndex((t) => t.id === newTx.id)
+  if (i >= 0) store.transactions[targetId][i] = { ...store.transactions[targetId][i], ...newTx }
+  else store.transactions[targetId].unshift(newTx)
+  persist()
+  emitDetail(mId)
+  emitDetail(targetId)
+}
+
 // --- recurring templates ---
 export function listTemplates(uid) {
   return Promise.resolve([...store.templates])
@@ -438,8 +456,7 @@ export async function resetPassword() {
   // Not applicable in local mode
 }
 
-export async function loadAll(uid) {
-  const months = {}
+export async function loadAll(uid) {  const months = {}
   for (const id of Object.keys(store.months)) {
     months[id] = {
       ...store.months[id],
@@ -489,6 +506,7 @@ export default {
   setTransaction,
   updateTransaction,
   removeTransaction,
+  moveTransaction,
   listTemplates,
   addTemplate,
   updateTemplate,

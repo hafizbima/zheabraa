@@ -661,6 +661,27 @@ export async function removeTransaction(uid, mId, id) {
   )
 }
 
+export async function moveTransaction(uid, mId, id, targetId, newTx) {
+  needClient()
+  // lock per-bulan (fraction of second); supabase txn tidak ada, sequence dengan await
+  const { error: delErr } = await supabase
+    .from('transactions')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', uid)
+    .eq('month_id', mId)
+  if (delErr) throw delErr
+  await ensureMonth(uid, targetId)
+  const { error: insErr } = await supabase.from('transactions').upsert({
+    id: newTx.id,
+    user_id: uid,
+    month_id: targetId,
+    created_at: newTx.createdAt || Date.now(),
+    ...txRow(newTx),
+  })
+  if (insErr) throw insErr
+}
+
 export default {
   mode: 'supabase',
   onAuthChange,
@@ -684,6 +705,7 @@ export default {
   setTransaction,
   updateTransaction,
   removeTransaction,
+  moveTransaction,
   listTemplates,
   addTemplate,
   updateTemplate,
