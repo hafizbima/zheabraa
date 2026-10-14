@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zheabraa — TikTok 30s Storyboard (Gen Z)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bowlby+One&family=Inter:wght@600;700;800;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0f2e;color:#fff;font-family:Inter,sans-serif;overflow-x:hidden}
+  /* header */
+  .top{position:sticky;top:0;z-index:10;background:#0f1b3d;border-bottom:2px solid #d9a441;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+  .top b{font-family:Bowlby One,sans-serif;font-size:15px;letter-spacing:.5px}
+  .top span{font-size:11px;opacity:.7}
+  .top button{background:#d9a441;color:#0f1b3d;border:none;padding:8px 16px;border-radius:999px;font-weight:800;font-size:13px;cursor:pointer}
+  /* progress */
+  #bar{height:3px;background:#d9a441;width:0%;transition:width .3s linear}
+  /* stage */
+  .stage{max-width:420px;margin:0 auto;padding:16px}
+  /* scene card */
+  .scene{background:#111a3a;border:1.5px solid #1e2d5e;border-radius:16px;overflow:hidden;margin:14px 0;position:relative}
+  .scene.active{border-color:#d9a441;box-shadow:0 0 0 2px rgba(217,164,65,.25)}
+  .s-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#16204a;border-bottom:1px solid #1e2d5e}
+  .s-head b{font-size:12px;color:#d9a441}
+  .s-head span{font-family:Bowlby One,sans-serif;font-size:11px;color:#fff}
+  .s-body{padding:14px}
+  /* phone mock */
+  .phone{width:100%;aspect-ratio:9/16;max-height:420px;background:linear-gradient(180deg,#0f1b3d 0%,#1a2a5e 100%);border-radius:12px;border:1.5px solid #24305a;overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .phone-top{height:28px;background:#0f1b3d;display:flex;justify-content:space-between;align-items:center;padding:0 10px;font-size:9px;color:#8f9ac2}
+  .phone-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px}
+  .p-card{background:#16234a;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px}
+  .p-card b{font-size:11px;color:#f5f2e8}
+  .p-card small{font-size:9px;color:#8f9ac2}
+  .bar{height:6px;background:#0f1b3d;border-radius:99px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:99px}
+  .on-screen{font-family:Bowlby One,sans-serif;font-size:22px;line-height:1;text-align:center;padding:12px 8px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .on-screen em{color:#d9a441;font-style:normal}
+  .vo{background:#0f1b3d;border-radius:10px;padding:10px 12px;margin-top:10px;display:flex;gap:8px;align-items:flex-start}
+  .vo i{font-style:normal;background:#d9a441;color:#0f1b3d;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;flex-shrink:0;margin-top:1px}
+  .vo p{font-size:11px;line-height:1.5;color:#cbd5e1}
+  .vo p b{color:#fff}
+  .play-row{text-align:center;padding:10px}
+  .play-row button{background:#d9a441;color:#0f1b3d;border:none;padding:10px 22px;border-radius:999px;font-weight:900;font-size:13px;cursor:pointer}
+  .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .meta span{background:#1e2d5e;color:#8f9ac2;font-size:9px;padding:4px 8px;border-radius:999px}
+  /* caption box */
+  .cap{background:#0f1b3d;border:1.5px solid #1e2d5e;border-radius:12px;padding:14px;margin:14px 0}
+  .cap h4{font-family:Bowlby One,sans-serif;font-size:13px;color:#d9a441;margin-bottom:6px}
+  .cap p{font-size:11px;line-height:1.6;color:#cbd5e1}
+  .cap code{background:#16204a;padding:2px 6px;border-radius:4px;font-size:10px;color:#f5f2e8}
+  @media print{.top,.play-row{display:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div><b>ZHEABRAA</b> <span>· TikTok 30s · Gen Z · Opsi A (Screen Record)</span></div>
+  <button onclick="play()">▶ PLAY 30s</button>
+</div>
+<div id="bar"></div>
+
+<div class="stage">
+
+<!-- INTRO -->
+<div class="cap">
+  <h4>📋 Cara pakai file ini (1-take, 5 menit)</h4>
+  <p>1. Klik <b>PLAY</b> di atas → scene auto ganti tiap detik sesuai timing.<br>
+  2. <b>Screen record</b> pakai HP / OBS / Chrome screen recorder (1080×1920).<br>
+  3. Import hasil record ke <b>CapCut</b> (browser, gratis) → pilih template <code>Bold Text Pop</code> → paste teks on-screen di bawah → auto-caption → export.<br>
+  4. Audio: cari di CapCut <code>money phonk</code> atau <code>aesthetic lofi 140 BPM</code> + SFX <code>pop</code> tiap nominal.</p>
+</div>
+
+<!-- SCENE 1 -->
+<div class="scene" id="s1">
+  <div class="s-head"><b>00:00 — 00:03 · HOOK</b><span>3 detik</span></div>
+  <div class="s-body">
+    <div class="phone">
+      <div class="phone-top"><span>myBCA</span><span>Rp 12.480.000</span></div>
+      <div style="flex:1;display:grid;place-items:center;padding:16px;text-align:center">
+        <div style="font-size:42px">💸</div>
+        <div style="font-family:Bowlby One,sans-serif;font-size:28px;line-height:1;color:#fff">SALDO<br><span style="color:#ff5c8a">HILANG</span> MULU?</div>
+        <div style="font-size:11px;color:#8f9ac2;margin-top:6px">gaji numpang lewat doang 😭</div>
+      </div>
+    </div>
+    <div class="on-screen">gaji masuk<br><em>langsung hilang?</em> 😭</div>
+    <div class="vo"><i>🎙</i><p><b>"Gaji numpang lewat doang gak sih?"</b> — jeda 0.5s, nada kesel relatable</p></div>
+    <div class="meta"><span>Font: Bowlby One 28pt</span><span>SFX: whoosh</span><span>Transisi: zoom in</span></div>
+  </div>
+</div>
+
+<!-- SCENE 2 -->
+<div class="scene" id="s2">
+  <div class="s-head"><b>00:03 — 00:08 · PROBLEM</b><span>5 detik</span></div>
+  <div class="s-body">
+    <div class="phone">
+      <div class="phone-top"><span>myBCA — A</span><span>👁</span></div>
+      <div style="padding:12px;display:flex;flex-direction:column;gap:8px">
+        <div style="background:#16234a;border-radius:10px;padding:10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:#f5f2e8">A <small style="color:#8f9ac2">induk</small></span><span style="font-size:11px;color:#8f9ac2">Rp 1.200.000</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:#1e2d5e;border-radius:10px;padding:10px;text-align:center"><div style="font-size:10px;color:#8f9ac2">A/giving</div><div style="font-size:12px;font-weight:800;color:#fff">Rp 800rb</div></div>
+          <div style="background:#1e2d5e;border-radius:10px;padding:10px;text-align:center"><div style="font-size:10px;color:#8f9ac2">A/saving</div><div style="font-size:12px;font-weight:800;color:#fff">Rp 1.5jt</div></div>
+        </div>
+        <div style="background:#1e2d5e;border-radius:10px;padding:10px;text-align:center"><div style="font-size:10px;color:#8f9ac2">A/dating</div><div style="font-size:12px;font-weight:800;color:#fff">Rp 600rb</div></div>
+        <div style="text-align:center;font-size:10px;color:#d9a441;margin-top:4px">↓ harus sweep ke A dulu baru bisa bayar</div>
+      </div>
+    </div>
+    <div class="on-screen" style="font-size:18px">1 rekening,<br><em>3 nasib beda</em></div>
+    <div class="vo"><i>🎙</i><p><b>"Gue punya 1 rekening, tapi isinya gue sekat: giving, saving, dating"</b> — tunjuk tiap child</p></div>
+    <div class="meta"><span>SFX: pop tiap pocket</span><span>Highlight: gold border</span></div>
+  </div>
+</div>
+
+<!-- SCENE 3 -->
+<div class="scene" id="s3">
+  <div class="s-head"><b>00:08 — 00:16 · DEMO HERO</b><span>8 detik — INTI</span></div>
+  <div class="s-body">
+    <div class="phone">
+      <div class="phone-top"><span>Zheabraa</span><span>☀️ ⚙️</span></div>
+      <div style="padding:10px">
+        <div style="background:#fff;color:#0f1b3d;border-radius:10px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700">makan 35k <span style="background:#0f1b3d;color:#fff;padding:4px 10px;border-radius:99px;font-size:10px">↵</span></div>
+        <div style="margin-top:8px;background:#fff;border-radius:10px;padding:10px">
+          <div style="font-size:10px;color:#888">Kategori / Pocket — sisa 465rb</div>
+          <div style="font-size:12px;font-weight:700;color:#0f1b3d;margin-top:4px">Date — sisa Rp 465.000 ▼</div>
+          <div style="font-size:9px;color:#666;margin-top:4px">Tidak perlu sweep ke rekening utama — cukup pilih pocket.</div>
+        </div>
+        <div style="margin-top:8px;background:#0f1b3d;color:#fff;border-radius:10px;padding:10px;text-align:center;font-size:12px;font-weight:700">Simpan ✓</div>
+      </div>
+    </div>
+    <div class="on-screen" style="font-size:20px">tinggal <em>pilih pocket.</em><br>udah.</div>
+    <div class="vo"><i>🎙</i><p><b>"Di Zheabraa gak usah pindah-pindah. Pilih pocket, ketik 35k, beres."</b> — ketukan tiap kata</p></div>
+    <div class="meta"><span>QuickAdd parser</span><span>SFX: pop + ding</span><span>Text pop: scale 0.98</span></div>
+  </div>
+</div>
+
+<!-- SCENE 4 -->
+<div class="scene" id="s4">
+  <div class="s-head"><b>00:16 — 00:22 · POCKET GRID</b><span>6 detik</span></div>
+  <div class="s-body">
+    <div class="phone">
+      <div style="padding:10px">
+        <div class="phone-grid">
+          <div class="p-card"><b>🍜 Makan</b><small>320rb / 500rb</small><div class="bar"><i style="width:64%;background:#7c6cf0"></i></div><small style="color:#7c6cf0">64%</small></div>
+          <div class="p-card"><b>💅 Skincare</b><small>80rb / 300rb</small><div class="bar"><i style="width:27%;background:#7c6cf0"></i></div></div>
+          <div class="p-card" style="border:1.5px solid #d9a441"><b>🏖 Saving</b><small style="color:#d9a441">Terkumpul 1.2jt / 5jt</small><div class="bar"><i style="width:24%;background:#55db9c"></i></div><div style="display:flex;gap:4px;margin-top:4px"><span style="background:#d9a441;color:#0f1b3d;font-size:8px;padding:2px 6px;border-radius:99px;font-weight:700">+ Simpan</span><span style="background:#55db9c;color:#0f1b3d;font-size:8px;padding:2px 6px;border-radius:99px;font-weight:700">Gunakan</span></div></div>
+          <div class="p-card"><b>🎁 Giving</b><small>50rb / 200rb</small><div class="bar"><i style="width:25%;background:#7c6cf0"></i></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="on-screen" style="font-size:17px">nabung <em>auto</em> + manual ✅</div>
+    <div class="vo"><i>🎙</i><p><b>"Sisa budget auto jadi tabungan. Mau nabung manual? Tinggal Simpan."</b></p></div>
+    <div class="meta"><span>Grid 2 kolom</span><span>Badge: Simpan/Gunakan</span></div>
+  </div>
+</div>
+
+<!-- SCENE 5 -->
+<div class="scene" id="s5">
+  <div class="s-head"><b>00:22 — 00:27 · STATS</b><span>5 detik</span></div>
+  <div class="s-body">
+    <div class="phone">
+      <div style="padding:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;font-weight:700;color:#fff">Perbandingan Bulan</span><span style="font-size:9px;color:#8f9ac2">Nov vs Okt</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+          <div style="background:#16234a;border-radius:10px;padding:8px"><div style="font-size:9px;color:#8f9ac2">Makan</div><div style="font-size:11px;font-weight:800;color:#fff">Rp 420rb <span style="color:#ff5c8a;font-size:9px">▲ 40%</span></div></div>
+          <div style="background:#16234a;border-radius:10px;padding:8px"><div style="font-size:9px;color:#8f9ac2">Transport</div><div style="font-size:11px;font-weight:800;color:#fff">Rp 180rb <span style="color:#55db9c;font-size:9px">▼ 20%</span></div></div>
+        </div>
+        <div style="margin-top:8px;background:#fff;border-radius:10px;padding:8px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:10px;color:#333">Laporan</span><span style="background:#0f1b3d;color:#fff;font-size:9px;padding:4px 8px;border-radius:99px">Cetak → PDF</span></div>
+      </div>
+    </div>
+    <div class="on-screen" style="font-size:17px">borosnya <em>ketauan</em></div>
+    <div class="vo"><i>🎙</i><p><b>"Statistiknya jelas. Boros dimana ketauan."</b></p></div>
+    <div class="meta"><span>Chip ▲▼</span><span>Cetak PDF</span></div>
+  </div>
+</div>
+
+<!-- SCENE 6 -->
+<div class="scene" id="s6">
+  <div class="s-head"><b>00:27 — 00:30 · OUTRO / CTA</b><span>3 detik</span></div>
+  <div class="s-body">
+    <div class="phone" style="justify-content:center;align-items:center;text-align:center;padding:16px">
+      <div style="width:64px;height:64px;background:#fff;border-radius:50%;display:grid;place-items:center;font-size:28px">🐷</div>
+      <div style="font-family:Bowlby One,sans-serif;font-size:20px;color:#fff;margin-top:10px">ZHEABRAA</div>
+      <div style="font-size:11px;color:#d9a441;margin-top:4px">Sekat virtual, saldo real.</div>
+      <div style="margin-top:12px;background:#fff;color:#0f1b3d;padding:8px 14px;border-radius:10px;font-size:11px;font-weight:800">zheabraa.vercel.app</div>
+      <div style="margin-top:8px;font-size:10px;color:#8f9ac2">link di bio · free</div>
+    </div>
+    <div class="on-screen" style="font-size:16px"><em>link di bio</em> — free</div>
+    <div class="vo"><i>🎙</i><p><b>"Zheabraa. Sekat virtual, saldo real."</b> — pelan, tegas</p></div>
+    <div class="meta"><span>QR opsional</span><span>CTA: link di bio</span></div>
+  </div>
+</div>
+
+<div class="cap">
+  <h4>✂️ CapCut — langkah 3 menit</h4>
+  <p>1. Import hasil screen record → <b>Ratio 9:16</b> → potong tiap scene sesuai detik di atas.<br>
+  2. Teks: pakai template <b>Bold Text Pop</b> → paste teks <code>on-screen</code> per scene → durasi samakan scene.<br>
+  3. Audio: <b>Search → money phonk</b> (atau aesthetic lofi 140 BPM) → volume -14.<br>
+  4. SFX: tambah <b>pop</b> tiap nominal / persen muncul.<br>
+  5. Export 1080×1920, 30fps.</p>
+</div>
+
+<div class="cap">
+  <h4>📝 Caption siap paste</h4>
+  <p>1 rekening rasa 3 dompet 🫠 gaji numpang lewat? sekat dulu baru tenang. #zheabraa #keuangan #genz #aturuang #pocketbudgeting #mybca #fyp #aturduit #financialfreedom</p>
+</div>
+
+<div class="cap">
+  <h4>🎙 Naskah VO lengkap (copy-paste ke TTS CapCut)</h4>
+  <p>Gaji numpang lewat doang gak sih? Gue punya 1 rekening, tapi isinya gue sekat: giving, saving, dating. Di Zheabraa gak usah pindah-pindah. Pilih pocket, ketik 35k, beres. Sisa budget auto jadi tabungan. Mau nabung manual? Tinggal Simpan. Statistiknya jelas. Boros dimana ketauan. Zheabraa. Sekat virtual, saldo real.</p>
+</div>
+
+<div style="text-align:center;padding:16px;font-size:10px;color:#8f9ac2">Storyboard Opsi A — siap screen-record 1-take · Zheabraa v0.1</div>
+
+</div>
+
+<script>
+let idx=0, timer=null;
+const ids=['s1','s2','s3','s4','s5','s6'];
+const durs=[3000,5000,8000,6000,5000,3000];
+function hilite(i){
+  document.querySelectorAll('.scene').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById(ids[i]);
+  if(el){ el.classList.add('active'); el.scrollIntoView({behavior:'smooth',block:'center'})}
+  document.getElementById('bar').style.width=((i+1)/ids.length*100)+'%';
+}
+function play(){
+  idx=0; hilite(0);
+  clearInterval(timer);
+  let acc=0;
+  timer=setInterval(()=>{
+    idx++;
+    if(idx>=ids.length){ clearInterval(timer); document.getElementById('bar').style.width='100%'; return }
+    hilite(idx);
+  }, 5000);
+  // per-scene durations
+  let cur=0;
+  function next(){
+    if(cur>=ids.length) return;
+    hilite(cur);
+    setTimeout(()=>{cur++; next()}, durs[cur]);
+  }
+  cur=0; next();
+}
+</script>
+</body>
+</html>
