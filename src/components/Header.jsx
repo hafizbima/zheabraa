@@ -96,7 +96,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
             <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white">
               <img src="/logo.png" alt="" className="h-full w-full object-cover" />
             </div>
-            <span className={`font-display text-lg font-bold tracking-tight ${isDark ? 'text-[#f5f2e8]' : 'text-carbon'}`}>Zheabraa</span>
+            <span className={`font-display text-lg font-bold tracking-normal ${isDark ? 'text-[#f5f2e8]' : 'text-carbon'}`}>Zheabraa</span>
           </div>
           <div className="flex items-center gap-1.5">
             <button

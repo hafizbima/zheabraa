@@ -49,21 +49,21 @@ export default function PocketCard({ cat, txs, onClick, onSave, onUse }) {
       {goal > 0 && (
         <div className="mt-2.5">
           <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-            <span>Terkumpul {formatRupiah(savedAmt)} / {formatRupiah(goal)}</span>
-            <span className="flex items-center gap-1.5">
+            <span className="truncate">Terkumpul {formatRupiah(savedAmt)} / {formatRupiah(goal)}</span>
+            <span className="flex shrink-0 items-center gap-1.5">
               <span>{goalPct}%</span>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onSave(cat) }}
-                className="rounded-full border border-carbon bg-sunburst/50 px-2.5 py-1 text-[11px] font-semibold text-carbon transition hover:bg-sunburst active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:focus:ring-white/40"
+                className="shrink-0 whitespace-nowrap rounded-full border border-carbon bg-sunburst/50 px-2.5 py-1 text-[11px] font-semibold text-carbon transition hover:bg-sunburst active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:focus:ring-white/40"
               >
-                + Simpan
+                Simpan +
               </button>
               {savedAmt > 0 && (
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onUse(cat) }}
-                  className="rounded-full border border-carbon bg-mint/50 px-2.5 py-1 text-[11px] font-semibold text-carbon transition hover:bg-mint active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:focus:ring-white/40"
+                  className="shrink-0 whitespace-nowrap rounded-full border border-carbon bg-mint/50 px-2.5 py-1 text-[11px] font-semibold text-carbon transition hover:bg-mint active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:focus:ring-white/40"
                 >
                   Gunakan
                 </button>

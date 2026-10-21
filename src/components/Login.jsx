@@ -39,7 +39,7 @@ export default function Login() {
           <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-carbon bg-paper shadow-carbon dark:border-white/50">
             <img src="/logo.png" alt="Gimme Money" className="h-full w-full rounded-full object-cover" />
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Zheabraa</h1>
+          <h1 className="font-display text-2xl font-bold tracking-normal">Zheabraa</h1>
           <p className="mt-1 text-sm opacity-70">Sistem pocket budgeting untuk keuangan pribadimu</p>
           {backendMode === 'local' && (
             <span className="mt-2 inline-block rounded-full border border-carbon/30 bg-paper/70 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:border-white/20 dark:bg-white/10 dark:text-slate-300">
