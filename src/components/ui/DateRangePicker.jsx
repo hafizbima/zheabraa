@@ -67,12 +67,12 @@ export function DateRangePicker({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-left text-sm text-carbon transition hover:border-carbon/50 focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white dark:hover:border-white/40"
+        className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-left font-sans text-sm text-slate-900 shadow-tactile-sm transition hover:border-teal-500/50 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
         aria-expanded={open}
         aria-label="Pilih rentang tanggal"
       >
         <span className="flex items-center gap-2 truncate">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 opacity-70">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-slate-400">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
             <line x1="16" y1="2" x2="16" y2="6" />
             <line x1="8" y1="2" x2="8" y2="6" />
@@ -80,16 +80,16 @@ export function DateRangePicker({
           </svg>
           <span className="truncate">{formatRangeLabel(from, to)}</span>
         </span>
-        <span className="ml-1 text-xs opacity-60">▾</span>
+        <span className="ml-1 text-xs text-slate-400">▾</span>
       </button>
 
       {/* Popover */}
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full z-50 mt-1.5 w-[310px] overflow-hidden rounded-2xl border-2 border-carbon bg-paper shadow-2xl dark:border-white/30 dark:bg-slate-900 sm:left-0 sm:right-auto">
+          <div className="absolute right-0 top-full z-50 mt-1.5 w-[310px] overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-tactile-md dark:border-slate-800 dark:bg-slate-900 sm:left-0 sm:right-auto">
             {/* Quick Presets */}
-            <div className="flex flex-wrap gap-1 border-b border-black/10 p-2 dark:border-white/10">
+            <div className="flex flex-wrap gap-1 border-b border-slate-100 p-2 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => applyPreset('all')}

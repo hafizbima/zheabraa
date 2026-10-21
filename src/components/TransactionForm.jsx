@@ -47,7 +47,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const amt = toInt(amount)
   const overPocket = selectedCat && amt > 0 && amt > catSisa
   const input =
-    'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2.5 text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
+    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-sans text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   const submit = (e) => {
     e.preventDefault()
@@ -82,12 +82,12 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
     <button
       type="button"
       onClick={() => setType(key)}
-      className={`rounded-xl border-2 px-3 py-2 text-sm font-medium transition ${
+      className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
         active
           ? key === 'refund'
-            ? 'border-carbon bg-mint/50 text-carbon'
-            : 'border-carbon bg-ember/15 text-ember'
-          : 'border-black/20 bg-paper text-slate-500 hover:bg-mist dark:border-white/20 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+            ? 'border-teal-300 bg-teal-50 text-teal-700 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300'
+            : 'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300'
+          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
       }`}
     >
       {key === 'refund' ? 'Refund / Koreksi' : 'Pengeluaran'}

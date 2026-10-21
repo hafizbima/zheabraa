@@ -26,7 +26,7 @@ export default function WalletManager({ onClose }) {
 
   const allTx = allTransactions(months)
   const input =
-    'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
+    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   useEffect(() => {
     setDrafts((prev) => {
@@ -146,12 +146,12 @@ export default function WalletManager({ onClose }) {
       }
     >
       {isSingle ? (
-        <div className="rounded-2xl border-2 border-carbon bg-sky/50 p-4 dark:border-white/20 dark:bg-white/5">
-          <p className="mb-3 text-sm text-carbon dark:text-white">
-            Saat ini pakai <strong>1 Rekening Utama</strong>. Tambah dompet jika butuh rekening fisik terpisah (mis. Cash, E-Wallet).
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4.5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+          <p className="mb-3 font-sans text-xs text-slate-600 dark:text-slate-400">
+            Saat ini pakai <strong className="font-semibold text-slate-900 dark:text-white">1 Rekening Utama</strong>. Tambah dompet jika butuh rekening fisik terpisah (mis. Cash, E-Wallet).
           </p>
           <form onSubmit={submitNew}>
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="grid gap-2.5 sm:grid-cols-3">
               <input className={input} placeholder="Nama (mis. GoPay)" value={name} onChange={(e) => setName(e.target.value)} required />
               <input className={input} type="text" inputMode="numeric" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(e.target.value)} />
               <div className="flex flex-wrap items-center gap-1.5">
@@ -160,15 +160,15 @@ export default function WalletManager({ onClose }) {
                 ))}
               </div>
             </div>
-            <div className="mt-3 flex justify-end">
+            <div className="mt-3.5 flex justify-end">
               <button type="submit" className={btn.primary}>+ Tambah</button>
             </div>
           </form>
         </div>
       ) : (
-        <form onSubmit={submitNew} className="rounded-2xl border-2 border-carbon bg-sky/50 p-4 dark:border-white/20 dark:bg-white/5">
-          <h4 className="mb-3 text-sm font-semibold text-carbon dark:text-white">Tambah dompet</h4>
-          <div className="grid gap-2 sm:grid-cols-3">
+        <form onSubmit={submitNew} className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4.5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+          <h4 className="mb-3 font-sans text-sm font-bold text-slate-900 dark:text-white">Tambah dompet</h4>
+          <div className="grid gap-2.5 sm:grid-cols-3">
             <input className={input} placeholder="Nama (mis. GoPay)" value={name} onChange={(e) => setName(e.target.value)} required />
             <input className={input} type="text" inputMode="numeric" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(e.target.value)} />
             <div className="flex flex-wrap items-center gap-1.5">
@@ -184,7 +184,7 @@ export default function WalletManager({ onClose }) {
               ))}
             </div>
           </div>
-          <div className="mt-3 flex justify-end">
+          <div className="mt-3.5 flex justify-end">
             <button type="submit" className={btn.primary}>
               + Tambah
             </button>
@@ -192,7 +192,7 @@ export default function WalletManager({ onClose }) {
         </form>
       )}
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-4 space-y-2.5">
         {list.map((w) => {
           const d = drafts[w.id] || w
           const bal =
@@ -206,7 +206,7 @@ export default function WalletManager({ onClose }) {
               onDragOver={(e) => { e.preventDefault(); setOverId(w.id) }}
               onDragLeave={() => setOverId(null)}
               onDrop={() => { setOverId(null); move(w.id) }}
-              className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-carbon bg-paper p-3 transition-shadow hover:shadow-carbon-sm dark:border-white/20 dark:bg-slate-900 ${overId === w.id ? 'ring-2 ring-violet' : ''}`}
+              className={`flex flex-wrap items-center gap-x-3 gap-y-2.5 rounded-xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40 ${overId === w.id ? 'ring-2 ring-teal-500' : ''}`}
             >
               <div className="flex h-9 shrink-0 flex-col items-center justify-center">
                 <span

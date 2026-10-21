@@ -69,14 +69,14 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
       <button
         key={key}
         onClick={() => onViewChange(key)}
-        className={`flex h-10 items-center justify-center gap-2 rounded-xl text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${
+        className={`flex h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${
           active
             ? isDark
-              ? 'bg-[#f5f2e8] text-[#0f1b3d]'
-              : 'bg-carbon text-white'
+              ? 'bg-teal-600 text-white font-semibold shadow-tactile-sm'
+              : 'bg-slate-900 text-white font-semibold shadow-tactile-sm'
             : isDark
-              ? 'bg-[#16234a] text-[#8f9ac2] hover:bg-[#1e2f5a] hover:text-[#f5f2e8]'
-              : 'bg-mist text-carbon hover:bg-white hover:text-carbon border border-carbon/20'
+              ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white border border-slate-700/60'
+              : 'bg-white/90 text-slate-600 hover:bg-white hover:text-slate-900 border border-slate-200/80 shadow-tactile-sm'
         }`}
       >
         {icon}
@@ -87,30 +87,30 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
 
   return (
     <header
-      className={`no-print sticky top-0 z-30 border-b transition-transform duration-300 ${hidden ? '-translate-y-full' : 'translate-y-0'} ${isDark ? 'border-[#24305a] bg-[#0f1b3d]' : 'border-carbon bg-paper'}`}
+      className={`no-print sticky top-0 z-30 border-b transition-transform duration-300 ${hidden ? '-translate-y-full' : 'translate-y-0'} ${isDark ? 'border-slate-800 bg-[#0D1117]/90 backdrop-blur-md' : 'border-slate-200/80 bg-white/90 backdrop-blur-md'}`}
     >
       <div className="mx-auto max-w-3xl px-4">
-        {/* Header row — logo kiri, toggle + gear kanan (30x30 transparan) */}
+        {/* Header row — logo kiri, toggle + gear kanan */}
         <div className="flex items-center justify-between py-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-tactile-sm dark:border-slate-700">
               <img src="/logo.png" alt="" className="h-full w-full object-cover" />
             </div>
-            <span className={`font-display text-lg font-bold tracking-normal ${isDark ? 'text-[#f5f2e8]' : 'text-carbon'}`}>Zheabraa</span>
+            <span className={`font-sans text-lg font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Zheabraa</span>
           </div>
           <div className="flex items-center gap-1.5">
             <button
               onClick={onToggleTheme}
               aria-label={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}
-              className={`flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${isDark ? 'text-[#f5f2e8] hover:bg-white/10' : 'text-carbon hover:bg-black/5'}`}
+              className={`flex h-9 w-9 items-center justify-center rounded-xl border transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'border-slate-800 text-slate-300 hover:bg-slate-800' : 'border-slate-200/80 text-slate-600 hover:bg-white hover:text-slate-900 shadow-tactile-sm'}`}
             >
               {theme === 'dark' ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="4" />
                   <path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" strokeLinecap="round" />
                 </svg>
               ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
@@ -120,9 +120,9 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
                 onClick={() => setGearOpen((v) => !v)}
                 aria-label="Pengaturan"
                 aria-expanded={gearOpen}
-                className={`flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${isDark ? 'text-[#f5f2e8] hover:bg-white/10' : 'text-carbon hover:bg-black/5'}`}
+                className={`flex h-9 w-9 items-center justify-center rounded-xl border transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'border-slate-800 text-slate-300 hover:bg-slate-800' : 'border-slate-200/80 text-slate-600 hover:bg-white hover:text-slate-900 shadow-tactile-sm'}`}
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="3" />
                   <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" strokeLinecap="round" />
                 </svg>
@@ -130,14 +130,14 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
               {gearOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setGearOpen(false)} />
-                  <div className={`absolute right-0 top-11 z-50 w-44 overflow-hidden rounded-xl border shadow-lg ${isDark ? 'border-[#24305a] bg-[#16234a]' : 'border-carbon bg-paper'}`}>
+                  <div className={`absolute right-0 top-11 z-50 w-48 overflow-hidden rounded-2xl border shadow-tactile-md ${isDark ? 'border-slate-800 bg-slate-900 text-slate-100' : 'border-slate-200 bg-white text-slate-800'}`}>
                     <button
                       onClick={() => {
                         setGearOpen(false)
                         exportBackup({ wallets, months, templates })
                       }}
                       disabled={busy}
-                      className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium ${isDark ? 'text-[#f5f2e8] hover:bg-white/10' : 'text-carbon hover:bg-mist'}`}
+                      className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-xs sm:text-sm font-medium ${isDark ? 'text-slate-200 hover:bg-slate-800' : 'text-slate-700 hover:bg-slate-50'}`}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M12 3v12M7 10l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
@@ -148,7 +148,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
                     <button
                       onClick={() => restoreRef.current?.click()}
                       disabled={busy}
-                      className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium ${isDark ? 'text-[#f5f2e8] hover:bg-white/10' : 'text-carbon hover:bg-mist'}`}
+                      className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-xs sm:text-sm font-medium ${isDark ? 'text-slate-200 hover:bg-slate-800' : 'text-slate-700 hover:bg-slate-50'}`}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M12 21V9M7 14l5-5 5 5" strokeLinecap="round" strokeLinejoin="round" />
@@ -199,27 +199,31 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
         </div>
 
         {/* Month selector: baris terpisah, rata tengah */}
-        <div className={`flex items-center justify-center gap-2 border-y py-2.5 ${isDark ? 'border-[#24305a]' : 'border-carbon/20'}`}>
+        <div className={`flex items-center justify-center gap-2 border-y py-2.5 ${isDark ? 'border-slate-800' : 'border-slate-200/80'}`}>
           <button
             onClick={() => switchMonth(addMonths(currentMonthId, -1))}
             aria-label="Bulan sebelumnya"
-            className={`flex h-10 w-10 items-center justify-center rounded-full text-lg transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${isDark ? 'text-[#8f9ac2] hover:bg-white/10 hover:text-[#f5f2e8]' : 'text-carbon/60 hover:bg-black/5 hover:text-carbon'}`}
+            className={`flex h-8 w-8 items-center justify-center rounded-xl transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
           >
-            ‹
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
           </button>
           <button
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
-            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${isDark ? 'text-[#f5f2e8] hover:text-[#d9a441]' : 'text-carbon hover:text-carbon/70'}`}
+            className={`rounded-xl px-4 py-1 font-sans text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'text-white hover:text-teal-400' : 'text-slate-900 hover:text-teal-600'}`}
           >
             {labelOf(currentMonthId)}
           </button>
           <button
             onClick={() => switchMonth(addMonths(currentMonthId, 1))}
             aria-label="Bulan berikutnya"
-            className={`flex h-10 w-10 items-center justify-center rounded-full text-lg transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${isDark ? 'text-[#8f9ac2] hover:bg-white/10 hover:text-[#f5f2e8]' : 'text-carbon/60 hover:bg-black/5 hover:text-carbon'}`}
+            className={`flex h-8 w-8 items-center justify-center rounded-xl transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
           >
-            ›
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
           </button>
         </div>
 
@@ -254,7 +258,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
           )}
           <button
             onClick={onOpenWallets}
-            className={`flex h-10 items-center justify-center gap-2 rounded-xl text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${isDark ? 'bg-[#16234a] text-[#8f9ac2] hover:bg-[#1e2f5a] hover:text-[#f5f2e8]' : 'bg-mist text-carbon hover:bg-white border border-carbon/20'}`}
+            className={`flex h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white border border-slate-700/60' : 'bg-white/90 text-slate-600 hover:bg-white hover:text-slate-900 border border-slate-200/80 shadow-tactile-sm'}`}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="7" width="18" height="12" rx="2" />
@@ -275,7 +279,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
           )}
           <button
             onClick={() => window.print()}
-            className={`flex h-10 items-center justify-center gap-2 rounded-xl text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 no-print ${isDark ? 'bg-[#16234a] text-[#8f9ac2] hover:bg-[#1e2f5a] hover:text-[#f5f2e8]' : 'bg-mist text-carbon hover:bg-white border border-carbon/20'}`}
+            className={`flex h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-teal-500/20 no-print ${isDark ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white border border-slate-700/60' : 'bg-white/90 text-slate-600 hover:bg-white hover:text-slate-900 border border-slate-200/80 shadow-tactile-sm'}`}
             aria-label="Cetak laporan"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -291,10 +295,10 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
       {menuOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-          <div className={`absolute left-1/2 top-[108px] z-50 w-64 -translate-x-1/2 overflow-hidden rounded-2xl border shadow-lg ${isDark ? 'border-[#24305a] bg-[#16234a]' : 'border-carbon bg-paper'}`}>
-            <p className={`border-b px-4 py-2 text-xs font-bold uppercase tracking-wide ${isDark ? 'border-[#24305a] text-[#8f9ac2]' : 'border-carbon text-carbon/60'}`}>Pilih bulan</p>
+          <div className={`absolute left-1/2 top-[108px] z-50 w-64 -translate-x-1/2 overflow-hidden rounded-2xl border shadow-tactile-md ${isDark ? 'border-slate-800 bg-slate-900 text-slate-100' : 'border-slate-200 bg-white text-slate-800'}`}>
+            <p className={`border-b px-4 py-2 text-xs font-semibold uppercase tracking-wider ${isDark ? 'border-slate-800 text-slate-400' : 'border-slate-100 text-slate-500'}`}>Pilih bulan</p>
             <div className="max-h-64 overflow-y-auto">
-              {monthIds.length === 0 && <p className={`px-4 py-3 text-sm ${isDark ? 'text-[#8f9ac2]' : 'text-slate-500'}`}>Belum ada bulan tersimpan.</p>}
+              {monthIds.length === 0 && <p className={`px-4 py-3 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Belum ada bulan tersimpan.</p>}
               {monthIds.map((m) => (
                 <button
                   key={m}
@@ -302,7 +306,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
                     switchMonth(m)
                     setMenuOpen(false)
                   }}
-                  className={`block w-full px-4 py-2.5 text-left text-sm ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/5'} ${m === currentMonthId ? `font-semibold ${isDark ? 'text-[#f5f2e8]' : 'text-carbon'}` : isDark ? 'text-[#8f9ac2]' : 'text-carbon/70'}`}
+                  className={`block w-full px-4 py-2.5 text-left text-sm ${isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-50'} ${m === currentMonthId ? `font-semibold ${isDark ? 'text-teal-400' : 'text-teal-600'}` : isDark ? 'text-slate-400' : 'text-slate-700'}`}
                 >
                   {labelOf(m)}
                 </button>
@@ -313,9 +317,13 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
                 setMenuOpen(false)
                 setConfirmNew(true)
               }}
-              className={`block w-full border-t px-4 py-3 text-left text-sm font-medium ${isDark ? 'border-[#24305a] text-[#f5f2e8] hover:bg-white/5' : 'border-carbon text-carbon hover:bg-black/5'}`}
+              className={`flex w-full items-center gap-2 border-t px-4 py-3 text-left text-sm font-medium ${isDark ? 'border-slate-800 text-slate-200 hover:bg-slate-800' : 'border-slate-100 text-slate-800 hover:bg-slate-50'}`}
             >
-              ➕ Mulai Bulan Baru
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Mulai Bulan Baru
             </button>
           </div>
         </>

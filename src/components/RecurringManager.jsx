@@ -7,10 +7,10 @@ import { btn } from '../lib/buttons.js'
 import EmptyState from './EmptyState.jsx'
 
 const TYPES = [
-  { key: 'expense', label: 'Pengeluaran', activeCls: 'border-carbon bg-ember/15 text-ember' },
-  { key: 'income', label: 'Pemasukan', activeCls: 'border-carbon bg-mint/50 text-carbon' },
-  { key: 'bill', label: 'Tagihan', activeCls: 'border-carbon bg-sky/50 text-carbon' },
-  { key: 'transfer', label: 'Transfer', activeCls: 'border-carbon bg-violet/15 text-violet' },
+  { key: 'expense', label: 'Pengeluaran', activeCls: 'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300' },
+  { key: 'income', label: 'Pemasukan', activeCls: 'border-teal-300 bg-teal-50 text-teal-700 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300' },
+  { key: 'bill', label: 'Tagihan', activeCls: 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300' },
+  { key: 'transfer', label: 'Transfer', activeCls: 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300' },
 ]
 const typeMeta = (k) => TYPES.find((t) => t.key === k) || TYPES[0]
 
@@ -30,7 +30,7 @@ export default function RecurringManager({ onClose }) {
 
   const cats = month?.categories || []
   const input =
-    'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
+    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   const catName = (id) => (id ? cats.find((c) => c.id === id)?.name : null)
   const walletName = (id) => (id ? wallets.find((w) => w.id === id)?.name : '-')
@@ -131,21 +131,21 @@ export default function RecurringManager({ onClose }) {
         </div>
       }
     >
-      <form onSubmit={submitNew} className="rounded-2xl border-2 border-carbon bg-mint/30 p-4 dark:border-white/20 dark:bg-white/5">
-        <h4 className="mb-3 text-sm font-semibold text-carbon dark:text-white">Tambah template</h4>
-        <div className="grid gap-2 sm:grid-cols-4">
+      <form onSubmit={submitNew} className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4.5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+        <h4 className="mb-3 font-sans text-sm font-bold text-slate-900 dark:text-white">Tambah template</h4>
+        <div className="grid gap-2.5 sm:grid-cols-4">
           <input className={input} type="text" inputMode="numeric" placeholder="Tanggal" value={day} onChange={(e) => setDay(e.target.value)} aria-label="Tanggal" />
           <input className={input} type="text" inputMode="numeric" placeholder="Nominal (Rp)" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Nominal" />
           <input className={input + ' sm:col-span-2'} placeholder="Keterangan (mis. Bayar Kos)" value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
-        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {TYPES.map((t) => (
             <button
               key={t.key}
               type="button"
               onClick={() => setType(t.key)}
-              className={`rounded-xl border-2 px-3 py-2 text-sm font-medium transition ${
-                type === t.key ? t.activeCls : 'border-black/20 bg-paper text-slate-500 hover:bg-mist dark:border-white/20 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+              className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                type === t.key ? t.activeCls : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
               }`}
             >
               {t.label}
@@ -153,7 +153,7 @@ export default function RecurringManager({ onClose }) {
           ))}
         </div>
         {type === 'expense' || type === 'bill' ? (
-          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <div className="mt-2.5 grid gap-2 sm:grid-cols-2">
             <select className={input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
               <option value="free">Uang Bebas</option>
               {cats.map((c) => (
@@ -172,7 +172,7 @@ export default function RecurringManager({ onClose }) {
             </select>
           </div>
         ) : type === 'transfer' ? (
-          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <div className="mt-2.5 grid gap-2 sm:grid-cols-2">
             <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
               <option value="">Dompet asal</option>
               {wallets.map((w) => (
@@ -191,18 +191,18 @@ export default function RecurringManager({ onClose }) {
             </select>
           </div>
         ) : (
-          <p className="mt-2 rounded-xl border border-mint bg-mint/30 px-3 py-2 text-xs text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
+          <p className="mt-2.5 rounded-xl border border-teal-200/80 bg-teal-50/60 px-3.5 py-2 text-xs text-teal-800 dark:border-teal-800/80 dark:bg-teal-950/40 dark:text-teal-200">
             Pemasukan otomatis ditambahkan ke daftar Pemasukan di Dashboard tiap bulan.
           </p>
         )}
-        <div className="mt-3 flex justify-end">
+        <div className="mt-3.5 flex justify-end">
           <button type="submit" disabled={toInt(amount) <= 0} className={btn.primary}>
             + Tambah Template
           </button>
         </div>
       </form>
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-4 space-y-2.5">
         {templates.length === 0 && (
           <EmptyState title="Belum ada template" sub="Tambah template untuk pengeluaran, pemasukan, tagihan, atau transfer berulang." />
         )}
@@ -211,13 +211,13 @@ export default function RecurringManager({ onClose }) {
           const dt = typeMeta(d.type || 'expense')
           const isOut = (d.type || 'expense') === 'expense' || d.type === 'bill'
           return (
-            <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-carbon bg-paper p-3 transition-shadow hover:shadow-carbon-sm dark:border-white/20 dark:bg-slate-900">
-              <label className="flex items-center gap-1.5 text-xs text-slate-500">
+            <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
                 <input
                   type="checkbox"
                   checked={d.active !== false}
                   onChange={(e) => updateDraft(t.id, { active: e.target.checked })}
-                  className="h-4 w-4 accent-carbon"
+                  className="h-4 w-4 rounded accent-teal-600"
                   aria-label="Aktif"
                 />
                 Aktif
@@ -231,14 +231,14 @@ export default function RecurringManager({ onClose }) {
                   else arr.push(currentMonthId)
                   updateDraft(t.id, { skipMonths: arr })
                 }}
-                className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold transition ${
+                className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold transition ${
                   (d.skipMonths || []).includes(currentMonthId)
-                    ? 'border-carbon bg-sunburst/60 text-carbon'
-                    : 'border-black/20 bg-paper text-slate-500 hover:bg-mist dark:border-white/20 dark:bg-slate-900 dark:text-slate-300'
+                    ? 'border-amber-300 bg-amber-100 text-amber-800 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-200'
+                    : 'border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
                 }`}
                 title="Lewati template ini pada bulan berjalan"
               >
-                ⏸ Skip bulan ini
+                Skip bulan ini
               </button>
               <input
                 className={input + ' w-16'}
@@ -262,14 +262,14 @@ export default function RecurringManager({ onClose }) {
                 onChange={(e) => updateDraft(t.id, { description: e.target.value })}
                 placeholder="Keterangan"
               />
-              <div className="flex overflow-hidden rounded-xl border-2 border-black/20 dark:border-white/20">
+              <div className="flex overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
                 {TYPES.map((tk) => (
                   <button
                     key={tk.key}
                     type="button"
                     onClick={() => updateDraft(t.id, { type: tk.key })}
-                    className={`px-2 py-1.5 text-xs font-medium ${
-                      (d.type || 'expense') === tk.key ? tk.activeCls : 'bg-paper text-slate-500 dark:bg-slate-900 dark:text-slate-300'
+                    className={`px-2.5 py-1.5 text-xs font-semibold ${
+                      (d.type || 'expense') === tk.key ? tk.activeCls : 'bg-white text-slate-500 dark:bg-slate-800 dark:text-slate-400'
                     }`}
                   >
                     {tk.label}

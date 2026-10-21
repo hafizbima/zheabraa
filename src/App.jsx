@@ -24,15 +24,15 @@ function Root() {
   const { user, ready } = useStore()
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-sky dark:bg-[#0f1b3d]">
-        <div className="text-center text-carbon dark:text-white">
+      <div className="flex min-h-screen items-center justify-center bg-[#F4F5F7] dark:bg-[#0D1117]">
+        <div className="text-center text-slate-900 dark:text-white">
           <img
             src="/logo.png"
             alt="Gimme Money"
-            className="mx-auto mb-4 h-14 w-14 rounded-2xl border-2 border-carbon/20 object-cover"
+            className="mx-auto mb-4 h-14 w-14 rounded-2xl border border-slate-200/80 object-cover shadow-tactile-sm dark:border-slate-800"
           />
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-carbon/20 border-t-carbon dark:border-white/20 dark:border-t-white" />
-          <p className="text-sm opacity-60">Memuat data…</p>
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-slate-800 dark:border-slate-800 dark:border-t-teal-400" />
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Memuat data…</p>
         </div>
       </div>
     )
@@ -65,7 +65,7 @@ function Shell() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky via-sky to-[#cfe6ff] dark:from-[#131a33] dark:via-[#131a33] dark:to-[#0f1b3d]">
+    <div className="min-h-screen bg-[#F4F5F7] text-slate-900 transition-colors duration-200 dark:bg-[#0D1117] dark:text-slate-100">
       <Header
         view={view}
         onViewChange={setView}
@@ -93,10 +93,13 @@ function Shell() {
       {/* FAB */}
       <button
         onClick={() => openNewTx(null)}
-        className="no-print fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border-2 border-carbon bg-paper text-2xl text-carbon shadow-carbon transition hover:bg-mist active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/50 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800 dark:focus:ring-white/40"
+        className="no-print fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-tactile-md transition-all duration-150 hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95 focus:outline-none focus:ring-2 focus:ring-slate-400/30 dark:bg-teal-600 dark:hover:bg-teal-500"
         aria-label="Tambah transaksi"
       >
-        +
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
       </button>
 
       {txOpen && (

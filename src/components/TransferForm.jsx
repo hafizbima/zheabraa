@@ -22,7 +22,7 @@ export default function TransferForm({ monthId, onClose }) {
   const [error, setError] = useState('')
 
   const input =
-    'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2.5 text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
+    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-sans text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   const amt = toInt(amount)
   const fromOver = fromId && amt > 0 && amt > bal(fromId)
@@ -43,7 +43,7 @@ export default function TransferForm({ monthId, onClose }) {
 
     addTransaction(monthId, {
       date,
-      type: 'transfer',
+      type,
       amount: amt,
       categoryId: null,
       walletId: fromId,
@@ -69,7 +69,7 @@ export default function TransferForm({ monthId, onClose }) {
       }
     >
       <form id="transfer-form" onSubmit={submit} className="space-y-4">
-        <p className="rounded-xl border border-carbon bg-sky px-3 py-2 text-xs text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
+        <p className="rounded-xl border border-teal-200/80 bg-teal-50/60 px-3.5 py-2 text-xs text-teal-800 dark:border-teal-800/80 dark:bg-teal-950/40 dark:text-teal-200">
           Memindahkan uang antar dompet tanpa memengaruhi pocket atau uang bebas.
         </p>
 

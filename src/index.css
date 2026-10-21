@@ -11,14 +11,14 @@ html {
 }
 
 body {
-  @apply bg-sky font-sans text-slate-800 antialiased dark:bg-[#0f1b3d] dark:text-slate-100;
+  @apply bg-[#F4F5F7] font-sans text-slate-900 antialiased dark:bg-[#0D1117] dark:text-slate-100;
 }
 
 h1,
 h2,
 h3,
 h4 {
-  @apply tracking-tight;
+  @apply tracking-tight font-sans;
 }
 
 .dark {

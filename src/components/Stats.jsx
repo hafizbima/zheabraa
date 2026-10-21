@@ -148,7 +148,7 @@ export default function Stats() {
   }, [gran, ranged, months, data.rows])
 
   const input =
-    'rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
+    'rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   // perbandingan bulan terakhir vs bulan sebelumnya (butuh minimal 2 bulan)
   const compare = (() => {
@@ -168,13 +168,13 @@ export default function Stats() {
   })()
 
   const granBtn = (key, label) =>
-    `rounded-full border px-3 py-1.5 text-xs font-semibold transition ${gran === key ? 'border-carbon bg-carbon text-white dark:border-white dark:bg-white dark:text-carbon' : 'border-carbon bg-paper text-carbon hover:bg-mist dark:border-white/30 dark:bg-slate-900 dark:text-white'}`
+    `rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${gran === key ? 'bg-slate-900 text-white shadow-tactile-sm dark:bg-teal-500 dark:text-slate-950' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'}`
 
   return (
     <div className="space-y-5">
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-display text-lg font-bold text-carbon dark:text-white">Statistik</h2>
+          <h2 className="font-sans text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">Statistik</h2>
           <div className="flex items-center gap-2">
             <button onClick={() => window.print()} className={btn.ghost} aria-label="Cetak laporan">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -199,22 +199,22 @@ export default function Stats() {
         </div>
       </section>
 
-      <section className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl border-2 border-carbon bg-mint/40 p-3.5 dark:border-white/30 dark:bg-slate-900">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-300">Total Pemasukan</p>
-          <p className="mt-1 text-base font-bold text-carbon dark:text-white">{formatRupiah(data.income)}</p>
+      <section className="grid grid-cols-2 gap-3.5">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Pemasukan</p>
+          <p className="mt-1 font-sans text-lg font-bold text-teal-600 dark:text-teal-400">{formatRupiah(data.income)}</p>
         </div>
-        <div className="rounded-2xl border-2 border-carbon bg-lavender/60 p-3.5 dark:border-white/30 dark:bg-slate-900">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-300">Total Dialokasikan</p>
-          <p className="mt-1 text-base font-bold text-violet dark:text-lavender">{formatRupiah(data.allocated)}</p>
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Dialokasikan</p>
+          <p className="mt-1 font-sans text-lg font-bold text-slate-900 dark:text-white">{formatRupiah(data.allocated)}</p>
         </div>
-        <div className="rounded-2xl border-2 border-carbon bg-sky/60 p-3.5 dark:border-white/30 dark:bg-slate-900">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-300">Total Belanja (net)</p>
-          <p className="mt-1 text-base font-bold text-carbon dark:text-white">{formatRupiah(data.spent)}</p>
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Belanja (net)</p>
+          <p className="mt-1 font-sans text-lg font-bold text-rose-600 dark:text-rose-400">{formatRupiah(data.spent)}</p>
         </div>
-        <div className="rounded-2xl border-2 border-carbon bg-sunburst/40 p-3.5 dark:border-white/30 dark:bg-slate-900">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-300">Sisa Akhir Bulan</p>
-          <p className={`mt-1 text-base font-bold ${data.left < 0 ? 'text-ember' : 'text-carbon dark:text-white'}`}>
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Sisa Akhir Bulan</p>
+          <p className={`mt-1 font-sans text-lg font-bold ${data.left < 0 ? 'text-rose-600' : 'text-slate-900 dark:text-white'}`}>
             {formatRupiah(data.left)}
           </p>
         </div>
@@ -222,24 +222,24 @@ export default function Stats() {
 
       {/* Perbandingan bulan terakhir vs sebelumnya */}
       {compare && (
-        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-          <h3 className="font-semibold text-carbon dark:text-white">Perbandingan Bulan</h3>
-          <p className="text-xs text-slate-400">{compare.label} vs {compare.prevLabel}</p>
-          <div className="mt-3 grid grid-cols-2 gap-3">
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+          <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Perbandingan Bulan</h3>
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{compare.label} vs {compare.prevLabel}</p>
+          <div className="mt-3.5 grid grid-cols-2 gap-3">
             {compare.items.map((it) => {
               const diff = it.cur - it.prev
               const up = diff > 0
               return (
-                <div key={it.label} className="rounded-xl border border-carbon px-3 py-2 dark:border-white/20 dark:bg-white/5">
+                <div key={it.label} className="rounded-xl border border-slate-100 bg-slate-50/70 p-3 dark:border-slate-800/80 dark:bg-slate-800/40">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{it.label}</span>
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{it.label}</span>
                     {diff !== 0 && (
-                      <span className={`text-[10px] font-semibold ${up ? 'text-ember' : 'text-mint'}`}>
+                      <span className={`text-[10px] font-semibold ${up ? 'text-rose-500' : 'text-teal-600'}`}>
                         {up ? '▲' : '▼'} {formatRupiah(Math.abs(diff))}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm font-bold text-carbon dark:text-white">{formatRupiah(it.cur)}</p>
+                  <p className="mt-1 font-sans text-sm font-bold text-slate-900 dark:text-white">{formatRupiah(it.cur)}</p>
                   <p className="text-[10px] text-slate-400">bulan lalu: {formatRupiah(it.prev)}</p>
                 </div>
               )
@@ -249,34 +249,34 @@ export default function Stats() {
       )}
 
       {data.wals.length > 0 && (
-        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-          <h3 className="font-semibold text-carbon dark:text-white">Per Dompet</h3>
-          <div className="mt-3 overflow-x-auto">
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+          <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Per Dompet</h3>
+          <div className="mt-3.5 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
-                  <th className="pb-2 pr-3 font-medium">Dompet</th>
-                  <th className="pb-2 pr-3 text-right font-medium">Masuk</th>
-                  <th className="pb-2 pr-3 text-right font-medium">Keluar</th>
-                  <th className="pb-2 pr-3 text-right font-medium">Net</th>
-                  <th className="pb-2 text-right font-medium">Saldo</th>
+                <tr className="text-left text-xs uppercase tracking-wider text-slate-400">
+                  <th className="pb-2.5 pr-3 font-semibold">Dompet</th>
+                  <th className="pb-2.5 pr-3 text-right font-semibold">Masuk</th>
+                  <th className="pb-2.5 pr-3 text-right font-semibold">Keluar</th>
+                  <th className="pb-2.5 pr-3 text-right font-semibold">Net</th>
+                  <th className="pb-2.5 text-right font-semibold">Saldo</th>
                 </tr>
               </thead>
               <tbody>
                 {data.wals.map((w) => (
-                  <tr key={w.id} className="border-t border-black/20 dark:border-white/20">
-                    <td className="py-2.5 pr-3">
-                      <span className="flex items-center gap-2 font-medium text-carbon dark:text-white">
+                  <tr key={w.id} className="border-t border-slate-100 dark:border-slate-800/80">
+                    <td className="py-3 pr-3">
+                      <span className="flex items-center gap-2 font-medium text-slate-900 dark:text-white">
                         <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: w.color }} />
                         {w.name}
                       </span>
                     </td>
-                    <td className="py-2.5 pr-3 text-right text-mint">{formatRupiah(w.in)}</td>
-                    <td className="py-2.5 pr-3 text-right text-ember">{formatRupiah(w.out)}</td>
-                    <td className={`py-2.5 pr-3 text-right ${w.net < 0 ? 'text-ember' : 'text-carbon dark:text-white'}`}>
+                    <td className="py-3 pr-3 text-right font-sans font-medium text-teal-600 dark:text-teal-400">{formatRupiah(w.in)}</td>
+                    <td className="py-3 pr-3 text-right font-sans font-medium text-rose-500">{formatRupiah(w.out)}</td>
+                    <td className={`py-3 pr-3 text-right font-sans font-medium ${w.net < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
                       {formatRupiah(w.net)}
                     </td>
-                    <td className={`py-2.5 text-right font-medium ${w.balance < 0 ? 'text-ember' : 'text-carbon dark:text-white'}`}>
+                    <td className={`py-3 text-right font-sans font-bold ${w.balance < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
                       {formatRupiah(w.balance)}
                     </td>
                   </tr>
@@ -291,9 +291,9 @@ export default function Stats() {
       )}
 
       {data.cats.length > 0 && (
-        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-          <div className="mb-2">
-            <h3 className="font-semibold text-carbon dark:text-white">Belanja per Kategori</h3>
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-3">
+            <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Belanja per Kategori</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">Ke mana saja pengeluaranmu dialokasikan selama periode ini?</p>
           </div>
           <DonutChart data={data.cats} totalLabel="Total Belanja" />
@@ -301,59 +301,59 @@ export default function Stats() {
       )}
 
       {trend.rows.length > 1 && (
-        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-3">
-            <h3 className="font-semibold text-carbon dark:text-white">
+            <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
               {gran === 'harian' ? 'Tren Harian' : gran === 'mingguan' ? 'Tren Mingguan' : 'Tren Bulanan'}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">Bagaimana pola arus kas pemasukan versus pengeluaran seiring waktu?</p>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={trend.rows} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.15} />
+              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.08} />
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} width={56} tickFormatter={compactNum} />
-              <Tooltip formatter={(v) => formatRupiah(Number(v))} labelStyle={{ color: '#0f172a' }} contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0' }} />
-              {gran === 'bulanan' && <Line type="monotone" dataKey="income" name="Pemasukan" stroke="#8b5cf6" strokeWidth={2} dot={false} />}
-              <Line type="monotone" dataKey="spent" name="Belanja" stroke="#ef4444" strokeWidth={2} dot={false} />
+              <Tooltip formatter={(v) => formatRupiah(Number(v))} labelStyle={{ color: '#0f172a' }} contentStyle={{ borderRadius: 16, border: '1px solid #e2e8f0', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.06)' }} />
+              {gran === 'bulanan' && <Line type="monotone" dataKey="income" name="Pemasukan" stroke="#0d9488" strokeWidth={2.5} dot={false} />}
+              <Line type="monotone" dataKey="spent" name="Belanja" stroke="#f43f5e" strokeWidth={2.5} dot={false} />
             </LineChart>
           </ResponsiveContainer>
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+          <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
             {gran === 'bulanan' && (
-              <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#8b5cf6]" />
+              <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                <span className="h-2.5 w-2.5 rounded-full bg-teal-600" />
                 Pemasukan
               </span>
             )}
-            <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#ef4444]" />
+            <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+              <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
               Belanja
             </span>
           </div>
         </section>
       )}
 
-      <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-        <h3 className="font-semibold text-carbon dark:text-white">Per Bulan</h3>
-        <div className="mt-3 overflow-x-auto">
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+        <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Per Bulan</h3>
+        <div className="mt-3.5 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
-                <th className="pb-2 pr-3 font-medium">Bulan</th>
-                <th className="pb-2 pr-3 text-right font-medium">Pemasukan</th>
-                <th className="pb-2 pr-3 text-right font-medium">Alokasi</th>
-                <th className="pb-2 pr-3 text-right font-medium">Belanja</th>
-                <th className="pb-2 text-right font-medium">Sisa</th>
+              <tr className="text-left text-xs uppercase tracking-wider text-slate-400">
+                <th className="pb-2.5 pr-3 font-semibold">Bulan</th>
+                <th className="pb-2.5 pr-3 text-right font-semibold">Pemasukan</th>
+                <th className="pb-2.5 pr-3 text-right font-semibold">Alokasi</th>
+                <th className="pb-2.5 pr-3 text-right font-semibold">Belanja</th>
+                <th className="pb-2.5 text-right font-semibold">Sisa</th>
               </tr>
             </thead>
             <tbody>
               {data.rows.map((r) => (
-                <tr key={r.mId} className="border-t border-black/20 dark:border-white/20">
-                  <td className="py-2.5 pr-3 font-medium text-carbon dark:text-white">{r.label}</td>
-                  <td className="py-2.5 pr-3 text-right text-carbon dark:text-white">{formatRupiah(r.income)}</td>
-                  <td className="py-2.5 pr-3 text-right text-violet dark:text-lavender">{formatRupiah(r.allocated)}</td>
-                  <td className="py-2.5 pr-3 text-right text-carbon dark:text-white">{formatRupiah(r.spent)}</td>
-                  <td className={`py-2.5 text-right ${r.left < 0 ? 'text-ember' : 'text-carbon dark:text-white'}`}>
+                <tr key={r.mId} className="border-t border-slate-100 dark:border-slate-800/80">
+                  <td className="py-3 pr-3 font-medium text-slate-900 dark:text-white">{r.label}</td>
+                  <td className="py-3 pr-3 text-right font-sans text-slate-900 dark:text-white">{formatRupiah(r.income)}</td>
+                  <td className="py-3 pr-3 text-right font-sans text-teal-600 dark:text-teal-400">{formatRupiah(r.allocated)}</td>
+                  <td className="py-3 pr-3 text-right font-sans text-slate-900 dark:text-white">{formatRupiah(r.spent)}</td>
+                  <td className={`py-3 text-right font-sans font-bold ${r.left < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
                     {formatRupiah(r.left)}
                   </td>
                 </tr>

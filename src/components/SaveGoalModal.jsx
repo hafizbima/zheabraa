@@ -11,20 +11,20 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
   const over = isUse && amt > available
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-carbon/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="modal-panel relative z-10 w-full max-w-sm rounded-2xl border-2 border-carbon bg-paper p-5 dark:border-white/30 dark:bg-slate-900">
-        <h3 className="text-lg font-bold text-carbon dark:text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={onClose} />
+      <div className="modal-panel relative z-10 w-full max-w-sm rounded-3xl border border-slate-200/80 bg-white p-6 shadow-tactile dark:border-slate-800 dark:bg-slate-900">
+        <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white">
           {isUse ? 'Pakai tabungan ' : 'Simpan ke '}{cat.name}
         </h3>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           {isUse
             ? `Uang diambil dari tabungan (tersedia ${formatRupiah(available)}) untuk belanja.`
             : 'Uang akan dikeluarkan dari Uang Bebas dan ditambahkan ke tabungan.'}
         </p>
-        <div className="mt-3 space-y-2">
+        <div className="mt-4 space-y-2.5">
           <input
-            className="w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             type="text"
             inputMode="numeric"
             placeholder="Nominal (Rp)"
@@ -32,19 +32,19 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
             onChange={(e) => setAmount(e.target.value)}
             autoFocus
           />
-          {amount && amt > 0 && <p className="text-xs text-slate-400">{formatRupiah(amt)}</p>}
+          {amount && amt > 0 && <p className="font-sans text-xs font-semibold text-teal-600 dark:text-teal-400">{formatRupiah(amt)}</p>}
           {isUse && (
             <input
-              className="w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
               type="text"
-              placeholder={`Untuk apa? (mis. Beli laptop)`}
+              placeholder="Untuk apa? (mis. Beli laptop)"
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
             />
           )}
         </div>
-        {over && <p className="mt-2 text-xs text-ember">Melebihi tabungan tersedia ({formatRupiah(available)}).</p>}
-        <div className="mt-4 flex justify-end gap-2">
+        {over && <p className="mt-2 text-xs font-medium text-rose-500">Melebihi tabungan tersedia ({formatRupiah(available)}).</p>}
+        <div className="mt-5 flex justify-end gap-2">
           <button onClick={onClose} className={btn.neutral}>Batal</button>
           <button
             onClick={() => {

@@ -123,7 +123,7 @@ export default function TransactionList({ onEditTx }) {
     .reduce((a, t) => a + t.amount, 0)
 
   const input =
-    'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
+    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   const group = {}
   for (const t of filtered) {
@@ -133,9 +133,9 @@ export default function TransactionList({ onEditTx }) {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Lihat bulan</label>
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Lihat bulan</label>
           <select className={input + ' w-52'} value={viewMonth} onChange={(e) => setViewMonth(e.target.value)} aria-label="Bulan transaksi">
             {monthIds.map((m) => (
               <option key={m} value={m}>
@@ -145,13 +145,13 @@ export default function TransactionList({ onEditTx }) {
           </select>
         </div>
         <input
-          className={input + ' mb-2'}
+          className={input + ' mb-3'}
           placeholder="Cari di semua bulan…"
           value={globalSearch}
           onChange={(e) => setGlobalSearch(e.target.value)}
           aria-label="Cari semua bulan"
         />
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           <input
             className={input}
             placeholder="Cari keterangan…"
@@ -189,15 +189,15 @@ export default function TransactionList({ onEditTx }) {
           />
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-          <span className="text-slate-500 dark:text-slate-400">
-            <span className="font-semibold text-ember">{formatRupiah(spent)}</span> keluar
+        <div className="mt-3.5 flex flex-wrap items-center gap-3 text-xs">
+          <span className="rounded-lg bg-rose-50 px-2.5 py-1 text-slate-600 dark:bg-rose-950/30 dark:text-slate-300">
+            <span className="font-sans font-bold text-rose-600 dark:text-rose-400">{formatRupiah(spent)}</span> keluar
           </span>
-          <span className="text-slate-500 dark:text-slate-400">
-            <span className="font-semibold text-mint">{formatRupiah(refunded)}</span> refund
+          <span className="rounded-lg bg-teal-50 px-2.5 py-1 text-slate-600 dark:bg-teal-950/30 dark:text-slate-300">
+            <span className="font-sans font-bold text-teal-600 dark:text-teal-400">{formatRupiah(refunded)}</span> refund
           </span>
-          <span className="text-slate-500 dark:text-slate-400">
-            <span className="font-semibold text-carbon dark:text-white">{filtered.length}</span> transaksi
+          <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            <span className="font-sans font-bold text-slate-900 dark:text-white">{filtered.length}</span> transaksi
           </span>
           <button
             onClick={() => {
@@ -225,19 +225,19 @@ export default function TransactionList({ onEditTx }) {
 
       {/* Cari global — hasil dari semua bulan */}
       {globalSearch.trim() && (
-        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-          <h3 className="font-semibold text-carbon dark:text-white">Hasil pencarian " {globalSearch.trim()} "</h3>
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+          <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Hasil pencarian "{globalSearch.trim()}"</h3>
           {globalResults.length === 0 ? (
             <p className="mt-3 text-sm text-slate-400">Tidak ditemukan.</p>
           ) : (
-            <div className="mt-3 space-y-2">
+            <div className="mt-3.5 space-y-2">
               {globalResults.map(({ mId, tx }) => {
                 const isTransfer = tx.type === 'transfer'
                 return (
-                  <div key={tx.id} className="flex items-center gap-3 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
+                  <div key={tx.id} className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 shadow-tactile-sm dark:border-slate-800/80 dark:bg-slate-800/40">
                     <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: catColor(tx) }} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-carbon dark:text-white">{catName(tx)}</p>
+                      <p className="truncate font-sans text-sm font-semibold text-slate-900 dark:text-white">{catName(tx)}</p>
                       <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                         {formatDate(tx.date)} ({labelOf(mId)})
                         {isTransfer
@@ -246,10 +246,10 @@ export default function TransactionList({ onEditTx }) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-sm font-semibold ${isTransfer ? 'text-violet dark:text-lavender' : tx.type === 'refund' || tx.type === 'income' ? 'text-mint' : 'text-ember'}`}>
+                      <p className={`font-sans text-sm font-bold ${isTransfer ? 'text-indigo-600 dark:text-indigo-400' : tx.type === 'refund' || tx.type === 'income' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-900 dark:text-white'}`}>
                         {isTransfer ? '⇄ ' : tx.type === 'refund' || tx.type === 'income' ? '+' : '−'}{formatRupiah(tx.amount)}
                       </p>
-                      <div className="mt-0.5 flex justify-end gap-1">
+                      <div className="mt-1 flex justify-end gap-1">
                         <button onClick={() => onEditTx(mId, tx)} className={btn.subtle}>Ubah</button>
                         <button onClick={() => setConfirmId({ mId, id: tx.id })} className={btn.subtleDanger}>Hapus</button>
                       </div>
@@ -264,7 +264,7 @@ export default function TransactionList({ onEditTx }) {
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border-2 border-dashed border-black/30 bg-paper p-8 text-center dark:border-white/20 dark:bg-slate-900">
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white/50 p-8 text-center dark:border-slate-800 dark:bg-slate-900">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {hasFilter ? 'Tidak ada transaksi yang cocok dengan filter.' : 'Belum ada transaksi di bulan ini.'}
           </p>
@@ -280,7 +280,7 @@ export default function TransactionList({ onEditTx }) {
       ) : (
         Object.entries(group).map(([date, items]) => (
           <section key={date}>
-            <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
               {formatDate(date)}
             </p>
             <div className="space-y-2">
@@ -289,11 +289,11 @@ export default function TransactionList({ onEditTx }) {
                 return (
                   <div
                     key={t.id}
-                    className="flex items-center gap-3 rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900"
+                    className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40"
                   >
                     <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: catColor(t) }} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-carbon dark:text-white">{catName(t)}</p>
+                      <p className="truncate font-sans text-sm font-semibold text-slate-900 dark:text-white">{catName(t)}</p>
                       <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                         {isTransfer
                           ? `${walletName(t.walletId) || '-'} → ${walletName(t.toWalletId) || '-'}${t.description ? ` • ${t.description}` : ''}`
@@ -301,10 +301,10 @@ export default function TransactionList({ onEditTx }) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-sm font-semibold ${isTransfer ? 'text-violet dark:text-lavender' : t.type === 'refund' || t.type === 'income' ? 'text-mint' : 'text-ember'}`}>
+                      <p className={`font-sans text-sm font-bold ${isTransfer ? 'text-indigo-600 dark:text-indigo-400' : t.type === 'refund' || t.type === 'income' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-900 dark:text-white'}`}>
                         {isTransfer ? '⇄ ' : t.type === 'refund' || t.type === 'income' ? '+' : '−'}{formatRupiah(t.amount)}
                       </p>
-                      <div className="mt-0.5 flex justify-end gap-1">
+                      <div className="mt-1 flex justify-end gap-1">
                         <button onClick={() => onEditTx(viewMonth, t)} className={btn.subtle}>
                           Ubah
                         </button>

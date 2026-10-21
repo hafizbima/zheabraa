@@ -2,9 +2,9 @@ import { categoryStatus, categoryLeft, goalSaved } from '../lib/calc.js'
 import { formatRupiah } from '../lib/money.js'
 
 function statusStyles(status) {
-  if (status === 'over') return 'bg-ember'
-  if (status === 'warn') return 'bg-sunburst'
-  return 'bg-violet'
+  if (status === 'over') return 'bg-rose-500'
+  if (status === 'warn') return 'bg-amber-500'
+  return 'bg-teal-500'
 }
 
 export default function PocketCard({ cat, txs, onClick, onSave, onUse }) {
@@ -19,43 +19,43 @@ export default function PocketCard({ cat, txs, onClick, onSave, onUse }) {
   return (
     <div
       onClick={onClick}
-      className="block w-full cursor-pointer rounded-2xl border-2 border-carbon bg-paper p-4 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-carbon-sm active:scale-[0.99] dark:border-white/30 dark:bg-slate-900 dark:hover:bg-slate-800"
+      className="block w-full cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-tactile-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-tactile active:scale-[0.99] dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
-          <span className="truncate font-medium text-carbon dark:text-white">{cat.name}</span>
+          <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
+          <span className="truncate font-sans text-sm font-semibold text-slate-900 dark:text-white">{cat.name}</span>
           {goal > 0 && (
-            <span className={`shrink-0 rounded-full border border-carbon px-2 py-0.5 text-[10px] font-semibold ${goalDone ? 'bg-mint/70 text-carbon' : 'bg-sky/70 text-carbon'}`}>
+            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${goalDone ? 'border border-emerald-200/80 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' : 'border border-teal-200/80 bg-teal-50 text-teal-700 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300'}`}>
               {goalDone ? 'Target Tercapai' : `Target ${formatRupiah(goal)}`}
             </span>
           )}
         </div>
         <div className="text-right">
-          <p className="text-sm font-semibold text-carbon dark:text-white">
+          <p className="font-sans text-sm font-bold text-slate-900 dark:text-white">
             {formatRupiah(used)}
-            {budget > 0 && <span className="font-normal text-slate-500 dark:text-slate-400"> / {formatRupiah(budget)}</span>}
+            {budget > 0 && <span className="text-xs font-normal text-slate-500 dark:text-slate-400"> / {formatRupiah(budget)}</span>}
           </p>
-          <p className={`text-[11px] font-medium ${status === 'over' ? 'text-ember' : status === 'warn' ? 'text-brand-600 dark:text-brand-400' : 'text-slate-500 dark:text-slate-400'}`}>
+          <p className={`text-[11px] font-semibold ${status === 'over' ? 'text-rose-500' : status === 'warn' ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'}`}>
             sisa {formatRupiah(left)}
           </p>
         </div>
       </div>
       {budget > 0 && (
-        <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full border border-black/20 bg-black/5 dark:border-white/20 dark:bg-white/10">
+        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
           <div className={`h-full rounded-full ${statusStyles(status)} transition-all`} style={{ width: `${pct}%` }} />
         </div>
       )}
       {goal > 0 && (
-        <div className="mt-2.5">
+        <div className="mt-3">
           <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400">
             <span className="truncate">Terkumpul {formatRupiah(savedAmt)} / {formatRupiah(goal)}</span>
             <span className="flex shrink-0 items-center gap-1.5">
-              <span>{goalPct}%</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-300">{goalPct}%</span>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onSave(cat) }}
-                className="shrink-0 whitespace-nowrap rounded-full border border-carbon bg-sunburst/50 px-2.5 py-1 text-[11px] font-semibold text-carbon transition hover:bg-sunburst active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:focus:ring-white/40"
+                className="shrink-0 whitespace-nowrap rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
                 Simpan +
               </button>
@@ -63,15 +63,15 @@ export default function PocketCard({ cat, txs, onClick, onSave, onUse }) {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onUse(cat) }}
-                  className="shrink-0 whitespace-nowrap rounded-full border border-carbon bg-mint/50 px-2.5 py-1 text-[11px] font-semibold text-carbon transition hover:bg-mint active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:focus:ring-white/40"
+                  className="shrink-0 whitespace-nowrap rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-700 shadow-sm transition hover:bg-teal-100 active:scale-95 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300 dark:hover:bg-teal-900/50"
                 >
                   Gunakan
                 </button>
               )}
             </span>
           </div>
-          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full border border-black/20 bg-black/5 dark:border-white/20 dark:bg-white/10">
-            <div className={`h-full rounded-full ${goalDone ? 'bg-mint' : 'bg-violet'} transition-all`} style={{ width: `${goalPct}%` }} />
+          <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+            <div className={`h-full rounded-full ${goalDone ? 'bg-emerald-500' : 'bg-teal-500'} transition-all`} style={{ width: `${goalPct}%` }} />
           </div>
         </div>
       )}

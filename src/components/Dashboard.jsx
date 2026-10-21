@@ -24,21 +24,21 @@ import { btn } from '../lib/buttons.js'
 function Card({ label, value, sub, accent, tint }) {
   return (
     <div
-      className={`group rounded-2xl border-2 border-carbon p-3.5 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-carbon-sm dark:border-white/30 ${
-        tint || 'bg-paper dark:bg-slate-900'
+      className={`group rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900 ${
+        tint || ''
       }`}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">{label}</p>
-      <p className={`mt-1 text-lg font-bold ${accent || 'text-carbon dark:text-white'}`}>{value}</p>
-      {sub && <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">{sub}</p>}
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
+      <p className={`mt-1 font-sans text-xl font-bold tracking-tight ${accent || 'text-slate-900 dark:text-white'}`}>{value}</p>
+      {sub && <p className="mt-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">{sub}</p>}
     </div>
   )
 }
 
 function statusStyles(status) {
-  if (status === 'over') return 'bg-ember'
-  if (status === 'warn') return 'bg-sunburst'
-  return 'bg-violet'
+  if (status === 'over') return 'bg-rose-500'
+  if (status === 'warn') return 'bg-amber-500'
+  return 'bg-teal-500'
 }
 
 export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onManageRecurring, onTransfer }) {
@@ -90,7 +90,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       : walletBalance(primary, allTransactions(months))
     : 0
 
-  // ponytail: threshold 70% + top 3 hardcoded, bikin configurable kalau user minta
+  // threshold 70% + top 3
   const alerts = (month.categories || [])
     .map((cat) => ({ cat, ...categoryStatus(cat, txs) }))
     .filter((a) => a.budget > 0 && a.pct >= 70)
@@ -141,42 +141,70 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   }
 
   const input =
-    'rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
+    'rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   return (
     <>
       <div className="space-y-5">
-      {/* Summary */}
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Card label="Total Pemasukan" value={formatRupiah(inflow)} tint="bg-mint/40 dark:bg-mint/10" />
-        <Card label="Teralokasi ke Pocket" value={formatRupiah(allocated)} sub={`uang bebas ${formatRupiah(pool)}`} accent="text-[#a67c00] dark:text-[#d9a441]" tint="bg-lavender/60 dark:bg-lavender/10" />
-        <Card label="Uang Bebas (sisa)" value={formatRupiah(pool)} sub="sebelum dipakai" tint="bg-sky/60 dark:bg-sky/10" />
-        <Card label="Sisa Uang Bebas" value={formatRupiah(left)} sub={`terpakai ${formatRupiah(freeSpent)}`} accent={left < 0 ? 'text-ember' : 'text-carbon dark:text-white'} tint="bg-[#B8B8FF] dark:bg-white/5" />
+      {/* Hero Card: Free Money Left (Revolut / Apple Card style) */}
+      <section className="relative overflow-hidden rounded-3xl border border-teal-500/25 bg-gradient-to-br from-teal-500/15 via-emerald-500/5 to-white p-6 shadow-tactile dark:from-teal-950/40 dark:via-slate-900 dark:to-slate-900 dark:border-teal-500/30">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-teal-500/15 px-3 py-1 text-xs font-semibold text-teal-700 dark:text-teal-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+              Free Money Left (Uang Bebas)
+            </div>
+            <p className={`mt-3 text-3xl sm:text-4xl font-bold tracking-tight font-sans ${left < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
+              {formatRupiah(left)}
+            </p>
+            <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+              Tersedia untuk dibelanjakan bulan ini • Dari total pool {formatRupiah(pool)} (terpakai {formatRupiah(freeSpent)})
+            </p>
+          </div>
+          <button
+            onClick={() => onNewTx(null)}
+            className="self-start sm:self-auto rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white shadow-tactile-sm transition hover:bg-slate-800 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-500"
+          >
+            Catat Pengeluaran
+          </button>
+        </div>
+      </section>
+
+      {/* Supporting Metric Cards */}
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Card label="Total Pemasukan" value={formatRupiah(inflow)} accent="text-teal-600 dark:text-teal-400" />
+        <Card label="Teralokasi ke Pocket" value={formatRupiah(allocated)} sub={`uang bebas ${formatRupiah(pool)}`} accent="text-slate-800 dark:text-slate-200" />
+        <Card label="Sisa Uang Bebas" value={formatRupiah(left)} sub={`terpakai ${formatRupiah(freeSpent)}`} accent={left < 0 ? 'text-rose-500' : 'text-slate-800 dark:text-slate-200'} />
       </section>
 
       <QuickAdd categories={month.categories || []} onPick={(prefill) => onNewTx(prefill)} />
 
       {/* Tagihan bulan ini (template tipe bill) */}
       {upcomingBills.length > 0 && (
-        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-          <h3 className="font-semibold text-carbon dark:text-white">Tagihan</h3>
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center justify-between">
+            <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Tagihan</h3>
+            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+              {upcomingBills.length} Tagihan
+            </span>
+          </div>
           <div className="mt-3 space-y-2">
             {upcomingBills.map((b) => {
               const due = Math.min(28, Math.max(1, b.dayOfMonth || 1))
               const overdue = due < new Date().getDate()
               const cat = (month.categories || []).find((c) => c.id === b.categoryId)
               return (
-                <div key={b.id} className="flex items-center justify-between gap-3 rounded-xl border border-carbon px-3 py-2 dark:border-white/20 dark:bg-white/5">
+                <div key={b.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/70 px-3.5 py-2.5 dark:border-slate-800/80 dark:bg-slate-800/40">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-carbon dark:text-white">{b.description || 'Tagihan'}</p>
+                    <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">{b.description || 'Tagihan'}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {cat ? cat.name : '-'}
                       {overdue ? ' • jatuh tempo' : ` • tgl ${due}`}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
-                    <p className="text-sm font-semibold text-carbon dark:text-white">{formatRupiah(b.amount)}</p>
-                    <button onClick={() => onNewTx({ categoryId: b.categoryId, description: b.description, amount: b.amount })} className={btn.subtle}>
+                    <p className="font-sans text-sm font-bold text-slate-900 dark:text-white">{formatRupiah(b.amount)}</p>
+                    <button onClick={() => onNewTx({ categoryId: b.categoryId, description: b.description, amount: b.amount })} className={btn.primary + ' !px-3 !py-1 !text-xs'}>
                       Bayar
                     </button>
                   </div>
@@ -189,24 +217,24 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
       {/* Budget perlu dicek */}
       {alerts.length > 0 && (
-        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-          <h3 className="font-semibold text-carbon dark:text-white">Budget yang perlu dicek</h3>
-          <div className="mt-3 space-y-2">
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+          <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Budget yang perlu dicek</h3>
+          <div className="mt-3 space-y-2.5">
             {alerts.map(({ cat, used, budget, pct, status }) => (
-              <div key={cat.id} className="rounded-xl border border-carbon bg-paper px-3 py-2.5 dark:border-white/20 dark:bg-slate-900">
+              <div key={cat.id} className="rounded-xl border border-slate-100 bg-slate-50/70 px-3.5 py-3 dark:border-slate-800/80 dark:bg-slate-800/40">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
-                    <span className="text-sm font-medium text-carbon dark:text-white">{cat.name}</span>
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{cat.name}</span>
                   </div>
-                  <span className={`shrink-0 text-xs font-semibold ${status === 'over' ? 'text-ember' : 'text-brand-600'}`}>
+                  <span className={`shrink-0 text-xs font-semibold ${status === 'over' ? 'text-rose-500' : 'text-amber-500'}`}>
                     {pct}% kepakai
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {formatRupiah(used)} / {formatRupiah(budget)}
                 </p>
-                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full border border-black/20 bg-black/5 dark:border-white/20 dark:bg-white/10">
+                <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200/70 dark:bg-slate-700">
                   <div className={`h-full rounded-full ${statusStyles(status)} transition-all`} style={{ width: `${pct}%` }} />
                 </div>
               </div>
@@ -216,9 +244,9 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       )}
 
       {/* Pemasukan & carry-over */}
-      <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-carbon dark:text-white">Pemasukan & Carry-over</h3>
+          <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Pemasukan & Carry-over</h3>
           <button
             onClick={() => {
               setEditingIncome(null)
@@ -231,14 +259,14 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
           </button>
         </div>
 
-        <div className="mt-3 space-y-2">
+        <div className="mt-3.5 space-y-2.5">
           {(month.transactions || []).filter((t) => t.type === 'income').map((inc) => (
-            <div key={inc.id} className="flex items-center justify-between rounded-xl border border-carbon bg-lavender/50 px-3 py-2 dark:border-white/20 dark:bg-white/5">
+            <div key={inc.id} className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/70 px-3.5 py-2.5 dark:border-slate-800/80 dark:bg-slate-800/40">
               <div>
-                <p className="text-sm font-medium text-carbon dark:text-white">{inc.description}</p>
-                <p className="text-xs text-slate-600 dark:text-slate-300">{formatRupiah(inc.amount)}</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">{inc.description}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{formatRupiah(inc.amount)}</p>
               </div>
-              <div className="flex gap-1">
+              <div className="flex gap-1.5">
                 <button onClick={() => editIncome(inc)} className={btn.subtle}>
                   Ubah
                 </button>
@@ -249,9 +277,9 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             </div>
           ))}
 
-          <div className="flex items-center justify-between rounded-xl border border-carbon bg-sunburst/30 px-3 py-2 dark:border-white/20 dark:bg-white/5">
+          <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/70 px-3.5 py-2.5 dark:border-slate-800/80 dark:bg-slate-800/40">
             <div>
-              <p className="text-sm font-medium text-carbon dark:text-white">Carry-over (sisa bulan lalu)</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">Carry-over (sisa bulan lalu)</p>
               <p className="text-xs text-slate-500 dark:text-slate-400">otomatis dari bulan sebelumnya, bisa diubah</p>
             </div>
             <div className="flex items-center gap-2">
@@ -271,12 +299,12 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
           </div>
 
           {editingIncome && (
-            <div className="rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
+            <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-tactile-sm dark:border-slate-700 dark:bg-slate-800">
               <div className="flex gap-2">
                 <input className={input + ' flex-1'} value={incomeLabel} onChange={(e) => setIncomeLabel(e.target.value)} placeholder="Label (mis. Gaji, Bonus)" />
                 <input className={input + ' w-36'} type="text" inputMode="numeric" value={incomeAmount} onChange={(e) => setIncomeAmount(e.target.value)} placeholder="Nominal" />
               </div>
-              <div className="mt-2 flex justify-end gap-2">
+              <div className="mt-2.5 flex justify-end gap-2">
                 <button onClick={() => setEditingIncome(null)} className={btn.neutral}>Batal</button>
                 <button onClick={saveIncome} className={btn.primary}>
                   Simpan
@@ -288,23 +316,23 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       </section>
 
       {/* Catatan bulanan */}
-      <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-        <h3 className="font-semibold text-carbon dark:text-white">Catatan Bulan Ini</h3>
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+        <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Catatan Bulan Ini</h3>
         <textarea
-          className={input + ' mt-2 min-h-20 w-full resize-y'}
+          className={input + ' mt-2.5 min-h-20 w-full resize-y'}
           placeholder="Tulis catatan keuangan bulan ini…"
           value={noteDraft}
           onChange={(e) => setNoteDraft(e.target.value)}
           onBlur={commitNote}
         />
-        <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Tersimpan otomatis saat keluar dari kolom.</p>
+        <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">Tersimpan otomatis saat keluar dari kolom.</p>
       </section>
 
       {/* Alokasi chart */}
       {donutData.length > 0 && (
-        <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-          <div className="mb-2">
-            <h3 className="font-semibold text-[#a67c00] dark:text-[#d9a441]">Alokasi Pocket</h3>
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-3">
+            <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Alokasi Pocket</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">Berapa porsi budget yang kamu siapkan untuk tiap kebutuhan?</p>
           </div>
           <DonutChart data={donutData} totalLabel="Teralokasi" />
@@ -312,13 +340,13 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       )}
 
       {/* Pocket */}
-      <section className="space-y-3">
+      <section className="space-y-3.5">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-carbon dark:text-white">Pocket</h3>
+            <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white">Pocket</h3>
             {primary && <p className="text-[11px] text-slate-400">sekat virtual dari {primary.name}</p>}
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             {(month.categories || []).length > 0 && (
               <button onClick={() => setReallocOpen(true)} className={btn.subtle}>
                 Re-alokasi
@@ -333,12 +361,12 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
           </div>
         </div>
         {allocated > inflow && (
-          <p className="rounded-xl border border-sunburst bg-sunburst/30 px-3 py-2 text-xs text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
+          <p className="rounded-xl border border-amber-200/80 bg-amber-50 px-3.5 py-2.5 text-xs font-medium text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
             Alokasi pocket ({formatRupiah(allocated)}) melebihi pemasukan ({formatRupiah(inflow)}). Kurangi budget atau tambah pemasukan.
           </p>
         )}
         {(month.categories || []).length > 0 && (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
             {(month.categories || []).map((cat) => (
               <PocketCard
                 key={cat.id}
@@ -346,7 +374,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                 txs={txs}
                 onClick={() => onNewTx({ categoryId: cat.id })}
                 onSave={(c) => setSaveModal({ cat: c, mode: 'nabung' })}
-            onUse={(c) => setSaveModal({ cat: c, mode: 'pakai' })}
+                onUse={(c) => setSaveModal({ cat: c, mode: 'pakai' })}
               />
             ))}
           </div>
@@ -365,14 +393,14 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       </section>
 
       {/* Transaksi berulang */}
-      <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-carbon dark:text-white">Transaksi Berulang</h3>
+          <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Transaksi Berulang</h3>
           <button onClick={onManageRecurring} className={btn.subtle}>
             Kelola
           </button>
         </div>
-        <div className="mt-3 space-y-2">
+        <div className="mt-3.5 space-y-2.5">
           {templates.length === 0 && (
             <p className="text-sm text-slate-500 dark:text-slate-400">Belum ada template. Tambahkan via "Kelola" agar otomatis tercatat tiap bulan.</p>
           )}
@@ -384,9 +412,9 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             const wal = isIncome ? null : wallets.find((w) => w.id === t.walletId)
             const walTo = isTransfer ? wallets.find((w) => w.id === t.toWalletId) : null
             return (
-              <div key={t.id} className={`flex items-center justify-between gap-3 rounded-xl border border-carbon px-3 py-2 ${t.active !== false ? 'bg-mint/40 dark:bg-white/5' : 'bg-mist opacity-60 dark:bg-slate-800'}`}>
+              <div key={t.id} className={`flex items-center justify-between gap-3 rounded-xl border border-slate-100 px-3.5 py-2.5 ${t.active !== false ? 'bg-slate-50/70 dark:bg-slate-800/40' : 'bg-slate-50/30 opacity-60 dark:bg-slate-800/20'}`}>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-carbon dark:text-white">
+                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
                     Hari {Math.min(28, Math.max(1, t.dayOfMonth || 1))}: {t.description || 'Transaksi berulang'}
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -394,7 +422,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                     {isTransfer ? ` · ${wal?.name || '-'} → ${walTo?.name || '-'}` : wal ? ` · ${wal.name}` : ''}
                   </p>
                 </div>
-                <p className="shrink-0 text-sm font-semibold text-carbon dark:text-white">{formatRupiah(t.amount)}</p>
+                <p className="shrink-0 font-sans text-sm font-bold text-slate-900 dark:text-white">{formatRupiah(t.amount)}</p>
               </div>
             )
           })}
@@ -402,9 +430,9 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       </section>
 
       {/* Rekening / Dompet */}
-      <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-carbon dark:text-white">{wallets.length === 1 ? 'Rekening Utama' : 'Dompet'}</h3>
+          <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">{wallets.length === 1 ? 'Rekening Utama' : 'Dompet'}</h3>
           {wallets.length > 1 && (
             <button onClick={onTransfer} className={btn.subtle}>
               Transfer
@@ -412,37 +440,37 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
           )}
         </div>
         {wallets.length === 1 && primary ? (
-          <div className="mt-3 rounded-xl border-2 border-carbon bg-sky/30 p-4 dark:border-white/20 dark:bg-white/5">
+          <div className="mt-3.5 rounded-2xl border border-teal-500/20 bg-gradient-to-br from-teal-500/10 via-slate-50 to-white p-5 dark:border-teal-500/20 dark:from-teal-950/30 dark:via-slate-900 dark:to-slate-900">
             <div className="flex flex-wrap items-center gap-2">
               <span className="h-3 w-3 rounded-full" style={{ backgroundColor: primary.color }} />
-              <span className="text-sm font-medium text-carbon dark:text-white">{primary.name}</span>
-              <span className="rounded-full border border-carbon/20 bg-white px-2 py-0.5 text-[10px] font-semibold text-carbon dark:border-white/20 dark:bg-white/10 dark:text-white">sekat virtual</span>
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">{primary.name}</span>
+              <span className="rounded-full bg-slate-200/70 px-2.5 py-0.5 text-[10px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">sekat virtual</span>
             </div>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-carbon dark:text-white">{formatRupiah(primaryBalance)}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">saldo saat ini (Uang Bebas = A langsung, Pocket = child A)</p>
-            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded-lg bg-white/70 px-2 py-1.5 dark:bg-white/10">
-                <p className="text-slate-500 dark:text-slate-400">Teralokasi</p>
-                <p className="font-semibold text-carbon dark:text-white">{formatRupiah(allocated)}</p>
+            <p className="mt-3 font-sans text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">{formatRupiah(primaryBalance)}</p>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">saldo saat ini (Uang Bebas = A langsung, Pocket = child A)</p>
+            <div className="mt-4 grid grid-cols-2 gap-2.5 text-xs">
+              <div className="rounded-xl border border-slate-200/60 bg-white/80 p-3 shadow-tactile-sm dark:border-slate-700/60 dark:bg-slate-800/60">
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Teralokasi</p>
+                <p className="mt-0.5 font-sans text-sm font-bold text-slate-900 dark:text-white">{formatRupiah(allocated)}</p>
               </div>
-              <div className="rounded-lg bg-white/70 px-2 py-1.5 dark:bg-white/10">
-                <p className="text-slate-500 dark:text-slate-400">Uang Bebas</p>
-                <p className="font-semibold text-carbon dark:text-white">{formatRupiah(pool)}</p>
+              <div className="rounded-xl border border-slate-200/60 bg-white/80 p-3 shadow-tactile-sm dark:border-slate-700/60 dark:bg-slate-800/60">
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Uang Bebas</p>
+                <p className="mt-0.5 font-sans text-sm font-bold text-slate-900 dark:text-white">{formatRupiah(pool)}</p>
               </div>
             </div>
           </div>
         ) : (
-          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="mt-3.5 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {wallets.map((w) => (
-              <div key={w.id} className="rounded-xl border border-carbon bg-paper p-3 transition-shadow hover:shadow-carbon-sm dark:border-white/20 dark:bg-slate-900">
+              <div key={w.id} className="rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40">
                 <div className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded-full" style={{ backgroundColor: w.color }} />
-                  <span className="truncate text-sm font-medium text-carbon dark:text-white">{w.name}</span>
+                  <span className="truncate text-sm font-semibold text-slate-900 dark:text-white">{w.name}</span>
                 </div>
-                <p className="mt-1.5 text-sm font-semibold text-carbon dark:text-white">
+                <p className="mt-2 font-sans text-base font-bold text-slate-900 dark:text-white">
                   {formatRupiah(walletBalance(w, allTransactions(months)))}
                 </p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">saldo saat ini</p>
+                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">saldo saat ini</p>
               </div>
             ))}
             {wallets.length === 0 && <p className="col-span-full text-sm text-slate-500 dark:text-slate-400">Belum ada dompet.</p>}

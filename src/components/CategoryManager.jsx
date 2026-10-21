@@ -43,7 +43,7 @@ export default function CategoryManager({ onClose }) {
   const cats = month?.categories || []
   const txs = month?.transactions || []
   const input =
-    'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
+    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   useEffect(() => {
     setDrafts((prev) => {
@@ -178,33 +178,33 @@ export default function CategoryManager({ onClose }) {
         </div>
       }
     >
-      <form onSubmit={submitNew} className="rounded-2xl border-2 border-carbon bg-lavender/40 p-4 dark:border-white/20 dark:bg-white/5">
-        <h4 className="mb-3 text-sm font-semibold text-carbon dark:text-white">Tambah kategori</h4>
-        <div className="grid gap-2 sm:grid-cols-2">
+      <form onSubmit={submitNew} className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4.5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+        <h4 className="mb-3 font-sans text-sm font-bold text-slate-900 dark:text-white">Tambah kategori</h4>
+        <div className="grid gap-2.5 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">Nama</p>
+            <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Nama</p>
             <input className={input} placeholder="mis. Tabungan Liburan" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
           <div>
-            <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">Budget / bulan (Rp)</p>
+            <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Budget / bulan (Rp)</p>
             <input className={input} type="text" min="0" placeholder="Berapa yang dialokasikan tiap bulan" value={budget} onChange={(e) => setBudget(e.target.value)} />
           </div>
           <div>
-            <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">Target tabungan (Rp)</p>
+            <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Target tabungan (Rp)</p>
             <input className={input} type="text" min="0" placeholder="Jumlah yang ingin dikumpulkan" value={goal} onChange={(e) => setGoal(e.target.value)} />
           </div>
           <div className="sm:col-span-2">
             <ColorPicker value={color} onChange={setColor} />
           </div>
         </div>
-        <div className="mt-3 flex justify-end">
+        <div className="mt-3.5 flex justify-end">
           <button type="submit" className={btn.primary}>
             + Tambah
           </button>
         </div>
       </form>
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-4 space-y-2.5">
         {list.map((cat) => {
           const d = drafts[cat.id] || cat
           const { used } = categoryStatus(cat, txs)
@@ -214,7 +214,7 @@ export default function CategoryManager({ onClose }) {
               onDragOver={(e) => { e.preventDefault(); setOverId(cat.id) }}
               onDragLeave={() => setOverId(null)}
               onDrop={() => { setOverId(null); move(cat.id) }}
-              className={`flex flex-wrap items-end gap-x-3 gap-y-2 rounded-xl border border-carbon bg-paper p-3 transition-shadow hover:shadow-carbon-sm dark:border-white/20 dark:bg-slate-900 ${overId === cat.id ? 'ring-2 ring-violet' : ''}`}
+              className={`flex flex-wrap items-end gap-x-3 gap-y-2.5 rounded-xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40 ${overId === cat.id ? 'ring-2 ring-teal-500' : ''}`}
             >
               <div className="flex h-9 shrink-0 flex-col items-center justify-center">
                 <span
