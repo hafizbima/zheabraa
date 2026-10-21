@@ -24,8 +24,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,ico,woff2}', 'pwa-icon-*.png'],
-        globIgnores: ['**/logo.png'],
+        globPatterns: ['**/*.{js,css,html,svg,ico,woff2,png}'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
         clientsClaim: true,
