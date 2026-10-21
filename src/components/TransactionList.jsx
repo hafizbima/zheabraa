@@ -3,6 +3,7 @@ import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah } from '../lib/money.js'
 import { formatDate, labelOf, todayISO } from '../lib/dates.js'
 import Confirm from './Confirm.jsx'
+import { DateRangePicker } from './ui/DateRangePicker.jsx'
 import { btn } from '../lib/buttons.js'
 
 function downloadCSV(filename, rows) {
@@ -28,56 +29,18 @@ export default function TransactionList({ onEditTx }) {
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterWallet, setFilterWallet] = useState('all')
-  const [datePreset, setDatePreset] = useState('all')
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [confirmId, setConfirmId] = useState(null)
 
   useEffect(() => {
     setViewMonth(currentMonthId)
-    setDatePreset('all')
     setFromDate('')
     setToDate('')
   }, [currentMonthId])
 
   const txs = month.transactions || []
   const categories = month.categories || []
-
-  const uniqueDates = useMemo(() => {
-    const dates = new Set()
-    for (const t of txs) {
-      if (t.date) dates.add(t.date)
-    }
-    return Array.from(dates).sort().reverse()
-  }, [txs])
-
-  const handleDatePresetChange = (val) => {
-    setDatePreset(val)
-    if (val === 'all') {
-      setFromDate('')
-      setToDate('')
-    } else if (val === 'today') {
-      const today = todayISO()
-      setFromDate(today)
-      setToDate(today)
-    } else if (val === 'yesterday') {
-      const y = new Date()
-      y.setDate(y.getDate() - 1)
-      const yStr = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, '0')}-${String(y.getDate()).padStart(2, '0')}`
-      setFromDate(yStr)
-      setToDate(yStr)
-    } else if (val === 'last7') {
-      const d7 = new Date()
-      d7.setDate(d7.getDate() - 6)
-      const d7Str = `${d7.getFullYear()}-${String(d7.getMonth() + 1).padStart(2, '0')}-${String(d7.getDate()).padStart(2, '0')}`
-      setFromDate(d7Str)
-      setToDate(todayISO())
-    } else if (val.startsWith('date:')) {
-      const d = val.replace('date:', '')
-      setFromDate(d)
-      setToDate(d)
-    }
-  }
 
   const catName = (t) =>
     t.type === 'transfer'
@@ -100,7 +63,6 @@ export default function TransactionList({ onEditTx }) {
   const hasFilter =
     filterCategory !== 'all' ||
     filterWallet !== 'all' ||
-    datePreset !== 'all' ||
     !!fromDate ||
     !!toDate ||
     search.trim() !== ''
@@ -109,7 +71,6 @@ export default function TransactionList({ onEditTx }) {
     setSearch('')
     setFilterCategory('all')
     setFilterWallet('all')
-    setDatePreset('all')
     setFromDate('')
     setToDate('')
   }
@@ -217,49 +178,16 @@ export default function TransactionList({ onEditTx }) {
               </option>
             ))}
           </select>
-          <select
-            className={input}
-            value={datePreset}
-            onChange={(e) => handleDatePresetChange(e.target.value)}
-            aria-label="Filter tanggal"
-          >
-            <option value="all">Semua tanggal</option>
-            <option value="today">Hari ini</option>
-            <option value="yesterday">Kemarin</option>
-            <option value="last7">7 hari terakhir</option>
-            <option value="custom">Rentang tanggal…</option>
-            {uniqueDates.length > 0 && (
-              <optgroup label="Tanggal transaksi">
-                {uniqueDates.map((d) => (
-                  <option key={d} value={`date:${d}`}>
-                    {formatDate(d)}
-                  </option>
-                ))}
-              </optgroup>
-            )}
-          </select>
+          <DateRangePicker
+            from={fromDate}
+            to={toDate}
+            onChange={({ from, to }) => {
+              setFromDate(from)
+              setToDate(to)
+            }}
+            defaultMonth={viewMonth}
+          />
         </div>
-
-        {datePreset === 'custom' && (
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            <input
-              type="date"
-              className={input}
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              title="Dari tanggal"
-              aria-label="Dari tanggal"
-            />
-            <input
-              type="date"
-              className={input}
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              title="Sampai tanggal"
-              aria-label="Sampai tanggal"
-            />
-          </div>
-        )}
 
         <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
           <span className="text-slate-500 dark:text-slate-400">
