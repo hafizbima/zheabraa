@@ -8,7 +8,7 @@ export default function EmptyState({ title, sub, action }) {
         </svg>
       </div>
       <p className="text-sm font-semibold text-carbon dark:text-white">{title}</p>
-      {sub && <p className="mt-1 text-sm text-slate-400">{sub}</p>}
+      {sub && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{sub}</p>}
       {action && <div className="mt-3">{action}</div>}
     </div>
   )

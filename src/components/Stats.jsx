@@ -292,16 +292,22 @@ export default function Stats() {
 
       {data.cats.length > 0 && (
         <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-          <h3 className="font-semibold text-carbon dark:text-white">Belanja per Kategori</h3>
+          <div className="mb-2">
+            <h3 className="font-semibold text-carbon dark:text-white">Belanja per Kategori</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Ke mana saja pengeluaranmu dialokasikan selama periode ini?</p>
+          </div>
           <DonutChart data={data.cats} totalLabel="Total Belanja" />
         </section>
       )}
 
       {trend.rows.length > 1 && (
         <section className="rounded-2xl border-2 border-carbon bg-paper p-4 dark:border-white/30 dark:bg-slate-900">
-          <h3 className="mb-3 font-semibold text-carbon dark:text-white">
-            {gran === 'harian' ? 'Tren Harian' : gran === 'mingguan' ? 'Tren Mingguan' : 'Tren Bulanan'}
-          </h3>
+          <div className="mb-3">
+            <h3 className="font-semibold text-carbon dark:text-white">
+              {gran === 'harian' ? 'Tren Harian' : gran === 'mingguan' ? 'Tren Mingguan' : 'Tren Bulanan'}
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Bagaimana pola arus kas pemasukan versus pengeluaran seiring waktu?</p>
+          </div>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={trend.rows} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.15} />

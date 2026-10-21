@@ -34,6 +34,7 @@ export default function CategoryManager({ onClose }) {
   const [confirmId, setConfirmId] = useState(null)
   const [drafts, setDrafts] = useState({})
   const [orderIds, setOrderIds] = useState(null)
+  const [savedOrderIds, setSavedOrderIds] = useState(null)
   const [dragId, setDragId] = useState(null)
   const [overId, setOverId] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -85,8 +86,8 @@ export default function CategoryManager({ onClose }) {
       )
         n += 1
     }
-    return n + (orderDirty ? 1 : 0)
-  }, [cats, drafts, orderDirty])
+    return n + (orderIds && savedOrderIds && orderIds.join() !== savedOrderIds.join() ? 1 : 0)
+  }, [cats, drafts, orderIds, savedOrderIds])
 
   const updateDraft = (id, patch) => {
     setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }))
@@ -137,6 +138,7 @@ export default function CategoryManager({ onClose }) {
         }
       }
       setJustSaved(true)
+      setSavedOrderIds(orderIds)
     } finally {
       setSaving(false)
     }
@@ -214,24 +216,24 @@ export default function CategoryManager({ onClose }) {
               onDrop={() => { setOverId(null); move(cat.id) }}
               className={`flex flex-wrap items-end gap-x-3 gap-y-2 rounded-xl border border-carbon bg-paper p-3 transition-shadow hover:shadow-carbon-sm dark:border-white/20 dark:bg-slate-900 ${overId === cat.id ? 'ring-2 ring-violet' : ''}`}
             >
-              <div className="flex h-8 shrink-0 flex-col items-center justify-center">
+              <div className="flex h-9 shrink-0 flex-col items-center justify-center">
                 <span
                   draggable
                   onDragStart={(e) => { setDragId(cat.id); e.dataTransfer.effectAllowed = 'move' }}
                   onDragEnd={() => setDragId(null)}
-                  className="cursor-grab select-none text-lg leading-none text-slate-400 hover:text-carbon dark:hover:text-white"
+                  className="cursor-grab select-none text-lg leading-none text-slate-500 hover:text-carbon dark:text-slate-400 dark:hover:text-white"
                   title="Seret untuk mengurutkan (atau pakai tombol ↑↓)"
                   aria-label="Seret untuk mengurutkan"
                 >
                   ⋮⋮
                 </span>
-                <span className="mt-0.5 flex gap-0.5">
-                  <button type="button" onClick={() => moveBy(cat.id, -1)} aria-label="Naikkan urutan" className="px-0.5 text-xs text-slate-400 hover:text-carbon dark:hover:text-white">▲</button>
-                  <button type="button" onClick={() => moveBy(cat.id, 1)} aria-label="Turunkan urutan" className="px-0.5 text-xs text-slate-400 hover:text-carbon dark:hover:text-white">▼</button>
+                <span className="mt-0.5 flex gap-1">
+                  <button type="button" onClick={() => moveBy(cat.id, -1)} aria-label="Naikkan urutan" className="flex h-5 w-5 items-center justify-center rounded text-xs text-slate-500 hover:bg-black/5 hover:text-carbon focus:outline-none focus:ring-1 focus:ring-black/20 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">▲</button>
+                  <button type="button" onClick={() => moveBy(cat.id, 1)} aria-label="Turunkan urutan" className="flex h-5 w-5 items-center justify-center rounded text-xs text-slate-500 hover:bg-black/5 hover:text-carbon focus:outline-none focus:ring-1 focus:ring-black/20 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">▼</button>
                 </span>
               </div>
               <div className="w-8 shrink-0">
-                <p className="mb-1 text-xs text-slate-400">Warna</p>
+                <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Warna</p>
                 <input
                   type="color"
                   value={d.color}
@@ -241,7 +243,7 @@ export default function CategoryManager({ onClose }) {
                 />
               </div>
               <div className="min-w-36 flex-1 basis-40">
-                <p className="mb-1 text-xs text-slate-400">Nama</p>
+                <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Nama</p>
                 <input
                   className={input + ' w-full'}
                   value={d.name}

@@ -56,18 +56,18 @@ export default function ReallocateForm({ onClose }) {
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dari pocket</label>
           <select className={input} value={fromId} onChange={(e) => { setFromId(e.target.value); if (e.target.value === toId) setToId('') }}>
-            <option value="">— Pilih pocket —</option>
+            <option value="">(Pilih pocket)</option>
             {cats.map((c) => {
               const left = categoryLeft(c, txs)
               return (
                 <option key={c.id} value={c.id}>
-                  {c.name} — sisa {formatRupiah(left)}
+                  {c.name}: sisa {formatRupiah(left)}
                 </option>
               )
             })}
           </select>
           {fromCat && (
-            <p className={`mt-1 text-xs ${fromLeft < 0 ? 'text-ember font-medium' : 'text-slate-400'}`}>
+            <p className={`mt-1 text-xs ${fromLeft < 0 ? 'text-ember font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
               Budget saat ini {formatRupiah(fromCat.budgetAmount || 0)} → setelah re-alokasi {formatRupiah((fromCat.budgetAmount || 0) - amt)}
             </p>
           )}
@@ -76,21 +76,21 @@ export default function ReallocateForm({ onClose }) {
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Nominal (Rp)</label>
           <input type="text" inputMode="numeric" className={input} placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} autoFocus />
-          {amt > 0 && <p className="mt-1 text-xs text-slate-400">{formatRupiah(amt)}</p>}
+          {amt > 0 && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{formatRupiah(amt)}</p>}
         </div>
 
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Ke pocket</label>
           <select className={input} value={toId} onChange={(e) => setToId(e.target.value)}>
-            <option value="">— Pilih pocket —</option>
+            <option value="">(Pilih pocket)</option>
             {targetCats.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.name} — budget {formatRupiah(c.budgetAmount || 0)}
+                {c.name}: budget {formatRupiah(c.budgetAmount || 0)}
               </option>
             ))}
           </select>
           {toCat && (
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Budget saat ini {formatRupiah(toCat.budgetAmount || 0)} → setelah {formatRupiah((toCat.budgetAmount || 0) + amt)}
             </p>
           )}

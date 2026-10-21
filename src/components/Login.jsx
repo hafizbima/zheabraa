@@ -104,7 +104,7 @@ export default function Login() {
                   <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Password</label>
                   <div className="relative">
                     <input
-                      className={input + ' pr-10'}
+                      className={input + ' pr-11'}
                       type={showPw ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -115,7 +115,7 @@ export default function Login() {
                       type="button"
                       onClick={() => setShowPw((v) => !v)}
                       aria-label={showPw ? 'Sembunyikan password' : 'Tampilkan password'}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-carbon dark:hover:text-white"
+                      className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-500 transition hover:text-carbon focus:outline-none focus:ring-2 focus:ring-black/20 dark:text-slate-400 dark:hover:text-white dark:focus:ring-white/30"
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         {showPw ? (
@@ -192,7 +192,7 @@ export default function Login() {
         <p className="mt-4 text-center text-xs text-carbon/60 dark:text-white/60">
           {backendMode === 'local'
             ? 'Data tersimpan di perangkat ini (mode lokal).'
-            : 'Data tersinkron ke Supabase — bisa diakses dari HP/laptop mana saja.'}
+            : 'Data tersinkron ke Supabase, bisa diakses dari HP/laptop mana saja.'}
         </p>
       </div>
     </div>

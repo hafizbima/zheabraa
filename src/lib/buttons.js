@@ -1,5 +1,5 @@
 export const btnBase =
-  'inline-flex items-center justify-center gap-1.5 rounded-full border font-semibold transition-colors duration-150 active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-black/20 disabled:cursor-not-allowed disabled:opacity-50'
+  'inline-flex items-center justify-center gap-1.5 rounded-full border font-semibold transition-colors duration-150 active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/40 disabled:cursor-not-allowed disabled:opacity-50'
 
 export const btn = {
   primary: btnBase + ' border-black bg-carbon px-5 py-2 text-sm text-white hover:bg-[#1a1a1a] dark:border-white/30 dark:bg-white dark:text-carbon dark:hover:bg-white/90',

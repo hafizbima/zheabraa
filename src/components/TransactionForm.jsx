@@ -129,7 +129,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Tipe</label>
           {isTransfer ? (
             <p className="rounded-xl border border-carbon bg-sky px-3 py-2 text-sm text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
-              Ini transaksi transfer antar dompet. Edit dari sini tidak disarankan — gunakan menu "Transfer".&nbsp; Nominal tidak mengubah pocket/uang bebas.
+              Ini transaksi transfer antar dompet. Edit dari sini tidak disarankan, gunakan menu "Transfer".&nbsp; Nominal tidak mengubah pocket/uang bebas.
             </p>
           ) : (
             <>
@@ -137,7 +137,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
                 {typeButton('expense', 'Pengeluaran', type === 'expense')}
                 {typeButton('refund', 'Refund / Koreksi', type === 'refund')}
               </div>
-              <p className="mt-1 text-[11px] text-slate-400">
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                 {type === 'refund'
                   ? 'Refund menambah sisa (uang kembali ke pocket/uang bebas).'
                   : 'Pengeluaran mengurangi sisa pocket/uang bebas.'}
@@ -167,7 +167,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dompet asal</label>
               <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
-                <option value="">— Pilih dompet —</option>
+                <option value="">(Pilih dompet)</option>
                 {wallets.map((w) => (
                   <option key={w.id} value={w.id}>
                     {w.name}
@@ -178,7 +178,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dompet tujuan</label>
               <select className={input} value={toWalletId} onChange={(e) => setToWalletId(e.target.value)}>
-                <option value="">— Pilih dompet —</option>
+                <option value="">(Pilih dompet)</option>
                 {wallets.map((w) => (
                   <option key={w.id} value={w.id}>
                     {w.name}
@@ -189,7 +189,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
           </>
         ) : (
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Kategori / Pocket {monthMismatch && `— pocket bulan ${targetMonth}`}</label>
+            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Kategori / Pocket {monthMismatch && `(pocket bulan ${targetMonth})`}</label>
             <select className={input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
               <option value="free">Uang Bebas (tidak dari pocket)</option>
               {(categorySourceMonth?.categories || []).map((c) => {
@@ -198,25 +198,25 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
                   : categoryLeft(c, categorySourceMonth?.transactions || [])
                 return (
                   <option key={c.id} value={c.id}>
-                    {c.name} — sisa {formatRupiah(sisa)}
+                    {c.name}: sisa {formatRupiah(sisa)}
                   </option>
                 )
               })}
             </select>
             {isFree ? (
-              <p className="mt-1 text-[11px] text-slate-400">
-                Sweep/pindah dana di myBCA tidak perlu dicatat — cukup pilih pocket asal dananya di sini.
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                Sweep/pindah dana di myBCA tidak perlu dicatat, cukup pilih pocket asal dananya di sini.
               </p>
             ) : selectedCat && (
-              <p className="mt-1 text-[11px] text-slate-400">
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                 {selectedCat.goalAmount > 0
-                  ? <>Pocket tabungan — uang keluar dari tabungan ini. Sisa tabungan: <strong>{formatRupiah(catSisa)}</strong>.</>
-                  : <>Tidak perlu sweep ke rekening utama dulu — cukup pilih pocket ini & nominal. Sisa: <strong>{formatRupiah(catSisa)}</strong>.</>}
+                  ? <>Pocket tabungan: uang keluar dari tabungan ini. Sisa tabungan: <strong>{formatRupiah(catSisa)}</strong>.</>
+                  : <>Tidak perlu sweep ke rekening utama dulu, cukup pilih pocket ini & nominal. Sisa: <strong>{formatRupiah(catSisa)}</strong>.</>}
               </p>
             )}
             {overPocket && (
               <p className="mt-1 rounded-lg border border-sunburst bg-sunburst/30 px-2 py-1 text-[11px] text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
-                Nominal melebihi sisa pocket ({formatRupiah(catSisa)}) — masih bisa disimpan, sisa pocket akan minus.
+                Nominal melebihi sisa pocket ({formatRupiah(catSisa)}), masih bisa disimpan, sisa pocket akan minus.
               </p>
             )}
           </div>
@@ -225,13 +225,13 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         {!isTransfer && (
           isSingle ? (
             <p className="rounded-xl border border-black/10 bg-sky/20 px-3 py-2 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-              Tercatat di <strong>{primary?.name}</strong> — pocket adalah sekat virtual dari rekening ini.
+              Tercatat di <strong>{primary?.name}</strong>: pocket adalah sekat virtual dari rekening ini.
             </p>
           ) : (
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dompet (opsional)</label>
               <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
-                <option value="">— Tidak dilacak —</option>
+                <option value="">(Tidak dilacak)</option>
                 {wallets.map((w) => (
                   <option key={w.id} value={w.id}>
                     {w.name}

@@ -28,7 +28,7 @@ export default function DonutChart({ data, totalLabel }) {
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-xs text-slate-500 dark:text-slate-400">{totalLabel}</span>
           <span className="text-lg font-bold text-carbon dark:text-white">
-            {total > 0 ? formatRupiah(total) : '—'}
+            {total > 0 ? formatRupiah(total) : 'Rp 0'}
           </span>
         </div>
       </div>

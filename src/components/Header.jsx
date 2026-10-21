@@ -98,19 +98,19 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
             </div>
             <span className={`font-display text-lg font-bold tracking-tight ${isDark ? 'text-[#f5f2e8]' : 'text-carbon'}`}>Zheabraa</span>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={onToggleTheme}
               aria-label={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}
-              className={`flex h-[30px] w-[30px] items-center justify-center rounded-full bg-transparent transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#d9a441]/30 ${isDark ? 'text-[#f5f2e8] hover:bg-white/10' : 'text-carbon hover:bg-black/5'}`}
+              className={`flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${isDark ? 'text-[#f5f2e8] hover:bg-white/10' : 'text-carbon hover:bg-black/5'}`}
             >
               {theme === 'dark' ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="4" />
                   <path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" strokeLinecap="round" />
                 </svg>
               ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
@@ -120,9 +120,9 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
                 onClick={() => setGearOpen((v) => !v)}
                 aria-label="Pengaturan"
                 aria-expanded={gearOpen}
-                className={`flex h-[30px] w-[30px] items-center justify-center rounded-full bg-transparent transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#d9a441]/30 ${isDark ? 'text-[#f5f2e8] hover:bg-white/10' : 'text-carbon hover:bg-black/5'}`}
+                className={`flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${isDark ? 'text-[#f5f2e8] hover:bg-white/10' : 'text-carbon hover:bg-black/5'}`}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="3" />
                   <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" strokeLinecap="round" />
                 </svg>
@@ -130,7 +130,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
               {gearOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setGearOpen(false)} />
-                  <div className={`absolute right-0 top-9 z-50 w-44 overflow-hidden rounded-xl border shadow-lg ${isDark ? 'border-[#24305a] bg-[#16234a]' : 'border-carbon bg-paper'}`}>
+                  <div className={`absolute right-0 top-11 z-50 w-44 overflow-hidden rounded-xl border shadow-lg ${isDark ? 'border-[#24305a] bg-[#16234a]' : 'border-carbon bg-paper'}`}>
                     <button
                       onClick={() => {
                         setGearOpen(false)
@@ -198,32 +198,32 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
           </div>
         </div>
 
-        {/* Month selector — baris terpisah, rata tengah */}
-        <div className={`flex items-center justify-center gap-2 border-y py-2 ${isDark ? 'border-[#24305a]' : 'border-carbon/20'}`}>
+        {/* Month selector: baris terpisah, rata tengah */}
+        <div className={`flex items-center justify-center gap-2 border-y py-2.5 ${isDark ? 'border-[#24305a]' : 'border-carbon/20'}`}>
           <button
             onClick={() => switchMonth(addMonths(currentMonthId, -1))}
             aria-label="Bulan sebelumnya"
-            className={`flex h-8 w-8 items-center justify-center rounded-full transition active:scale-95 ${isDark ? 'text-[#8f9ac2] hover:bg-white/10 hover:text-[#f5f2e8]' : 'text-carbon/60 hover:bg-black/5 hover:text-carbon'}`}
+            className={`flex h-10 w-10 items-center justify-center rounded-full text-lg transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${isDark ? 'text-[#8f9ac2] hover:bg-white/10 hover:text-[#f5f2e8]' : 'text-carbon/60 hover:bg-black/5 hover:text-carbon'}`}
           >
             ‹
           </button>
           <button
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
-            className={`rounded-full px-3 py-1 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#d9a441]/30 ${isDark ? 'text-[#f5f2e8] hover:text-[#d9a441]' : 'text-carbon hover:text-carbon/70'}`}
+            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${isDark ? 'text-[#f5f2e8] hover:text-[#d9a441]' : 'text-carbon hover:text-carbon/70'}`}
           >
             {labelOf(currentMonthId)}
           </button>
           <button
             onClick={() => switchMonth(addMonths(currentMonthId, 1))}
             aria-label="Bulan berikutnya"
-            className={`flex h-8 w-8 items-center justify-center rounded-full transition active:scale-95 ${isDark ? 'text-[#8f9ac2] hover:bg-white/10 hover:text-[#f5f2e8]' : 'text-carbon/60 hover:bg-black/5 hover:text-carbon'}`}
+            className={`flex h-10 w-10 items-center justify-center rounded-full text-lg transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${isDark ? 'text-[#8f9ac2] hover:bg-white/10 hover:text-[#f5f2e8]' : 'text-carbon/60 hover:bg-black/5 hover:text-carbon'}`}
           >
             ›
           </button>
         </div>
 
-        {/* Grid navigasi 2x3 — 6 tombol seragam */}
+        {/* Grid navigasi 2x3: 6 tombol seragam */}
         <div className="grid grid-cols-2 gap-2 py-3 sm:grid-cols-3">
           {gridBtn(
             'dashboard',
@@ -254,7 +254,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
           )}
           <button
             onClick={onOpenWallets}
-            className={`flex h-10 items-center justify-center gap-2 rounded-xl text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#d9a441]/30 ${isDark ? 'bg-[#16234a] text-[#8f9ac2] hover:bg-[#1e2f5a] hover:text-[#f5f2e8]' : 'bg-mist text-carbon hover:bg-white border border-carbon/20'}`}
+            className={`flex h-10 items-center justify-center gap-2 rounded-xl text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 ${isDark ? 'bg-[#16234a] text-[#8f9ac2] hover:bg-[#1e2f5a] hover:text-[#f5f2e8]' : 'bg-mist text-carbon hover:bg-white border border-carbon/20'}`}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="7" width="18" height="12" rx="2" />
@@ -275,7 +275,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
           )}
           <button
             onClick={() => window.print()}
-            className={`flex h-10 items-center justify-center gap-2 rounded-xl text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#d9a441]/30 no-print ${isDark ? 'bg-[#16234a] text-[#8f9ac2] hover:bg-[#1e2f5a] hover:text-[#f5f2e8]' : 'bg-mist text-carbon hover:bg-white border border-carbon/20'}`}
+            className={`flex h-10 items-center justify-center gap-2 rounded-xl text-sm font-semibold transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#d9a441]/40 no-print ${isDark ? 'bg-[#16234a] text-[#8f9ac2] hover:bg-[#1e2f5a] hover:text-[#f5f2e8]' : 'bg-mist text-carbon hover:bg-white border border-carbon/20'}`}
             aria-label="Cetak laporan"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

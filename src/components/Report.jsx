@@ -90,7 +90,7 @@ export default function Report() {
                   <td className="py-2 text-right">{formatRupiah(budget)}</td>
                   <td className="py-2 text-right">{formatRupiah(used)}</td>
                   <td className="py-2 text-right">{formatRupiah(categoryLeft(c, txs))}</td>
-                  <td className="py-2 text-right">{c.goalAmount > 0 ? `${formatRupiah(gs.saved)} / ${formatRupiah(c.goalAmount)}` : '—'}</td>
+                  <td className="py-2 text-right">{c.goalAmount > 0 ? `${formatRupiah(gs.saved)} / ${formatRupiah(c.goalAmount)}` : '-'}</td>
                 </tr>
               )
             })}
@@ -102,7 +102,7 @@ export default function Report() {
         <h3 className="mb-2 font-semibold text-carbon dark:text-white">Transaksi ({txs.length})</h3>
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-black/20 text-left text-slate-400 dark:border-white/20">
+            <tr className="border-b border-black/20 text-left text-slate-500 dark:border-white/20 dark:text-slate-400">
               <th className="py-1.5">Tanggal</th>
               <th className="py-1.5">Keterangan</th>
               <th className="py-1.5 text-right">Nominal</th>
@@ -112,20 +112,20 @@ export default function Report() {
             {txs.map((t) => (
               <tr key={t.id} className="border-b border-black/5 dark:border-white/5">
                 <td className="py-1.5">{t.date}</td>
-                <td className="py-1.5">{t.description || '—'}</td>
+                <td className="py-1.5">{t.description || '-'}</td>
                 <td className={`py-1.5 text-right ${t.type === 'refund' || t.type === 'income' ? 'text-mint' : 'text-ember'}`}>
                   {t.type === 'refund' || t.type === 'income' ? '+' : '−'}{formatRupiah(t.amount)}
                 </td>
               </tr>
             ))}
             {txs.length === 0 && (
-              <tr><td colSpan="3" className="py-3 text-center text-slate-400">Belum ada transaksi.</td></tr>
+              <tr><td colSpan="3" className="py-3 text-center text-slate-500 dark:text-slate-400">Belum ada transaksi.</td></tr>
             )}
           </tbody>
         </table>
       </section>
 
-      <p className="text-[10px] text-slate-400">
+      <p className="text-[10px] text-slate-500 dark:text-slate-400">
         Sisa uang bebas: {formatRupiah(left)}. Total saldo dompet: {formatRupiah(totalWallet)}.
       </p>
     </div>

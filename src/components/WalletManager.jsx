@@ -16,6 +16,7 @@ export default function WalletManager({ onClose }) {
   const [confirmId, setConfirmId] = useState(null)
   const [drafts, setDrafts] = useState({})
   const [orderIds, setOrderIds] = useState(null)
+  const [savedOrderIds, setSavedOrderIds] = useState(null)
   const [dragId, setDragId] = useState(null)
   const [overId, setOverId] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -59,8 +60,8 @@ export default function WalletManager({ onClose }) {
       const d = drafts[w.id]
       if (d && (d.name !== w.name || d.color !== w.color || d.openingBalance !== w.openingBalance)) n += 1
     }
-    return n + (orderDirty ? 1 : 0)
-  }, [wallets, drafts, orderDirty])
+    return n + (orderIds && savedOrderIds && orderIds.join() !== savedOrderIds.join() ? 1 : 0)
+  }, [wallets, drafts, orderIds, savedOrderIds])
 
   const updateDraft = (id, patch) => {
     setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }))
@@ -106,6 +107,7 @@ export default function WalletManager({ onClose }) {
         }
       }
       setJustSaved(true)
+      setSavedOrderIds(orderIds)
     } finally {
       setSaving(false)
     }
@@ -128,9 +130,9 @@ export default function WalletManager({ onClose }) {
       wide
       footer={
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             {isSingle
-              ? 'Pocket adalah sekat virtual dari 1 rekening — saldo pocket dihitung dari transaksi, bukan rekening terpisah.'
+              ? 'Pocket adalah sekat virtual dari 1 rekening, saldo pocket dihitung dari transaksi, bukan rekening terpisah.'
               : 'Saldo = saldo awal + refund − pengeluaran. Perubahan tersimpan saat menekan "Simpan Perubahan". Seret ⋮⋮ untuk mengurutkan.'}
           </p>
           <button
@@ -206,20 +208,20 @@ export default function WalletManager({ onClose }) {
               onDrop={() => { setOverId(null); move(w.id) }}
               className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-carbon bg-paper p-3 transition-shadow hover:shadow-carbon-sm dark:border-white/20 dark:bg-slate-900 ${overId === w.id ? 'ring-2 ring-violet' : ''}`}
             >
-              <div className="flex shrink-0 flex-col items-center justify-center">
+              <div className="flex h-9 shrink-0 flex-col items-center justify-center">
                 <span
                   draggable
                   onDragStart={(e) => { setDragId(w.id); e.dataTransfer.effectAllowed = 'move' }}
                   onDragEnd={() => setDragId(null)}
-                  className="cursor-grab select-none text-lg leading-none text-slate-400 hover:text-carbon dark:hover:text-white"
+                  className="cursor-grab select-none text-lg leading-none text-slate-500 hover:text-carbon dark:text-slate-400 dark:hover:text-white"
                   title="Seret untuk mengurutkan (atau pakai tombol ↑↓)"
                   aria-label="Seret untuk mengurutkan"
                 >
                   ⋮⋮
                 </span>
-                <span className="mt-0.5 flex gap-0.5">
-                  <button type="button" onClick={() => moveBy(w.id, -1)} aria-label="Naikkan urutan" className="px-0.5 text-xs text-slate-400 hover:text-carbon dark:hover:text-white">▲</button>
-                  <button type="button" onClick={() => moveBy(w.id, 1)} aria-label="Turunkan urutan" className="px-0.5 text-xs text-slate-400 hover:text-carbon dark:hover:text-white">▼</button>
+                <span className="mt-0.5 flex gap-1">
+                  <button type="button" onClick={() => moveBy(w.id, -1)} aria-label="Naikkan urutan" className="flex h-5 w-5 items-center justify-center rounded text-xs text-slate-500 hover:bg-black/5 hover:text-carbon focus:outline-none focus:ring-1 focus:ring-black/20 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">▲</button>
+                  <button type="button" onClick={() => moveBy(w.id, 1)} aria-label="Turunkan urutan" className="flex h-5 w-5 items-center justify-center rounded text-xs text-slate-500 hover:bg-black/5 hover:text-carbon focus:outline-none focus:ring-1 focus:ring-black/20 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">▼</button>
                 </span>
               </div>
               <input
@@ -303,7 +305,7 @@ export default function WalletManager({ onClose }) {
           const hasDelta = adjustInput.trim() !== '' && delta !== 0
           return (
             <Modal
-              title={`Sesuaikan Saldo — ${w.name}`}
+              title={`Sesuaikan Saldo (${w.name})`}
               onClose={() => setAdjustId(null)}
               footer={
                 <div className="flex justify-end gap-2">

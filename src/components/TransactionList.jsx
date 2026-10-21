@@ -46,7 +46,7 @@ export default function TransactionList({ onEditTx }) {
         ? 'Pemasukan'
         : t.categoryId == null
           ? 'Uang Bebas'
-          : categories.find((c) => c.id === t.categoryId)?.name || '—'
+          : categories.find((c) => c.id === t.categoryId)?.name || '-'
   const catColor = (t) =>
     t.type === 'transfer'
       ? '#0ea5e9'
@@ -55,7 +55,7 @@ export default function TransactionList({ onEditTx }) {
         : t.categoryId == null
           ? '#64748b'
           : categories.find((c) => c.id === t.categoryId)?.color || '#64748b'
-  const walletName = (id) => (id ? wallets.find((w) => w.id === id)?.name || '—' : null)
+  const walletName = (id) => (id ? wallets.find((w) => w.id === id)?.name || '-' : null)
 
   const hasFilter =
     filterCategory !== 'all' ||
@@ -200,8 +200,8 @@ export default function TransactionList({ onEditTx }) {
                   t.type === 'transfer' ? 'Transfer' : t.type === 'refund' ? 'Refund' : t.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
                   catName(t),
                   t.type === 'transfer'
-                    ? `${walletName(t.walletId) || '—'} → ${walletName(t.toWalletId) || '—'}`
-                    : walletName(t.walletId) || '—',
+                    ? `${walletName(t.walletId) || '-'} → ${walletName(t.toWalletId) || '-'}`
+                    : walletName(t.walletId) || '-',
                   t.description || '',
                   String(t.amount || 0),
                 ])
@@ -230,11 +230,11 @@ export default function TransactionList({ onEditTx }) {
                     <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: catColor(tx) }} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-carbon dark:text-white">{catName(tx)}</p>
-                      <p className="truncate text-xs text-slate-400">
-                        {formatDate(tx.date)} — {labelOf(mId)}
+                      <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                        {formatDate(tx.date)} ({labelOf(mId)})
                         {isTransfer
-                          ? ` • ${walletName(tx.walletId) || '—'} → ${walletName(tx.toWalletId) || '—'}`
-                          : ` • ${tx.description || '—'}${walletName(tx.walletId) ? ` • ${walletName(tx.walletId)}` : ''}`}
+                          ? ` • ${walletName(tx.walletId) || '-'} → ${walletName(tx.toWalletId) || '-'}`
+                          : ` • ${tx.description || '-'}${walletName(tx.walletId) ? ` • ${walletName(tx.walletId)}` : ''}`}
                       </p>
                     </div>
                     <div className="text-right">
@@ -257,7 +257,7 @@ export default function TransactionList({ onEditTx }) {
       {/* List */}
       {filtered.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-black/30 bg-paper p-8 text-center dark:border-white/20 dark:bg-slate-900">
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             {hasFilter ? 'Tidak ada transaksi yang cocok dengan filter.' : 'Belum ada transaksi di bulan ini.'}
           </p>
           {hasFilter && (
@@ -286,10 +286,10 @@ export default function TransactionList({ onEditTx }) {
                     <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: catColor(t) }} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-carbon dark:text-white">{catName(t)}</p>
-                      <p className="truncate text-xs text-slate-400">
+                      <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                         {isTransfer
-                          ? `${walletName(t.walletId) || '—'} → ${walletName(t.toWalletId) || '—'}${t.description ? ` • ${t.description}` : ''}`
-                          : `${t.description || '—'}${walletName(t.walletId) ? ` • ${walletName(t.walletId)}` : ''}`}
+                          ? `${walletName(t.walletId) || '-'} → ${walletName(t.toWalletId) || '-'}${t.description ? ` • ${t.description}` : ''}`
+                          : `${t.description || '-'}${walletName(t.walletId) ? ` • ${walletName(t.walletId)}` : ''}`}
                       </p>
                     </div>
                     <div className="text-right">

@@ -264,10 +264,16 @@ function mapUser(u) {
 
 export function onAuthChange(cb) {
   needClient()
-  const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+  const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
     const u = session?.user || null
+    if (u) {
+      try {
+        await ensureSeeded(u.id)
+      } catch (e) {
+        console.error(e)
+      }
+    }
     cb(u ? mapUser(u) : null)
-    if (u) ensureSeeded(u.id).catch(console.error)
   })
   return data?.subscription?.unsubscribe
 }

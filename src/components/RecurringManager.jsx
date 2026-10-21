@@ -33,7 +33,7 @@ export default function RecurringManager({ onClose }) {
     'w-full rounded-xl border-2 border-black/20 bg-paper px-3 py-2 text-sm text-carbon outline-none focus:border-carbon focus:ring-2 focus:ring-black/15 dark:border-white/20 dark:bg-slate-800 dark:text-white'
 
   const catName = (id) => (id ? cats.find((c) => c.id === id)?.name : null)
-  const walletName = (id) => (id ? wallets.find((w) => w.id === id)?.name : '—')
+  const walletName = (id) => (id ? wallets.find((w) => w.id === id)?.name : '-')
 
   useEffect(() => {
     setDrafts((prev) => {
@@ -163,7 +163,7 @@ export default function RecurringManager({ onClose }) {
               ))}
             </select>
             <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
-              <option value="">Dompet — tidak dilacak</option>
+              <option value="">Dompet: tidak dilacak</option>
               {wallets.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.name}
@@ -291,7 +291,7 @@ export default function RecurringManager({ onClose }) {
                     ))}
                   </select>
                   <select className={input + ' w-36'} value={d.walletId || ''} onChange={(e) => updateDraft(t.id, { walletId: e.target.value || null })}>
-                    <option value="">Dompet —</option>
+                    <option value="">Dompet: otomatis</option>
                     {wallets.map((w) => (
                       <option key={w.id} value={w.id}>
                         {w.name}
@@ -303,7 +303,7 @@ export default function RecurringManager({ onClose }) {
               {d.type === 'transfer' && (
                 <>
                   <select className={input + ' w-36'} value={d.walletId || ''} onChange={(e) => updateDraft(t.id, { walletId: e.target.value || null })}>
-                    <option value="">Dari —</option>
+                    <option value="">Dari: pilih</option>
                     {wallets.map((w) => (
                       <option key={w.id} value={w.id}>
                         {w.name}
@@ -311,7 +311,7 @@ export default function RecurringManager({ onClose }) {
                     ))}
                   </select>
                   <select className={input + ' w-36'} value={d.toWalletId || ''} onChange={(e) => updateDraft(t.id, { toWalletId: e.target.value || null })}>
-                    <option value="">Ke —</option>
+                    <option value="">Ke: pilih</option>
                     {wallets.map((w) => (
                       <option key={w.id} value={w.id}>
                         {w.name}

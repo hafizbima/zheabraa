@@ -34,9 +34,9 @@ export default function PocketCard({ cat, txs, onClick, onSave, onUse }) {
         <div className="text-right">
           <p className="text-sm font-semibold text-carbon dark:text-white">
             {formatRupiah(used)}
-            {budget > 0 && <span className="font-normal text-slate-400"> / {formatRupiah(budget)}</span>}
+            {budget > 0 && <span className="font-normal text-slate-500 dark:text-slate-400"> / {formatRupiah(budget)}</span>}
           </p>
-          <p className={`text-[11px] font-medium ${status === 'over' ? 'text-ember' : status === 'warn' ? 'text-brand-600' : 'text-slate-400'}`}>
+          <p className={`text-[11px] font-medium ${status === 'over' ? 'text-ember' : status === 'warn' ? 'text-brand-600 dark:text-brand-400' : 'text-slate-500 dark:text-slate-400'}`}>
             sisa {formatRupiah(left)}
           </p>
         </div>
@@ -48,14 +48,14 @@ export default function PocketCard({ cat, txs, onClick, onSave, onUse }) {
       )}
       {goal > 0 && (
         <div className="mt-2.5">
-          <div className="flex items-center justify-between gap-2 text-[11px] text-slate-400">
+          <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400">
             <span>Terkumpul {formatRupiah(savedAmt)} / {formatRupiah(goal)}</span>
             <span className="flex items-center gap-1.5">
               <span>{goalPct}%</span>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onSave(cat) }}
-                className="rounded-full border border-carbon bg-sunburst/50 px-2 py-0.5 text-[10px] font-semibold text-carbon transition hover:bg-sunburst dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
+                className="rounded-full border border-carbon bg-sunburst/50 px-2.5 py-1 text-[11px] font-semibold text-carbon transition hover:bg-sunburst active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:focus:ring-white/40"
               >
                 + Simpan
               </button>
@@ -63,7 +63,7 @@ export default function PocketCard({ cat, txs, onClick, onSave, onUse }) {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onUse(cat) }}
-                  className="rounded-full border border-carbon bg-mint/50 px-2 py-0.5 text-[10px] font-semibold text-carbon transition hover:bg-mint dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
+                  className="rounded-full border border-carbon bg-mint/50 px-2.5 py-1 text-[11px] font-semibold text-carbon transition hover:bg-mint active:scale-95 focus:outline-none focus:ring-2 focus:ring-black/20 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:focus:ring-white/40"
                 >
                   Gunakan
                 </button>

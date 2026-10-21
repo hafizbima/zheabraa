@@ -39,7 +39,7 @@ export default function TransferForm({ monthId, onClose }) {
     if (!fromId) return setError('Pilih dompet asal')
     if (!toId) return setError('Pilih dompet tujuan')
     if (fromId === toId) return setError('Dompet asal dan tujuan tidak boleh sama')
-    if (amt > bal(fromId)) return setError(`Melebihi saldo ${formatRupiah(bal(fromId))} — transfer dibatalkan`)
+    if (amt > bal(fromId)) return setError(`Melebihi saldo ${formatRupiah(bal(fromId))}, transfer dibatalkan`)
 
     addTransaction(monthId, {
       date,
@@ -98,7 +98,7 @@ export default function TransferForm({ monthId, onClose }) {
                 if (e.target.value === toId) setToId('')
               }}
             >
-              <option value="">— Pilih dompet —</option>
+              <option value="">(Pilih dompet)</option>
               {wallets.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.name}
@@ -106,8 +106,8 @@ export default function TransferForm({ monthId, onClose }) {
               ))}
             </select>
             {fromId && (
-              <p className={`mt-1 text-xs ${fromOver ? 'font-medium text-ember' : 'text-slate-400'}`}>
-                {fromOver ? 'Melebihi saldo — ' : 'Saldo '}
+              <p className={`mt-1 text-xs ${fromOver ? 'font-medium text-ember' : 'text-slate-500 dark:text-slate-400'}`}>
+                {fromOver ? 'Melebihi saldo: ' : 'Saldo: '}
                 {formatRupiah(bal(fromId))}
               </p>
             )}
@@ -138,7 +138,7 @@ export default function TransferForm({ monthId, onClose }) {
                 if (e.target.value === fromId) setFromId('')
               }}
             >
-              <option value="">— Pilih dompet —</option>
+              <option value="">(Pilih dompet)</option>
               {wallets.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.name}
