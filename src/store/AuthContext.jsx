@@ -9,11 +9,19 @@ export function AuthProvider({ children }) {
   const [authReady, setAuthReady] = useState(false)
 
   useEffect(() => {
+    let resolved = false
     const unsub = backend.onAuthChange((u) => {
+      resolved = true
       setUser(u)
       setAuthReady(true)
     })
-    return unsub
+    const timer = setTimeout(() => {
+      if (!resolved) setAuthReady(true)
+    }, 4000)
+    return () => {
+      clearTimeout(timer)
+      if (typeof unsub === 'function') unsub()
+    }
   }, [])
 
   // --- auth actions ---

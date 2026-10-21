@@ -27,18 +27,9 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,ico,woff2}', 'pwa-icon-*.png'],
         globIgnores: ['**/logo.png'],
         navigateFallback: '/index.html',
-        runtimeCaching: [
-          {
-            // data Supabase: network-first, fallback cache — app tetap terbaca offline
-            urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'supabase-data',
-              expiration: { maxEntries: 64, maxAgeSeconds: 86400 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
       },
     }),
   ],

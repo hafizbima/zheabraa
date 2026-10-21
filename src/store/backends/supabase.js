@@ -221,35 +221,22 @@ export async function loadAll(uid) {
     if (mm) mm.transactions.push(mapTransaction(r))
   }
 
-  // generate recurring untuk bulan berjalan & mendatang (sekali, via recurringGenerated set)
-  const now = new Date()
-  const curMonth = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`
-  let generated = false
-  for (const mId of Object.keys(months)) {
-    if (mId >= curMonth && (await applyRecurringQuiet(uid, mId))) generated = true
-  }
-  if (generated) {
-    const [m2, t2] = await Promise.all([
-      supabase.from('months').select('*').eq('user_id', uid),
-      supabase.from('transactions').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
-    ])
-    if (!m2.error) for (const r of m2.data || []) {
-      const mm = months[r.id]
-      if (mm) Object.assign(mm, mapMonth(r), { categories: mm.categories, transactions: mm.transactions })
-    }
-    if (!t2.error) {
-      for (const r of t2.data || []) {
-        const mm = months[r.month_id]
-        if (!mm) continue
-        const tx = mapTransaction(r)
-        const i = mm.transactions.findIndex((x) => x.id === tx.id)
-        if (i >= 0) mm.transactions[i] = tx
-        else mm.transactions.push(tx)
-      }
+  const templates = (tpl.data || []).map(mapTemplate)
+
+  // jalankan recurring template di background agar tidak memblokir render awal
+  if (templates.length > 0) {
+    const now = new Date()
+    const curMonth = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`
+    for (const mId of Object.keys(months)) {
+      if (mId >= curMonth) applyRecurringQuiet(uid, mId).catch(console.error)
     }
   }
 
-  const templates = (tpl.data || []).map(mapTemplate)
+  // Jika user baru (belum ada data), seed di background
+  if ((!w.data || w.data.length === 0) && (!m.data || m.data.length === 0)) {
+    ensureSeeded(uid).catch(console.error)
+  }
+
   return { wallets, months, templates }
 }
 
@@ -264,15 +251,8 @@ function mapUser(u) {
 
 export function onAuthChange(cb) {
   needClient()
-  const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
+  const { data } = supabase.auth.onAuthStateChange((_event, session) => {
     const u = session?.user || null
-    if (u) {
-      try {
-        await ensureSeeded(u.id)
-      } catch (e) {
-        console.error(e)
-      }
-    }
     cb(u ? mapUser(u) : null)
   })
   return data?.subscription?.unsubscribe
