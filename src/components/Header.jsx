@@ -7,7 +7,7 @@ import { exportBackup, importBackup } from '../lib/backup.js'
 import { disableNotifications, notificationsEnabled, notificationsSupported, requestNotifications } from '../lib/notifications.js'
 import Confirm from './Confirm.jsx'
 
-export default function Header({ view, onViewChange, onOpenWallets }) {
+export default function Header({ view, onViewChange, onOpenWallets, onOpenInstallPrompt }) {
   const { user, logout, currentMonthId, switchMonth, startNewMonth, months, wallets, templates, budgetTemplates, notify } = useStore()
   const { theme, toggleTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -115,7 +115,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
 
   return (
     <header
-      className={`no-print sticky top-0 z-30 border-b transition-transform duration-300 ${hidden ? '-translate-y-full' : 'translate-y-0'} ${isDark ? 'border-slate-800 bg-[#0D1117]/90 backdrop-blur-md' : 'border-slate-200/80 bg-white/90 backdrop-blur-md'}`}
+      className={`no-print sticky top-0 z-30 border-b pt-[env(safe-area-inset-top)] transition-transform duration-300 ${hidden ? '-translate-y-full' : 'translate-y-0'} ${isDark ? 'border-slate-800 bg-[#0D1117]/90 backdrop-blur-md' : 'border-slate-200/80 bg-white/90 backdrop-blur-md'}`}
     >
       <div className="mx-auto max-w-3xl px-4">
         {/* Header row — logo kiri, toggle + gear kanan */}
@@ -159,6 +159,18 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setGearOpen(false)} />
                   <div className={`absolute right-0 top-11 z-50 w-48 overflow-hidden rounded-2xl border shadow-tactile-md ${isDark ? 'border-slate-800 bg-slate-900 text-slate-100' : 'border-slate-200 bg-white text-slate-800'}`}>
+                    {onOpenInstallPrompt && (
+                      <button
+                        onClick={() => {
+                          setGearOpen(false)
+                          onOpenInstallPrompt()
+                        }}
+                        className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-xs sm:text-sm font-medium ${isDark ? 'text-slate-200 hover:bg-slate-800' : 'text-slate-700 hover:bg-slate-50'}`}
+                      >
+                        <span className="text-sm">📱</span>
+                        Pasang di Layar Utama
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         setGearOpen(false)

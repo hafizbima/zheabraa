@@ -12,6 +12,7 @@ import BudgetTemplateManager from './components/BudgetTemplateManager.jsx'
 import WalletManager from './components/WalletManager.jsx'
 import RecurringManager from './components/RecurringManager.jsx'
 import TransferForm from './components/TransferForm.jsx'
+import IosInstallPrompt from './components/IosInstallPrompt.jsx'
 
 export default function App() {
   return (
@@ -53,6 +54,7 @@ function Shell() {
   const [walletOpen, setWalletOpen] = useState(false)
   const [recurrOpen, setRecurrOpen] = useState(false)
   const [transferOpen, setTransferOpen] = useState(false)
+  const [installPromptOpen, setInstallPromptOpen] = useState(false)
 
   const openNewTx = (prefillData) => {
     setEditing(null)
@@ -72,9 +74,10 @@ function Shell() {
         view={view}
         onViewChange={setView}
         onOpenWallets={() => setWalletOpen(true)}
+        onOpenInstallPrompt={() => setInstallPromptOpen(true)}
       />
 
-      <main className="mx-auto max-w-3xl px-4 pb-28 pt-5">
+      <main className="mx-auto max-w-3xl px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-5">
         {view === 'dashboard' ? (
           <Dashboard
             onNewTx={openNewTx}
@@ -96,7 +99,7 @@ function Shell() {
       {/* FAB */}
       <button
         onClick={() => openNewTx(null)}
-        className="no-print fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-tactile-md transition-all duration-150 hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95 focus:outline-none focus:ring-2 focus:ring-slate-400/30 dark:bg-teal-600 dark:hover:bg-teal-500"
+        className="no-print fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-6 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-tactile-md transition-all duration-150 hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95 focus:outline-none focus:ring-2 focus:ring-slate-400/30 dark:bg-teal-600 dark:hover:bg-teal-500"
         aria-label="Tambah transaksi"
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -118,6 +121,11 @@ function Shell() {
       {walletOpen && <WalletManager onClose={() => setWalletOpen(false)} />}
       {recurrOpen && <RecurringManager onClose={() => setRecurrOpen(false)} />}
       {transferOpen && <TransferForm monthId={currentMonthId} onClose={() => setTransferOpen(false)} />}
+
+      <IosInstallPrompt
+        open={installPromptOpen ? true : undefined}
+        onClose={() => setInstallPromptOpen(false)}
+      />
 
       {notice && (
         <div

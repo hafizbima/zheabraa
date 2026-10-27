@@ -10,6 +10,15 @@ html {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* iOS Safari: Cegah auto-zoom saat fokus ke input/select/textarea */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+  }
+}
+
 body {
   @apply bg-[#F4F5F7] font-sans text-slate-900 antialiased dark:bg-[#0D1117] dark:text-slate-100;
 }
