@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah, toInt } from '../lib/money.js'
+import { monthIdOf } from '../lib/dates.js'
 import {
   totalInflow,
   totalAllocated,
@@ -12,6 +13,8 @@ import {
   walletBalance,
   singleWalletBalance,
   allTransactions,
+  safeDailySpend,
+  isRecurringBillPaid,
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
 import ReallocateForm from './ReallocateForm.jsx'
@@ -20,6 +23,7 @@ import QuickAdd from './QuickAdd.jsx'
 import PocketCard from './PocketCard.jsx'
 import SaveGoalModal from './SaveGoalModal.jsx'
 import { btn } from '../lib/buttons.js'
+import { notificationCandidates, notificationsEnabled, sendNotificationOnce } from '../lib/notifications.js'
 
 function Card({ label, value, sub, accent, tint }) {
   return (
@@ -41,8 +45,9 @@ function statusStyles(status) {
   return 'bg-teal-500'
 }
 
-export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onManageRecurring, onTransfer }) {
+export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onManageBudgetTemplates, onManageRecurring, onTransfer }) {
   const {
+    user,
     currentMonth: month,
     currentMonthId,
     wallets,
@@ -66,6 +71,13 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const [noteDraft, setNoteDraft] = useState('')
   const [saveModal, setSaveModal] = useState(null) // { cat, mode: 'nabung' | 'pakai' }
   const notifiedOver = useRef(new Set())
+  const [notificationVersion, setNotificationVersion] = useState(0)
+
+  useEffect(() => {
+    const onChange = () => setNotificationVersion((version) => version + 1)
+    window.addEventListener('gmm-notifications-changed', onChange)
+    return () => window.removeEventListener('gmm-notifications-changed', onChange)
+  }, [])
 
   useEffect(() => {
     setCarryDraft(month ? String(month.carryOver ?? 0) : '')
@@ -83,6 +95,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const pool = freePool(month)
   const freeSpent = freeMoneySpent(txs)
   const left = freeLeft(month)
+  const dailySpend = safeDailySpend(month, templates)
   const primary = wallets[0] || null
   const primaryBalance = primary
     ? wallets.length === 1
@@ -111,6 +124,12 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       }
     }
   }, [alerts, notify, month])
+
+  useEffect(() => {
+    if (!user || !month || !notificationsEnabled(user.uid)) return
+    const candidates = notificationCandidates({ month, templates })
+    candidates.forEach((candidate) => sendNotificationOnce(user.uid, candidate))
+  }, [user, month, templates, notificationVersion])
 
   const upcomingBills = templates.filter((t) => t.type === 'bill' && t.active !== false)
 
@@ -177,6 +196,30 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
         <Card label="Sisa Uang Bebas" value={formatRupiah(left)} sub={`terpakai ${formatRupiah(freeSpent)}`} accent={left < 0 ? 'text-rose-500' : 'text-slate-800 dark:text-slate-200'} />
       </section>
 
+      {/* Batas rata-rata pengeluaran dari uang bebas sampai akhir bulan */}
+      <section className={`rounded-2xl border p-5 shadow-tactile-sm ${left < 0 ? 'border-rose-500/25 bg-rose-50/70 dark:border-rose-500/30 dark:bg-rose-950/20' : 'border-teal-500/20 bg-teal-50/70 dark:border-teal-500/25 dark:bg-teal-950/20'}`}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${left < 0 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-300' : 'bg-teal-500/10 text-teal-700 dark:text-teal-300'}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${left < 0 ? 'bg-rose-500' : 'bg-teal-500'}`} />
+              Aman Dibelanjakan / Hari
+            </div>
+            <p className={`mt-2 font-sans text-2xl font-bold tracking-tight ${left < 0 ? 'text-rose-600 dark:text-rose-300' : 'text-slate-900 dark:text-white'}`}>
+              {dailySpend.daysRemaining > 0 ? formatRupiah(dailySpend.amount) : '—'}
+            </p>
+          </div>
+          <p className="max-w-sm text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+            {left < 0
+              ? `Uang bebas sudah melewati batas sebesar ${formatRupiah(Math.abs(left))}.`
+              : dailySpend.daysRemaining > 0
+                ? dailySpend.plannedBills > 0
+                  ? `Setelah menyisihkan ${formatRupiah(dailySpend.plannedBills)} untuk tagihan Uang Bebas, tersisa ${formatRupiah(dailySpend.discretionaryLeft)} untuk ${dailySpend.daysRemaining} hari.`
+                  : `Rata-rata dari sisa ${formatRupiah(left)} untuk ${dailySpend.daysRemaining} hari tersisa, termasuk hari ini.`
+                : 'Bulan ini sudah selesai. Buat bulan baru untuk melihat batas harian.'}
+          </p>
+        </div>
+      </section>
+
       <QuickAdd categories={month.categories || []} onPick={(prefill) => onNewTx(prefill)} />
 
       {/* Tagihan bulan ini (template tipe bill) */}
@@ -191,7 +234,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
           <div className="mt-3 space-y-2">
             {upcomingBills.map((b) => {
               const due = Math.min(28, Math.max(1, b.dayOfMonth || 1))
-              const overdue = due < new Date().getDate()
+              const billPaid = isRecurringBillPaid(month, b)
+              const overdue = !billPaid && month.id === monthIdOf(new Date()) && due < new Date().getDate()
               const cat = (month.categories || []).find((c) => c.id === b.categoryId)
               return (
                 <div key={b.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/70 px-3.5 py-2.5 dark:border-slate-800/80 dark:bg-slate-800/40">
@@ -199,13 +243,17 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                     <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">{b.description || 'Tagihan'}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {cat ? cat.name : '-'}
-                      {overdue ? ' • jatuh tempo' : ` • tgl ${due}`}
+                      {billPaid ? ' • lunas' : overdue ? ' • jatuh tempo' : ` • tgl ${due}`}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <p className="font-sans text-sm font-bold text-slate-900 dark:text-white">{formatRupiah(b.amount)}</p>
-                    <button onClick={() => onNewTx({ categoryId: b.categoryId, description: b.description, amount: b.amount })} className={btn.primary + ' !px-3 !py-1 !text-xs'}>
-                      Bayar
+                    <button
+                      onClick={() => onNewTx({ date: `${month.id}-${String(due).padStart(2, '0')}`, categoryId: b.categoryId, description: b.description, amount: b.amount, recurringTemplateId: b.id })}
+                      disabled={billPaid}
+                      className={(billPaid ? btn.neutral : btn.primary) + ' !px-3 !py-1 !text-xs'}
+                    >
+                      {billPaid ? 'Lunas' : 'Bayar'}
                     </button>
                   </div>
                 </div>
@@ -358,6 +406,9 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             <button onClick={onManageCategories} className={btn.subtle}>
               Kelola Kategori
             </button>
+            <button onClick={onManageBudgetTemplates} className={btn.subtle}>
+              Template Budget
+            </button>
           </div>
         </div>
         {allocated > inflow && (
@@ -368,10 +419,11 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
         {(month.categories || []).length > 0 && (
           <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
             {(month.categories || []).map((cat) => (
-              <PocketCard
-                key={cat.id}
-                cat={cat}
-                txs={txs}
+                <PocketCard
+                 key={cat.id}
+                 cat={cat}
+                 txs={txs}
+                 currentMonthId={currentMonthId}
                 onClick={() => onNewTx({ categoryId: cat.id })}
                 onSave={(c) => setSaveModal({ cat: c, mode: 'nabung' })}
                 onUse={(c) => setSaveModal({ cat: c, mode: 'pakai' })}

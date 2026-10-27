@@ -63,6 +63,7 @@ create table if not exists public.categories (
   name text not null,
   budget_amount integer not null default 0,
   goal_amount integer not null default 0,
+  goal_deadline text,
   color text not null default '#8B5CF6',
   sort_order integer not null default 0,
   created_at bigint not null default 0,
@@ -93,6 +94,7 @@ create table if not exists public.transactions (
   category_id text,
   wallet_id text,
   to_wallet_id text,
+  recurring_template_id text,
   description text not null default '',
   created_at bigint not null default 0,
   primary key (id, user_id)
@@ -136,6 +138,29 @@ create policy "templates_insert" on public.recurring_templates
 create policy "templates_update" on public.recurring_templates
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "templates_delete" on public.recurring_templates
+  for delete using (auth.uid() = user_id);
+
+-- ---------- budget_templates ----------
+create table if not exists public.budget_templates (
+  id text not null,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  name text not null,
+  categories jsonb not null default '[]'::jsonb,
+  created_at bigint not null default 0,
+  primary key (id, user_id)
+);
+
+create index if not exists idx_budget_templates_user on public.budget_templates (user_id);
+
+alter table public.budget_templates enable row level security;
+
+create policy "budget_templates_select" on public.budget_templates
+  for select using (auth.uid() = user_id);
+create policy "budget_templates_insert" on public.budget_templates
+  for insert with check (auth.uid() = user_id);
+create policy "budget_templates_update" on public.budget_templates
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "budget_templates_delete" on public.budget_templates
   for delete using (auth.uid() = user_id);
 
 -- ---------- realtime ----------

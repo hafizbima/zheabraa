@@ -14,6 +14,11 @@ import {
   singleWalletBalance,
   goalSaved,
   carryOverAmount,
+  daysRemainingInMonth,
+  plannedFreeBills,
+  isRecurringBillPaid,
+  safeDailySpend,
+  goalPlan,
 } from '../src/lib/calc.js'
 
 const walletA = { id: 'w1', name: 'Cash', openingBalance: 100000 }
@@ -206,4 +211,87 @@ describe('calc', () => {
     // bandingkan dengan monthLeftTotal (yang masih menghitung tabungan c1)
     expect(monthLeftTotal(month)).toBe(250000 + 400000 + 180000)
   })
+
+  it('menghitung hari tersisa termasuk hari ini dan menangani bulan lampau/depan', () => {
+    const reference = new Date(2026, 1, 10) // 10 Februari 2026
+    expect(daysRemainingInMonth('2026-02', reference)).toBe(19)
+    expect(daysRemainingInMonth('2026-01', reference)).toBe(0)
+    expect(daysRemainingInMonth('2026-03', reference)).toBe(31)
+  })
+
+  it('menghitung batas aman uang bebas per hari tanpa menghasilkan angka negatif', () => {
+    const month = {
+      id: '2026-02',
+      carryOver: 0,
+      categories: [],
+      transactions: [
+        { type: 'income', amount: 190000, date: '2026-02-01' },
+        { type: 'expense', amount: 10000, categoryId: null },
+      ],
+    }
+    const plan = safeDailySpend(month, new Date(2026, 1, 10))
+    expect(plan.left).toBe(180000)
+    expect(plan.daysRemaining).toBe(19)
+    expect(plan.amount).toBe(Math.floor(180000 / 19))
+
+    const overdrawn = safeDailySpend({ ...month, transactions: [...month.transactions, { type: 'expense', amount: 200000, categoryId: null }] }, referenceDate())
+    expect(overdrawn.amount).toBe(0)
+  })
+
+  it('menyisihkan tagihan Uang Bebas yang belum dibuat sebagai transaksi', () => {
+    const month = {
+      id: '2026-02',
+      carryOver: 0,
+      categories: [{ id: 'c1', budgetAmount: 100000 }],
+      transactions: [
+        { type: 'income', amount: 500000, date: '2026-02-01' },
+        { type: 'expense', amount: 50000, categoryId: null },
+        { id: 'recur-paid-2026-02-05', type: 'expense', amount: 25000, categoryId: null },
+      ],
+    }
+    const templates = [
+      { id: 'future', type: 'bill', amount: 75000, dayOfMonth: 20, categoryId: null, active: true },
+      { id: 'paid', type: 'bill', amount: 25000, dayOfMonth: 5, categoryId: null, active: true },
+      { id: 'pocket', type: 'bill', amount: 90000, dayOfMonth: 20, categoryId: 'c1', active: true },
+      { id: 'skipped', type: 'bill', amount: 60000, dayOfMonth: 20, categoryId: null, active: true, skipMonths: ['2026-02'] },
+    ]
+    const reference = new Date(2026, 1, 10)
+
+    expect(plannedFreeBills(month, templates, reference)).toBe(75000)
+    const plan = safeDailySpend(month, templates, reference)
+    expect(plan.left).toBe(325000)
+    expect(plan.plannedBills).toBe(75000)
+    expect(plan.discretionaryLeft).toBe(250000)
+    expect(plan.amount).toBe(Math.floor(250000 / 19))
+  })
+
+  it('mengenali pembayaran tagihan yang ditautkan ke template', () => {
+    const template = { id: 'bill-1', type: 'bill', dayOfMonth: 20, amount: 75000 }
+    const month = {
+      id: '2026-02',
+      transactions: [{ id: 'tx-1', recurringTemplateId: 'bill-1', type: 'expense', amount: 75000 }],
+    }
+    expect(isRecurringBillPaid(month, template)).toBe(true)
+    expect(isRecurringBillPaid({ ...month, transactions: [] }, template)).toBe(false)
+  })
+
+  it('menghitung kebutuhan tabungan bulanan sampai deadline', () => {
+    const category = {
+      id: 'trip',
+      goalAmount: 1000000,
+      savedAmount: 200000,
+      budgetAmount: 100000,
+      goalDeadline: '2026-12-15',
+    }
+    const plan = goalPlan(category, [], '2026-10', new Date(2026, 9, 27))
+    expect(plan.saved).toBe(300000)
+    expect(plan.needed).toBe(700000)
+    expect(plan.monthsRemaining).toBe(3)
+    expect(plan.monthlyAmount).toBe(233334)
+    expect(plan.overdue).toBe(false)
+  })
 })
+
+function referenceDate() {
+  return new Date(2026, 1, 10)
+}

@@ -10,6 +10,7 @@ export function DataProvider({ children }) {
   const [walletsReceived, setWalletsReceived] = useState(false)
   const [months, setMonths] = useState({})
   const [templates, setTemplates] = useState([])
+  const [budgetTemplates, setBudgetTemplates] = useState([])
   const [notice, setNotice] = useState(null)
 
   const notify = useCallback((msg) => {
@@ -38,6 +39,7 @@ export function DataProvider({ children }) {
       setWallets(d.wallets || [])
       setMonths(d.months || {})
       setTemplates(d.templates || [])
+      setBudgetTemplates(d.budgetTemplates || [])
     } catch (e) {
       const msg = String(e?.message || e?.code || '')
       if (msg.includes('PGRST303') || msg.includes('JWT issued at future')) {
@@ -66,6 +68,7 @@ export function DataProvider({ children }) {
       setWallets([])
       setMonths({})
       setTemplates([])
+      setBudgetTemplates([])
       setWalletsReceived(false)
       return
     }
@@ -78,12 +81,13 @@ export function DataProvider({ children }) {
       walletsReceived,
       months,
       templates,
+      budgetTemplates,
       notice,
       notify,
       refresh,
       mutate,
     }),
-    [wallets, walletsReceived, months, templates, notice, notify, refresh, mutate],
+    [wallets, walletsReceived, months, templates, budgetTemplates, notice, notify, refresh, mutate],
   )
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>

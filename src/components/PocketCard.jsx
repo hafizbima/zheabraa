@@ -1,4 +1,4 @@
-import { categoryStatus, categoryLeft, goalSaved } from '../lib/calc.js'
+import { categoryStatus, categoryLeft, goalSaved, goalPlan } from '../lib/calc.js'
 import { formatRupiah } from '../lib/money.js'
 
 function statusStyles(status) {
@@ -7,7 +7,7 @@ function statusStyles(status) {
   return 'bg-teal-500'
 }
 
-export default function PocketCard({ cat, txs, onClick, onSave, onUse }) {
+export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, onUse }) {
   const { used, budget, status, pct } = categoryStatus(cat, txs)
   const left = categoryLeft(cat, txs)
   const goal = cat.goalAmount > 0 ? cat.goalAmount : 0
@@ -15,6 +15,7 @@ export default function PocketCard({ cat, txs, onClick, onSave, onUse }) {
   const savedAmt = gs.saved
   const goalPct = goal ? Math.min(100, Math.round((savedAmt / goal) * 100)) : 0
   const goalDone = goal > 0 && savedAmt >= goal
+  const plan = goalPlan(cat, txs, currentMonthId)
 
   return (
     <div
@@ -73,6 +74,13 @@ export default function PocketCard({ cat, txs, onClick, onSave, onUse }) {
           <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
             <div className={`h-full rounded-full ${goalDone ? 'bg-emerald-500' : 'bg-teal-500'} transition-all`} style={{ width: `${goalPct}%` }} />
           </div>
+          {plan && !goalDone && (
+            <p className={`mt-1.5 text-[11px] font-medium ${plan.overdue ? 'text-rose-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              {plan.overdue
+                ? `Deadline lewat · perlu ${formatRupiah(plan.needed)} untuk mencapai target`
+                : `Butuh ${formatRupiah(plan.monthlyAmount)} / bulan sampai ${new Date(`${cat.goalDeadline}T00:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+            </p>
+          )}
         </div>
       )}
     </div>

@@ -47,6 +47,65 @@ export function freeLeft(month) {
   return freePool(month) - freeMoneySpent(month.transactions || [])
 }
 
+// Jumlah hari yang masih tersedia untuk membelanjakan uang bebas.
+// Hari ini ikut dihitung karena freeLeft sudah mencerminkan transaksi hari ini.
+export function daysRemainingInMonth(monthId, referenceDate = new Date()) {
+  if (!monthId || !/^\d{4}-\d{2}$/.test(monthId)) return 0
+  const [year, month] = monthId.split('-').map(Number)
+  const currentId = `${referenceDate.getFullYear()}-${String(referenceDate.getMonth() + 1).padStart(2, '0')}`
+
+  if (monthId < currentId) return 0
+  if (monthId > currentId) return new Date(year, month, 0).getDate()
+  return new Date(year, month, 0).getDate() - referenceDate.getDate() + 1
+}
+
+function recurringDay(template) {
+  return Math.min(28, Math.max(1, template.dayOfMonth || 1))
+}
+
+export function isRecurringBillPaid(month, template) {
+  if (!month?.id || !template?.id) return false
+  const day = recurringDay(template)
+  const generatedId = `recur-${template.id}-${month.id}-${String(day).padStart(2, '0')}`
+  return (month.transactions || []).some(
+    (tx) => tx.id === generatedId || tx.recurringTemplateId === template.id,
+  )
+}
+
+// Tagihan yang memakai Uang Bebas belum mengurangi freeLeft sebelum dibuat.
+// Tagihan yang sudah digenerate sebagai transaksi tidak dihitung dua kali.
+export function plannedFreeBills(month, templates = [], referenceDate = new Date()) {
+  if (!month?.id) return 0
+  const currentId = `${referenceDate.getFullYear()}-${String(referenceDate.getMonth() + 1).padStart(2, '0')}`
+
+  return templates
+    .filter((template) => template.type === 'bill' && template.active !== false && template.categoryId == null)
+    .filter((template) => !(template.skipMonths || []).includes(month.id))
+    .filter(() => month.id >= currentId)
+    .filter((template) => !isRecurringBillPaid(month, template))
+    .reduce((total, template) => total + (template.amount || 0), 0)
+}
+
+export function safeDailySpend(month, templates = [], referenceDate = new Date()) {
+  // Backward-compatible form: safeDailySpend(month, referenceDate)
+  if (templates instanceof Date) {
+    referenceDate = templates
+    templates = []
+  }
+  if (!Array.isArray(templates)) templates = []
+  const daysRemaining = daysRemainingInMonth(month?.id, referenceDate)
+  const left = freeLeft(month || {})
+  const plannedBills = plannedFreeBills(month, templates, referenceDate)
+  const discretionaryLeft = left - plannedBills
+  return {
+    amount: daysRemaining > 0 ? Math.max(0, Math.floor(discretionaryLeft / daysRemaining)) : 0,
+    daysRemaining,
+    left,
+    plannedBills,
+    discretionaryLeft,
+  }
+}
+
 export function categorySpentTotal(transactions) {
   return transactions
     .filter((t) => t.categoryId != null && t.type === 'expense')
@@ -129,4 +188,25 @@ export function goalSaved(category, transactions) {
   const saved = (category.savedAmount || 0) + Math.max(0, (category.budgetAmount || 0) - Math.max(0, categoryUsed(category.id, transactions)))
   const goal = category.goalAmount || 0
   return { saved, goal, pct: goal > 0 ? Math.min(100, Math.round((saved / goal) * 100)) : 0, done: goal > 0 && saved >= goal }
+}
+
+export function goalPlan(category, transactions, currentMonthId, referenceDate = new Date()) {
+  const progress = goalSaved(category, transactions)
+  if (!progress.goal || !category.goalDeadline || !currentMonthId) return null
+
+  const match = String(category.goalDeadline).match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  const current = String(currentMonthId).match(/^(\d{4})-(\d{2})$/)
+  if (!match || !current) return null
+
+  const targetMonth = new Date(Number(match[1]), Number(match[2]) - 1, 1)
+  const currentMonth = new Date(Number(current[1]), Number(current[2]) - 1, 1)
+  const monthsRemaining = (targetMonth.getFullYear() - currentMonth.getFullYear()) * 12 + targetMonth.getMonth() - currentMonth.getMonth() + 1
+  const needed = Math.max(0, progress.goal - progress.saved)
+  return {
+    ...progress,
+    needed,
+    monthsRemaining,
+    monthlyAmount: monthsRemaining > 0 ? Math.ceil(needed / monthsRemaining) : needed,
+    overdue: monthsRemaining <= 0 && needed > 0,
+  }
 }

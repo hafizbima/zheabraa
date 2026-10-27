@@ -9,7 +9,7 @@ import { btn } from '../lib/buttons.js'
 export default function TransactionForm({ monthId, transaction, prefill, onClose }) {
   const { currentMonth: month, months, wallets, addTransaction, updateTransaction } = useStore()
 
-  const [date, setDate] = useState(transaction?.date || todayISO())
+  const [date, setDate] = useState(transaction?.date || prefill?.date || todayISO())
   const [type, setType] = useState(transaction?.type || 'expense')
   const [amount, setAmount] = useState(
     transaction ? String(transaction.amount || '') : prefill?.amount ? String(prefill.amount) : '',
@@ -70,6 +70,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
       categoryId: isTransfer ? null : isFree ? null : categoryId,
       walletId: isTransfer ? walletId : walletId || (isSingle ? primary?.id : null),
       toWalletId: isTransfer ? toWalletId : null,
+      recurringTemplateId: transaction?.recurringTemplateId || prefill?.recurringTemplateId || null,
       description: description.trim(),
     }
 

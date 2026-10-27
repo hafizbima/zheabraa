@@ -13,6 +13,7 @@ import {
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
 import { btn } from '../lib/buttons.js'
+import { buildSpendingInsights } from '../lib/insights.js'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 
 function compactNum(v) {
@@ -167,6 +168,8 @@ export default function Stats() {
     }
   })()
 
+  const insights = useMemo(() => buildSpendingInsights(months, ranged), [months, ranged])
+
   const granBtn = (key, label) =>
     `rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${gran === key ? 'bg-slate-900 text-white shadow-tactile-sm dark:bg-teal-500 dark:text-slate-950' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'}`
 
@@ -241,6 +244,40 @@ export default function Stats() {
                   </div>
                   <p className="mt-1 font-sans text-sm font-bold text-slate-900 dark:text-white">{formatRupiah(it.cur)}</p>
                   <p className="text-[10px] text-slate-400">bulan lalu: {formatRupiah(it.prev)}</p>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      {insights.length > 0 && (
+        <section className="rounded-2xl border border-indigo-200/70 bg-indigo-50/60 p-5 shadow-tactile-sm dark:border-indigo-900/60 dark:bg-indigo-950/20">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Insight Pengeluaran</h3>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Pola yang terlihat dari periode yang dipilih.</p>
+            </div>
+            <span className="rounded-full bg-indigo-500/10 px-2.5 py-1 text-[10px] font-semibold text-indigo-700 dark:text-indigo-300">Otomatis</span>
+          </div>
+          <div className="mt-3.5 space-y-2.5">
+            {insights.map((insight) => {
+              let title = ''
+              let detail = ''
+              if (insight.type === 'top-category') {
+                title = `${insight.name} adalah pengeluaran terbesar`
+                detail = `${formatRupiah(insight.amount)} selama periode ini.`
+              } else if (insight.type === 'category-increase') {
+                title = `${insight.name} meningkat dibanding bulan sebelumnya`
+                detail = `Naik ${formatRupiah(insight.increase)} menjadi ${formatRupiah(insight.amount)}.`
+              } else {
+                title = 'Pengeluaran lebih sering terjadi di akhir pekan'
+                detail = `${Math.round(insight.weekendShare * 100)}% dari total belanja terjadi pada Sabtu atau Minggu.`
+              }
+              return (
+                <div key={`${insight.type}-${insight.name || 'weekend'}`} className="rounded-xl border border-indigo-100 bg-white/70 px-3.5 py-3 dark:border-indigo-900/60 dark:bg-slate-900/50">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{title}</p>
+                  <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">{detail}</p>
                 </div>
               )
             })}

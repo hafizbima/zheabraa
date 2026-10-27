@@ -142,6 +142,36 @@ describe('recurring templates (local backend)', () => {
     expect(incs[0].description).toBe('Gaji')
   })
 
+  it('keeps recurring bills planned until the user pays them', async () => {
+    local.ensureMonth('u1', nextMonth)
+    await local.addTemplate('u1', {
+      id: 't-bill',
+      type: 'bill',
+      dayOfMonth: 10,
+      amount: 100000,
+      categoryId: null,
+      description: 'Internet',
+      active: true,
+      createdAt: Date.now(),
+    })
+    await local.applyRecurring('u1', nextMonth)
+
+    expect(getDetail(nextMonth).transactions.find((t) => t.recurringTemplateId === 't-bill')).toBeUndefined()
+
+    await local.setTransaction('u1', nextMonth, {
+      id: 'paid-bill',
+      date: `${nextMonth}-10`,
+      type: 'expense',
+      amount: 100000,
+      categoryId: null,
+      walletId: null,
+      recurringTemplateId: 't-bill',
+      description: 'Internet',
+      createdAt: Date.now(),
+    })
+    expect(getDetail(nextMonth).transactions.find((t) => t.recurringTemplateId === 't-bill')).toBeTruthy()
+  })
+
   it('generates recurring transfer transactions with from/to wallets', async () => {
     local.ensureMonth('u1', nextMonth)
     await local.addTemplate('u1', {

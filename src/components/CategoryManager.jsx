@@ -30,6 +30,7 @@ export default function CategoryManager({ onClose }) {
   const [name, setName] = useState('')
   const [budget, setBudget] = useState('')
   const [goal, setGoal] = useState('')
+  const [deadline, setDeadline] = useState('')
   const [color, setColor] = useState(CATEGORY_COLORS[0])
   const [confirmId, setConfirmId] = useState(null)
   const [drafts, setDrafts] = useState({})
@@ -51,7 +52,7 @@ export default function CategoryManager({ onClose }) {
       for (const cat of cats) {
         next[cat.id] =
           prev[cat.id] ||
-          { id: cat.id, name: cat.name, budgetAmount: cat.budgetAmount, color: cat.color, goalAmount: cat.goalAmount || 0 }
+           { id: cat.id, name: cat.name, budgetAmount: cat.budgetAmount, color: cat.color, goalAmount: cat.goalAmount || 0, goalDeadline: cat.goalDeadline || '' }
       }
       return next
     })
@@ -82,7 +83,8 @@ export default function CategoryManager({ onClose }) {
         (d.name !== cat.name ||
           d.budgetAmount !== cat.budgetAmount ||
           d.color !== cat.color ||
-          (d.goalAmount || 0) !== (cat.goalAmount || 0))
+          (d.goalAmount || 0) !== (cat.goalAmount || 0) ||
+          (d.goalDeadline || '') !== (cat.goalDeadline || ''))
       )
         n += 1
     }
@@ -120,12 +122,13 @@ export default function CategoryManager({ onClose }) {
     try {
       for (const cat of cats) {
         const d = drafts[cat.id]
-        if (d && (d.name !== cat.name || d.budgetAmount !== cat.budgetAmount || d.color !== cat.color || (d.goalAmount || 0) !== (cat.goalAmount || 0))) {
+        if (d && (d.name !== cat.name || d.budgetAmount !== cat.budgetAmount || d.color !== cat.color || (d.goalAmount || 0) !== (cat.goalAmount || 0) || (d.goalDeadline || '') !== (cat.goalDeadline || ''))) {
           await updateCategory(currentMonthId, cat.id, {
             name: d.name,
             budgetAmount: d.budgetAmount,
             color: d.color,
             goalAmount: toInt(d.goalAmount),
+            goalDeadline: d.goalDeadline || null,
           })
         }
       }
@@ -152,10 +155,12 @@ export default function CategoryManager({ onClose }) {
       budgetAmount: toInt(budget),
       color,
       goalAmount: toInt(goal),
+      goalDeadline: deadline || null,
     })
     setName('')
     setBudget('')
     setGoal('')
+    setDeadline('')
   }
 
   return (
@@ -192,6 +197,10 @@ export default function CategoryManager({ onClose }) {
           <div>
             <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Target tabungan (Rp)</p>
             <input className={input} type="text" min="0" placeholder="Jumlah yang ingin dikumpulkan" value={goal} onChange={(e) => setGoal(e.target.value)} />
+          </div>
+          <div>
+            <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Target tercapai pada</p>
+            <input className={input} type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
           </div>
           <div className="sm:col-span-2">
             <ColorPicker value={color} onChange={setColor} />
@@ -259,6 +268,16 @@ export default function CategoryManager({ onClose }) {
                   value={d.budgetAmount}
                   onChange={(e) => updateDraft(cat.id, { budgetAmount: toInt(e.target.value) })}
                   aria-label="Budget"
+                />
+              </div>
+              <div className="w-36 shrink-0">
+                <p className="mb-1 text-xs text-slate-400">Deadline</p>
+                <input
+                  className={input + ' w-full'}
+                  type="date"
+                  value={d.goalDeadline || ''}
+                  onChange={(e) => updateDraft(cat.id, { goalDeadline: e.target.value })}
+                  aria-label="Deadline target tabungan"
                 />
               </div>
               <div className="w-32 shrink-0 sm:w-28">

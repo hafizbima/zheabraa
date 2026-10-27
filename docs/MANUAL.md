@@ -87,7 +87,22 @@ Empat kartu cepat:
 - **Uang Bebas** — pemasukan dikurangi alokasi (sebelum dipakai).
 - **Sisa Uang Bebas** — uang bebas dikurangi yang sudah terpakai.
 
-### 4.2. Catat Cepat (Quick Add)
+### 4.2. Aman Dibelanjakan per Hari
+
+Kartu **Aman Dibelanjakan / Hari** menyisihkan tagihan berulang aktif yang
+menggunakan Uang Bebas, lalu membagi sisanya dengan jumlah hari yang masih
+tersisa sampai akhir bulan. Hari ini ikut dihitung, sehingga angka tersebut
+menjadi batas rata-rata yang aman untuk hari ini dan hari-hari berikutnya.
+
+Tagihan yang sudah dibayar memiliki status **Lunas** dan tombol bayarnya tidak
+aktif lagi. Tagihan yang sudah memiliki pocket tetap mengikuti budget pocket
+tersebut.
+
+Jika Uang Bebas sudah minus, kartu menampilkan peringatan jumlah yang sudah
+melewati batas. Saat melihat bulan yang sudah selesai, kartu tidak menampilkan
+batas harian.
+
+### 4.3. Catat Cepat (Quick Add)
 
 Ketik satu baris seperti bahasa sehari-hari lalu tekan **Enter**. Form transaksi
 akan terbuka dengan data terisi otomatis.
@@ -101,35 +116,36 @@ akan terbuka dengan data terisi otomatis.
 Awalan: `k` / `rb` = 1.000, `jt` / `juta` = 1.000.000. Kata setelah `ke`
 dipakai untuk memilih pocket berdasarkan nama.
 
-### 4.3. Tagihan Bulan Ini
+### 4.4. Tagihan Bulan Ini
 
 Menampilkan template bertipe **Tagihan** yang aktif. Muncul badge **"jatuh
 tempo"** jika tanggalnya sudah lewat bulan ini. Tombol **Bayar** membuka form
-transaksi yang sudah terisi nominal dan pocket.
+transaksi yang sudah terisi nominal dan pocket. Setelah disimpan, status berubah
+menjadi **Lunas** dan tagihan tidak dapat dibayar dua kali pada bulan tersebut.
 
-### 4.4. Budget yang Perlu Dicek
+### 4.5. Budget yang Perlu Dicek
 
 Tiga pocket teratas dengan pemakaian budget ≥ 70%. Warna **oranye** = waspada,
 **merah** = melebihi. Muncul otomatis, berguna untuk mengingatkan sebelum
 kebobolan.
 
-### 4.5. Pemasukan & Carry-over
+### 4.6. Pemasukan & Carry-over
 
 - Daftar pemasukan bulan ini (label + nominal). Setiap baris punya tombol
   **Ubah** dan **Hapus**, serta tombol **+ Tambah** untuk income baru.
 - **Carry-over** — sisa bulan lalu yang otomatis dibawa ke bulan ini. Bisa diubah manual.
 
-### 4.6. Catatan Bulan Ini
+### 4.7. Catatan Bulan Ini
 
 Kolom catatan bebas untuk bulan berjalan. Tersimpan otomatis saat kolom
 ditinggalkan.
 
-### 4.7. Alokasi Pocket (Donut)
+### 4.8. Alokasi Pocket (Donut)
 
 Diagram lingkaran proporsi budget per pocket, dilengkapi **legenda warna +
 nominal** di bawahnya.
 
-### 4.8. Daftar Pocket
+### 4.9. Daftar Pocket
 
 Kartu per pocket menampilkan:
 - Nama, warna, badge **Target** (jika ada target tabungan).
@@ -140,16 +156,26 @@ Klik kartu pocket untuk langsung membuka form transaksi baru pada pocket itu.
 Di atas daftar ada tombol **Re-alokasi**, **Transaksi Berulang**, dan
 **Kelola Kategori**.
 
-### 4.9. Transaksi Berulang
+### 4.10. Transaksi Berulang
 
 Ringkasan template berulang yang aktif bulan ini (lihat bab 9).
 
-### 4.10. Rekening Utama / Dompet
+### 4.11. Rekening Utama / Dompet
 
 - **Mode 1 rekening (default):** kartu besar **Rekening Utama** dengan saldo
   saat ini (sudah termasuk kredit pemasukan), plus subtotal *Teralokasi* &
   *Uang Bebas*, dan badge "sekat virtual".
 - **Mode lebih dari 1 dompet:** grid kartu saldo per dompet + tombol **Transfer**.
+
+### 4.12. Template Budget Bulanan
+
+Pada bagian Pocket, buka **Template Budget** untuk menyimpan susunan pocket
+bulan ini dengan nama tertentu. Template menyimpan nama, warna, budget, dan
+target tiap pocket.
+
+Klik **Pakai bulan depan** untuk membuat bulan berikutnya menggunakan susunan
+tersebut. Sisa bulan berjalan tetap menjadi carry-over, sedangkan pocket baru
+dimulai dengan budget dari template.
 
 ---
 
@@ -178,6 +204,10 @@ tersimpan saat menekan **Simpan Perubahan**.
 
 Setiap pocket bisa memiliki target kumpulan (misal "Terkumpul 5jt dari 10jt").
 Ditampilkan progress bar + badge **Target Tercapai** saat tercapai.
+
+Tambahkan tanggal pada **Target tercapai pada** untuk melihat perkiraan nominal
+yang perlu ditabung setiap bulan. Perhitungan memakai saldo target saat ini dan
+jumlah bulan tersisa sampai deadline.
 
 ### 5.5. Re-alokasi
 
@@ -297,6 +327,17 @@ Blok yang menampilkan data income bulan terpilih (label + nominal, dengan tanda
 Tombol **Export CSV** mengunduh hasil filter (atau seluruh bulan jika tanpa
 filter) sebagai file `.csv`. File menyertakan BOM UTF-8 agar terbuka rapi di Excel.
 
+### 8.6. Impor CSV
+
+Tombol **Import CSV** membuka pratinjau sebelum transaksi disimpan. Format
+ekspor Zheabraa didukung langsung dengan kolom `Tanggal`, `Tipe`, `Kategori`,
+`Dompet`, `Keterangan`, dan `Nominal`. Header umum berbahasa Inggris seperti
+`Date`, `Type`, `Category`, `Description`, dan `Amount` juga dikenali.
+
+Tanggal ISO (`YYYY-MM-DD`) atau format `DD/MM/YYYY` dapat digunakan. Kategori
+dan dompet dicocokkan berdasarkan nama. Baris tidak valid dan transaksi
+duplikat dilewati.
+
 ---
 
 ## 9. Transaksi Berulang
@@ -309,7 +350,7 @@ Dashboard → **Transaksi Berulang** → **Kelola**.
 |------|-------------------|
 | Pengeluaran | Membuat transaksi pengeluaran pada tanggal tertentu |
 | Pemasukan | Menambah ke daftar income bulan itu |
-| Tagihan | Muncul di seksi Tagihan Dashboard; membuat transaksi pengeluaran |
+| Tagihan | Muncul di seksi Tagihan Dashboard; dibuat saat pengguna menekan Bayar |
 | Transfer | Membuat transaksi transfer antar dua dompet |
 
 ### 9.2. Membuat Template
@@ -356,7 +397,14 @@ saja (granularitas Harian/Mingguan). Ada legenda chip warna di bawah grafik.
 
 Tabel Pemasukan / Alokasi / Belanja / Sisa per bulan.
 
-### 10.7. Cetak Laporan
+### 10.7. Insight Pengeluaran
+
+Bagian **Insight Pengeluaran** membaca periode yang dipilih dan menampilkan
+hingga tiga pola otomatis: pocket dengan belanja terbesar, kenaikan belanja
+terbesar dibanding bulan sebelumnya, dan kecenderungan belanja pada akhir
+pekan jika datanya cukup terlihat.
+
+### 10.8. Cetak Laporan
 
 Tombol **Cetak** membuka dialog cetak browser; layout halaman dioptimalkan
 untuk kertas (header & elemen aksi disembunyikan).
@@ -387,7 +435,13 @@ Transitions). Preferensi tersimpan otomatis.
   template) sebagai file JSON.
 - **Pulihkan Backup** — memilih file JSON untuk memulihkan data. Aplikasi akan
   otomatis memuat ulang setelah berhasil.
+- **Aktifkan Notifikasi** — meminta izin browser untuk mengingatkan tagihan yang
+  dekat jatuh tempo, budget yang hampir habis, atau Uang Bebas yang habis.
+- **Matikan Notifikasi** — menghentikan pengingat browser.
 - **Keluar** — logout dari akun.
+
+Pengingat diperiksa saat aplikasi dibuka atau data diperbarui. Izin notifikasi
+tetap dikendalikan oleh pengaturan browser.
 
 > Lakukan backup sebelum mengganti perangkat atau mereset data.
 

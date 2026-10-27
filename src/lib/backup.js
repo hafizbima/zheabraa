@@ -1,7 +1,7 @@
 import backend from '../store/backend.js'
 
-export function exportBackup({ wallets, months, templates }) {
-  const data = { version: 1, exportedAt: Date.now(), wallets, months, templates }
+export function exportBackup({ wallets, months, templates, budgetTemplates }) {
+  const data = { version: 1, exportedAt: Date.now(), wallets, months, templates, budgetTemplates: budgetTemplates || [] }
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -40,4 +40,5 @@ export async function importBackup(file, uid) {
     for (const t of m.transactions || []) await backend.setTransaction(uid, mId, t)
   }
   for (const t of data.templates || []) await backend.addTemplate(uid, t)
+  for (const t of data.budgetTemplates || []) await backend.addBudgetTemplate(uid, t)
 }

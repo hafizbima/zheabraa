@@ -8,6 +8,7 @@ import TransactionForm from './components/TransactionForm.jsx'
 import Stats from './components/Stats.jsx'
 import Report from './components/Report.jsx'
 import CategoryManager from './components/CategoryManager.jsx'
+import BudgetTemplateManager from './components/BudgetTemplateManager.jsx'
 import WalletManager from './components/WalletManager.jsx'
 import RecurringManager from './components/RecurringManager.jsx'
 import TransferForm from './components/TransferForm.jsx'
@@ -48,6 +49,7 @@ function Shell() {
   const [editing, setEditing] = useState(null)
   const [prefill, setPrefill] = useState(null)
   const [catOpen, setCatOpen] = useState(false)
+  const [budgetTemplateOpen, setBudgetTemplateOpen] = useState(false)
   const [walletOpen, setWalletOpen] = useState(false)
   const [recurrOpen, setRecurrOpen] = useState(false)
   const [transferOpen, setTransferOpen] = useState(false)
@@ -78,6 +80,7 @@ function Shell() {
             onNewTx={openNewTx}
             onEditTx={openEditTx}
             onManageCategories={() => setCatOpen(true)}
+            onManageBudgetTemplates={() => setBudgetTemplateOpen(true)}
             onManageRecurring={() => setRecurrOpen(true)}
             onTransfer={() => setTransferOpen(true)}
           />
@@ -111,6 +114,7 @@ function Shell() {
         />
       )}
       {catOpen && <CategoryManager onClose={() => setCatOpen(false)} />}
+      {budgetTemplateOpen && <BudgetTemplateManager onClose={() => setBudgetTemplateOpen(false)} />}
       {walletOpen && <WalletManager onClose={() => setWalletOpen(false)} />}
       {recurrOpen && <RecurringManager onClose={() => setRecurrOpen(false)} />}
       {transferOpen && <TransferForm monthId={currentMonthId} onClose={() => setTransferOpen(false)} />}

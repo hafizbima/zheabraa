@@ -62,23 +62,63 @@ export function MonthProvider({ children }) {
     [user, mutate],
   )
 
-  const startNewMonth = useCallback(() => {
+  const startNewMonth = useCallback((budgetTemplate = null) => {
     if (!user) return
     const cur = months[currentMonthId]
     const nextId = addMonths(currentMonthId, 1)
     const carry = cur ? carryOverAmount(cur) : 0
     const txs = cur?.transactions || []
-    const cats = (cur?.categories || []).map((c) => {
-      const sisa = Math.max(0, (c.budgetAmount || 0) - Math.max(0, categoryUsed(c.id, txs)))
-      return {
-        ...c,
-        budgetAmount: 0,
-        savedAmount: (c.goalAmount > 0 ? (c.savedAmount || 0) + sisa : c.savedAmount || 0),
-      }
-    })
+    const cats = budgetTemplate?.categories?.length
+      ? budgetTemplate.categories.map((c, order) => ({
+          id: uid(),
+          key: c.key || slugify(c.name),
+          name: c.name,
+          budgetAmount: c.budgetAmount || 0,
+          goalAmount: c.goalAmount || 0,
+          goalDeadline: c.goalDeadline || '',
+          savedAmount: 0,
+          color: c.color,
+          order,
+        }))
+      : (cur?.categories || []).map((c) => {
+          const sisa = Math.max(0, (c.budgetAmount || 0) - Math.max(0, categoryUsed(c.id, txs)))
+          return {
+            ...c,
+            budgetAmount: 0,
+            savedAmount: (c.goalAmount > 0 ? (c.savedAmount || 0) + sisa : c.savedAmount || 0),
+          }
+        })
     mutate(backend.createNextMonth(user.uid, nextId, carry, cats), 'Gagal membuat bulan baru')
     setCurrentMonthId(nextId)
   }, [user, months, currentMonthId, mutate])
+
+  const saveBudgetTemplate = useCallback(
+    (name) => {
+      if (!user || !name?.trim()) return Promise.resolve()
+      const categories = (currentMonth?.categories || []).map((c, order) => ({
+        key: c.key || slugify(c.name),
+        name: c.name,
+        budgetAmount: c.budgetAmount || 0,
+        goalAmount: c.goalAmount || 0,
+        goalDeadline: c.goalDeadline || '',
+        color: c.color,
+        order,
+      }))
+      return mutate(
+        backend.addBudgetTemplate(user.uid, { id: uid(), name: name.trim(), categories, createdAt: Date.now() }),
+        'Gagal menyimpan template budget',
+      )
+    },
+    [user, currentMonth, mutate],
+  )
+
+  const removeBudgetTemplate = useCallback(
+    (id) => {
+      if (!user) return Promise.resolve()
+      return mutate(backend.removeBudgetTemplate(user.uid, id), 'Gagal menghapus template budget')
+    },
+    [user, mutate],
+  )
 
   // --- incomes (transaksi type='income' — satu sumber kebenaran, masuk Riwayat) ---
   const addIncome = useCallback(
@@ -220,8 +260,10 @@ export function MonthProvider({ children }) {
         }
       }
       const tx = { id: uid(), createdAt: Date.now(), ...data, categoryId: resolvedCatId }
-      if (targetId !== mId) backend.ensureMonth(user.uid, targetId).catch(console.error)
-      mutate(backend.setTransaction(user.uid, targetId, tx), 'Gagal menyimpan transaksi')
+      const save = targetId !== mId
+        ? backend.ensureMonth(user.uid, targetId).then(() => backend.setTransaction(user.uid, targetId, tx))
+        : backend.setTransaction(user.uid, targetId, tx)
+      return mutate(save, 'Gagal menyimpan transaksi')
     },
     [user, months, mutate],
   )
@@ -351,6 +393,8 @@ export function MonthProvider({ children }) {
       currentMonth,
       switchMonth,
       startNewMonth,
+      saveBudgetTemplate,
+      removeBudgetTemplate,
       addWallet,
       updateWallet,
       deleteWallet,
@@ -373,7 +417,7 @@ export function MonthProvider({ children }) {
     }),
     [
       ready, activeMonthId, currentMonth,
-      switchMonth, startNewMonth,
+      switchMonth, startNewMonth, saveBudgetTemplate, removeBudgetTemplate,
       addWallet, updateWallet, deleteWallet,
       addIncome, updateIncome, removeIncome, setCarryOver, setMonthNote,
       addCategory, updateCategory, removeCategory,

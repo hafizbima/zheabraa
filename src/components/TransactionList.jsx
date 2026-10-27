@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah } from '../lib/money.js'
 import { formatDate, labelOf, todayISO } from '../lib/dates.js'
 import Confirm from './Confirm.jsx'
+import Modal from './Modal.jsx'
 import { DateRangePicker } from './ui/DateRangePicker.jsx'
 import { btn } from '../lib/buttons.js'
+import { parseTransactionCSV } from '../lib/csv.js'
 
 function downloadCSV(filename, rows) {
   const csv = rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')
@@ -18,7 +20,7 @@ function downloadCSV(filename, rows) {
 }
 
 export default function TransactionList({ onEditTx }) {
-  const { months, currentMonthId, removeTransaction } = useStore()
+  const { months, currentMonthId, removeTransaction, addTransaction, notify } = useStore()
   const { wallets } = useStore()
 
   const monthIds = Object.keys(months).sort().reverse()
@@ -32,6 +34,11 @@ export default function TransactionList({ onEditTx }) {
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [confirmId, setConfirmId] = useState(null)
+  const [importOpen, setImportOpen] = useState(false)
+  const [importRows, setImportRows] = useState([])
+  const [importErrors, setImportErrors] = useState([])
+  const [importing, setImporting] = useState(false)
+  const importRef = useRef(null)
 
   useEffect(() => {
     setViewMonth(currentMonthId)
@@ -73,6 +80,65 @@ export default function TransactionList({ onEditTx }) {
     setFilterWallet('all')
     setFromDate('')
     setToDate('')
+  }
+
+  const openImport = async (file) => {
+    if (!file) return
+    try {
+      const result = parseTransactionCSV(await file.text())
+      setImportRows(result.rows)
+      setImportErrors(result.errors)
+      setImportOpen(true)
+    } catch (e) {
+      notify(e?.message || 'CSV tidak dapat dibaca')
+    }
+  }
+
+  const findByName = (items, name) => {
+    const q = String(name || '').trim().toLowerCase()
+    return q ? items.find((item) => item.name?.trim().toLowerCase() === q) : null
+  }
+
+  const importTransactions = async () => {
+    setImporting(true)
+    let imported = 0
+    let skipped = 0
+    const seen = new Set()
+    try {
+      for (const row of importRows) {
+        const targetId = row.date.slice(0, 7)
+        const targetMonth = months[targetId]
+        const targetCategories = targetMonth?.categories || []
+        const category = findByName(targetCategories, row.categoryName)
+        const wallet = findByName(wallets, row.walletName)
+        const toWallet = findByName(wallets, row.toWalletName)
+        const key = `${targetId}|${row.date}|${row.type}|${row.amount}|${row.description.trim().toLowerCase()}`
+        const existing = (targetMonth?.transactions || []).some(
+          (tx) => `${targetId}|${tx.date}|${tx.type}|${tx.amount}|${(tx.description || '').trim().toLowerCase()}` === key,
+        )
+        if (existing || seen.has(key)) {
+          skipped += 1
+          continue
+        }
+        seen.add(key)
+        await addTransaction(viewMonth, {
+          date: row.date,
+          type: row.type,
+          amount: row.amount,
+          categoryId: row.type === 'transfer' ? null : category?.id || null,
+          walletId: wallet?.id || (wallets.length === 1 ? wallets[0].id : null),
+          toWalletId: row.type === 'transfer' ? toWallet?.id || null : null,
+          description: row.description,
+        })
+        imported += 1
+      }
+      setImportOpen(false)
+      setImportRows([])
+      setImportErrors([])
+      notify(`${imported} transaksi diimpor${skipped ? `, ${skipped} duplikat dilewati` : ''}`)
+    } finally {
+      setImporting(false)
+    }
   }
 
   // pencarian lintas bulan: cari di semua bulan jika globalSearch diisi
@@ -131,6 +197,7 @@ export default function TransactionList({ onEditTx }) {
   }
 
   return (
+    <>
     <div className="space-y-4">
       {/* Filters */}
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
@@ -199,6 +266,23 @@ export default function TransactionList({ onEditTx }) {
           <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             <span className="font-sans font-bold text-slate-900 dark:text-white">{filtered.length}</span> transaksi
           </span>
+          <button
+            onClick={() => importRef.current?.click()}
+            className={btn.ghost}
+          >
+            Import CSV
+          </button>
+          <input
+            ref={importRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              e.target.value = ''
+              openImport(file)
+            }}
+          />
           <button
             onClick={() => {
               const rows = [['Tanggal', 'Tipe', 'Kategori', 'Dompet', 'Keterangan', 'Nominal']]
@@ -333,5 +417,39 @@ export default function TransactionList({ onEditTx }) {
         />
       )}
     </div>
+    {importOpen && (
+      <Modal title="Import CSV" onClose={() => !importing && setImportOpen(false)} wide>
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          {importRows.length} transaksi siap diimpor. Kategori dan dompet dicocokkan berdasarkan nama.
+        </p>
+        {importErrors.length > 0 && (
+          <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+            <p className="font-semibold">{importErrors.length} baris dilewati</p>
+            <ul className="mt-1 list-inside list-disc">
+              {importErrors.slice(0, 5).map((error) => <li key={error}>{error}</li>)}
+            </ul>
+          </div>
+        )}
+        <div className="mt-3 max-h-64 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700">
+          {importRows.slice(0, 20).map((row, index) => (
+            <div key={`${row.date}-${row.description}-${index}`} className="flex items-center justify-between gap-3 border-b border-slate-100 px-3.5 py-2.5 text-xs last:border-0 dark:border-slate-800">
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-slate-900 dark:text-white">{row.description}</p>
+                <p className="text-slate-500 dark:text-slate-400">{row.date} · {row.categoryName || 'Uang Bebas'}</p>
+              </div>
+              <p className="shrink-0 font-sans font-bold text-slate-900 dark:text-white">{formatRupiah(row.amount)}</p>
+            </div>
+          ))}
+          {importRows.length > 20 && <p className="px-3.5 py-2 text-xs text-slate-400">Menampilkan 20 transaksi pertama.</p>}
+        </div>
+        <div className="mt-4 flex justify-end gap-2">
+          <button onClick={() => setImportOpen(false)} disabled={importing} className={btn.neutral}>Batal</button>
+          <button onClick={importTransactions} disabled={importing || importRows.length === 0} className={btn.primary}>
+            {importing ? 'Mengimpor…' : 'Impor Transaksi'}
+          </button>
+        </div>
+      </Modal>
+    )}
+    </>
   )
 }

@@ -11,6 +11,7 @@ const store = {
   categories: {}, // id -> []
   transactions: {}, // id -> []
   templates: [], // recurring templates
+  budgetTemplates: [],
   subs: { auth: [], wallets: [], months: [], detail: {} },
 }
 
@@ -63,7 +64,7 @@ function migrate(raw) {
     }
     transactions[id] = txs
   }
-  return { wallets: raw.wallets || [], months, categories, transactions, templates: raw.templates || [] }
+  return { wallets: raw.wallets || [], months, categories, transactions, templates: raw.templates || [], budgetTemplates: raw.budgetTemplates || [] }
 }
 
 function persist() {
@@ -74,11 +75,14 @@ function persist() {
     categories: store.categories,
     transactions: store.transactions,
     templates: store.templates,
+    budgetTemplates: store.budgetTemplates,
   })
 }
 
 function seed() {
   store.wallets = defaultWallets()
+  store.templates = []
+  store.budgetTemplates = []
   const mId = monthIdOf(new Date())
   const blank = createBlankMonth(mId)
   store.months = {
@@ -138,6 +142,7 @@ export function reset() {
   store.categories = {}
   store.transactions = {}
   store.templates = []
+  store.budgetTemplates = []
   store.subs = { auth: [], wallets: [], months: [], detail: {} }
   saveJSON(AUTH_KEY, null)
 }
@@ -248,6 +253,7 @@ function generateRecurring(uid, mId) {
     const day = Math.min(28, Math.max(1, t.dayOfMonth || 1))
     if (mId === curMonth && day > todayDay) continue
     if (Array.isArray(t.skipMonths) && t.skipMonths.includes(mId)) continue // bulan di-skip user
+    if (t.type === 'bill') continue // tagihan dibuat saat user menekan Bayar
     if (t.type === 'income') {
       const id = `recur-${t.id}-${mId}`
       if (store.transactions[mId].some((x) => x.id === id)) continue
@@ -447,6 +453,23 @@ export function removeTemplate(uid, id) {
   persist()
   return Promise.resolve()
 }
+
+// --- budget templates ---
+export function listBudgetTemplates(uid) {
+  return Promise.resolve(store.budgetTemplates.map((t) => ({ ...t, categories: (t.categories || []).map((c) => ({ ...c })) })))
+}
+export function addBudgetTemplate(uid, template) {
+  const i = store.budgetTemplates.findIndex((x) => x.id === template.id)
+  if (i >= 0) store.budgetTemplates[i] = { ...store.budgetTemplates[i], ...template }
+  else store.budgetTemplates.push(template)
+  persist()
+  return Promise.resolve()
+}
+export function removeBudgetTemplate(uid, id) {
+  store.budgetTemplates = store.budgetTemplates.filter((t) => t.id !== id)
+  persist()
+  return Promise.resolve()
+}
 export function applyRecurring(uid, mId) {
   generateRecurring(uid, mId)
   return Promise.resolve()
@@ -464,19 +487,21 @@ export async function loadAll(uid) {  const months = {}
       transactions: store.transactions[id] || [],
     }
   }
-  return { wallets: [...store.wallets], months, templates: [...store.templates] }
+  return { wallets: [...store.wallets], months, templates: [...store.templates], budgetTemplates: [...store.budgetTemplates] }
 }
 
 export async function restoreAll(uid, data) {  const migrated = migrate({
     wallets: data.wallets || [],
     months: data.months || {},
     templates: data.templates || [],
+    budgetTemplates: data.budgetTemplates || [],
   })
   store.wallets = migrated.wallets
   store.months = migrated.months
   store.categories = migrated.categories
   store.transactions = migrated.transactions
   store.templates = migrated.templates
+  store.budgetTemplates = migrated.budgetTemplates
   persist()
   emitAll()
 }
@@ -512,6 +537,9 @@ export default {
   updateTemplate,
   removeTemplate,
   applyRecurring,
+  listBudgetTemplates,
+  addBudgetTemplate,
+  removeBudgetTemplate,
   loadAll,
   restoreAll,
   resetPassword,

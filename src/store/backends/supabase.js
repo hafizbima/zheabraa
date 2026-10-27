@@ -9,8 +9,8 @@ function needClient() {
 // --- row <-> shape mapping ---
 const WALLET_FIELDS = { name: 'name', color: 'color', openingBalance: 'opening_balance', order: 'sort_order', deleted: 'deleted' }
 const MONTH_FIELDS = { label: 'label', carryOver: 'carry_over', incomes: 'incomes', note: 'note', createdAt: 'created_at' }
-const CAT_FIELDS = { name: 'name', budgetAmount: 'budget_amount', goalAmount: 'goal_amount', savedAmount: 'saved_amount', color: 'color', key: 'key', order: 'sort_order' }
-const TX_FIELDS = { date: 'date', amount: 'amount', type: 'type', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', createdAt: 'created_at' }
+const CAT_FIELDS = { name: 'name', budgetAmount: 'budget_amount', goalAmount: 'goal_amount', savedAmount: 'saved_amount', goalDeadline: 'goal_deadline', color: 'color', key: 'key', order: 'sort_order' }
+const TX_FIELDS = { date: 'date', amount: 'amount', type: 'type', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', recurringTemplateId: 'recurring_template_id', description: 'description', createdAt: 'created_at' }
 const TEMPLATE_FIELDS = { dayOfMonth: 'day_of_month', type: 'type', amount: 'amount', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', active: 'active', skipMonths: 'skip_months', createdAt: 'created_at' }
 
 function mapWallet(r) {
@@ -27,7 +27,7 @@ function mapMonth(r) {
   }
 }
 function mapCategory(r) {
-  return { id: r.id, name: r.name, budgetAmount: r.budget_amount, goalAmount: Number(r.goal_amount) || 0, savedAmount: Number(r.saved_amount) || 0, color: r.color, key: r.key || null, order: r.sort_order }
+  return { id: r.id, name: r.name, budgetAmount: r.budget_amount, goalAmount: Number(r.goal_amount) || 0, savedAmount: Number(r.saved_amount) || 0, goalDeadline: r.goal_deadline || '', color: r.color, key: r.key || null, order: r.sort_order }
 }
 function mapTransaction(r) {
   return {
@@ -38,6 +38,7 @@ function mapTransaction(r) {
     categoryId: r.category_id,
     walletId: r.wallet_id,
     toWalletId: r.to_wallet_id,
+    recurringTemplateId: r.recurring_template_id || null,
     description: r.description,
     createdAt: Number(r.created_at) || 0,
   }
@@ -98,6 +99,15 @@ function mapTemplate(r) {
   }
 }
 
+function mapBudgetTemplate(r) {
+  return {
+    id: r.id,
+    name: r.name,
+    categories: Array.isArray(r.categories) ? r.categories : [],
+    createdAt: Number(r.created_at) || 0,
+  }
+}
+
 function pad2(n) {
   return String(n).padStart(2, '0')
 }
@@ -118,6 +128,7 @@ async function applyRecurringForMonth(uid, mId) {
     if (mId < curMonth) continue
     if (mId === curMonth && day > todayDay) continue
     if (Array.isArray(t.skip_months) && t.skip_months.includes(mId)) continue // bulan di-skip user
+    if (t.type === 'bill') continue // tagihan dibuat saat user menekan Bayar
     if (t.type === 'income') {
       txRows.push({
         id: `recur-${t.id}-${mId}`,
@@ -194,15 +205,17 @@ export async function applyRecurring(uid, mId) {
 // --- load all (tanpa realtime) ---
 export async function loadAll(uid) {
   needClient()
-  const [w, m, c, t, tpl] = await Promise.all([
+  const [w, m, c, t, tpl, bt] = await Promise.all([
     supabase.from('wallets').select('*').eq('user_id', uid).order('sort_order', { ascending: true }),
     supabase.from('months').select('*').eq('user_id', uid),
     supabase.from('categories').select('*').eq('user_id', uid),
     supabase.from('transactions').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
     supabase.from('recurring_templates').select('*').eq('user_id', uid).order('day_of_month', { ascending: true }),
+    supabase.from('budget_templates').select('*').eq('user_id', uid).order('created_at', { ascending: true }),
   ])
   for (const r of [w, m, c, t]) if (r.error) throw r.error
   if (tpl.error && !isMissingTable(tpl.error)) throw tpl.error
+  if (bt.error && !isMissingTable(bt.error)) throw bt.error
 
   const wallets = (w.data || []).filter((x) => !x.deleted).map(mapWallet)
   const months = {}
@@ -222,6 +235,7 @@ export async function loadAll(uid) {
   }
 
   const templates = (tpl.data || []).map(mapTemplate)
+  const budgetTemplates = (bt.data || []).map(mapBudgetTemplate)
 
   // jalankan recurring template di background agar tidak memblokir render awal
   if (templates.length > 0) {
@@ -237,7 +251,7 @@ export async function loadAll(uid) {
     ensureSeeded(uid).catch(console.error)
   }
 
-  return { wallets, months, templates }
+  return { wallets, months, templates, budgetTemplates }
 }
 
 // --- auth ---
@@ -568,6 +582,35 @@ export async function removeTemplate(uid, id) {
   return res.data
 }
 
+// --- monthly budget templates ---
+export async function listBudgetTemplates(uid) {
+  needClient()
+  const res = await supabase.from('budget_templates').select('*').eq('user_id', uid).order('created_at', { ascending: true })
+  if (res.error) {
+    if (isMissingTable(res.error)) return []
+    throw res.error
+  }
+  return (res.data || []).map(mapBudgetTemplate)
+}
+export async function addBudgetTemplate(uid, template) {
+  needClient()
+  const res = await supabase.from('budget_templates').upsert({
+    id: template.id,
+    user_id: uid,
+    name: template.name,
+    categories: template.categories || [],
+    created_at: template.createdAt || Date.now(),
+  })
+  if (res.error && !isMissingTable(res.error)) throw res.error
+  return res.data
+}
+export async function removeBudgetTemplate(uid, id) {
+  needClient()
+  const res = await supabase.from('budget_templates').delete().eq('id', id).eq('user_id', uid)
+  if (res.error && !isMissingTable(res.error)) throw res.error
+  return res.data
+}
+
 // --- categories ---
 export async function setCategory(uid, mId, cat) {
   needClient()
@@ -696,6 +739,9 @@ export default {
   addTemplate,
   updateTemplate,
   removeTemplate,
+  listBudgetTemplates,
+  addBudgetTemplate,
+  removeBudgetTemplate,
   applyRecurring,
   resetPassword,
 }

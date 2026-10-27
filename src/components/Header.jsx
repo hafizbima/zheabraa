@@ -4,18 +4,46 @@ import { useStore } from '../store/StoreContext.jsx'
 import { useTheme } from '../theme.js'
 import { addMonths, labelOf } from '../lib/dates.js'
 import { exportBackup, importBackup } from '../lib/backup.js'
+import { disableNotifications, notificationsEnabled, notificationsSupported, requestNotifications } from '../lib/notifications.js'
 import Confirm from './Confirm.jsx'
 
 export default function Header({ view, onViewChange, onOpenWallets }) {
-  const { user, logout, currentMonthId, switchMonth, startNewMonth, months, wallets, templates, notify } = useStore()
+  const { user, logout, currentMonthId, switchMonth, startNewMonth, months, wallets, templates, budgetTemplates, notify } = useStore()
   const { theme, toggleTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
   const [gearOpen, setGearOpen] = useState(false)
   const [confirmNew, setConfirmNew] = useState(false)
   const [busy, setBusy] = useState(false)
   const [hidden, setHidden] = useState(false)
+  const [notificationEnabled, setNotificationEnabled] = useState(() => notificationsEnabled(user?.uid))
   const restoreRef = useRef(null)
   const monthIds = Object.keys(months).sort().reverse()
+
+  useEffect(() => {
+    setNotificationEnabled(notificationsEnabled(user?.uid))
+  }, [user?.uid])
+
+  const toggleNotifications = async () => {
+    if (notificationEnabled) {
+      disableNotifications(user?.uid)
+      setNotificationEnabled(false)
+      notify('Notifikasi dimatikan')
+      window.dispatchEvent(new Event('gmm-notifications-changed'))
+      return
+    }
+    const result = await requestNotifications(user?.uid)
+    if (result.granted) {
+      setNotificationEnabled(true)
+      notify('Notifikasi diaktifkan')
+      window.dispatchEvent(new Event('gmm-notifications-changed'))
+    } else if (result.reason === 'denied') {
+      notify('Izin notifikasi ditolak. Aktifkan dari pengaturan browser.')
+    } else if (result.reason === 'unsupported') {
+      notify('Browser ini belum mendukung notifikasi.')
+    } else {
+      notify('Notifikasi belum diizinkan')
+    }
+  }
 
   // auto-hide: hilang saat scroll ke bawah, muncul saat scroll ke atas
   useEffect(() => {
@@ -134,7 +162,7 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
                     <button
                       onClick={() => {
                         setGearOpen(false)
-                        exportBackup({ wallets, months, templates })
+                         exportBackup({ wallets, months, templates, budgetTemplates })
                       }}
                       disabled={busy}
                       className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-xs sm:text-sm font-medium ${isDark ? 'text-slate-200 hover:bg-slate-800' : 'text-slate-700 hover:bg-slate-50'}`}
@@ -145,6 +173,18 @@ export default function Header({ view, onViewChange, onOpenWallets }) {
                       </svg>
                       Unduh Backup
                     </button>
+                    {notificationsSupported() && (
+                      <button
+                        onClick={() => {
+                          setGearOpen(false)
+                          toggleNotifications()
+                        }}
+                        className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-xs sm:text-sm font-medium ${isDark ? 'text-slate-200 hover:bg-slate-800' : 'text-slate-700 hover:bg-slate-50'}`}
+                      >
+                        <span className="text-sm">{notificationEnabled ? '🔔' : '🔕'}</span>
+                        {notificationEnabled ? 'Matikan Notifikasi' : 'Aktifkan Notifikasi'}
+                      </button>
+                    )}
                     <button
                       onClick={() => restoreRef.current?.click()}
                       disabled={busy}

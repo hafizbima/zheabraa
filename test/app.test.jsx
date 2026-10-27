@@ -22,7 +22,7 @@ beforeEach(() => {
 
 describe('Gimme Money smoke', () => {
   it('login -> dashboard -> add transaction -> history -> wallets', async () => {    const user = userEvent.setup()
-    const { getByText, getByPlaceholderText, getByRole, getAllByText, findByText, findAllByText } = render(<App />)
+    const { getByText, getByPlaceholderText, getByRole, getAllByText, findByText, findByRole, findAllByText } = render(<App />)
 
     // Login screen
     expect(getByRole('heading', { name: 'Masuk' })).toBeInTheDocument()
@@ -32,10 +32,15 @@ describe('Gimme Money smoke', () => {
     await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
     await user.click(getByRole('button', { name: 'Masuk' }))
     await findByText('Total Pemasukan')
+    expect(getByText('Aman Dibelanjakan / Hari')).toBeInTheDocument()
 
     // Default category seeded
     expect(getByText('Transport')).toBeInTheDocument()
     expect(getAllByText('Dompet').length).toBeGreaterThan(0)
+
+    await user.click(getByRole('button', { name: 'Template Budget' }))
+    expect(await findByRole('dialog', { name: 'Template Budget Bulanan' })).toBeInTheDocument()
+    await user.click(getByRole('button', { name: 'Tutup' }))
 
     // Open transaction form from category card
     await user.click(getByText('Transport'))
