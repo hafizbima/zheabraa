@@ -490,6 +490,13 @@ export async function loadAll(uid) {  const months = {}
   return { wallets: [...store.wallets], months, templates: [...store.templates], budgetTemplates: [...store.budgetTemplates] }
 }
 
+export async function resetAll(uid) {
+  if (!store.user && uid) store.user = { uid }
+  seed()
+  persist()
+  emitAll()
+}
+
 export async function restoreAll(uid, data) {  const migrated = migrate({
     wallets: data.wallets || [],
     months: data.months || {},
@@ -511,6 +518,7 @@ init()
 export default {
   mode: 'local',
   reset,
+  resetAll,
   onAuthChange,
   signIn,
   signUp,

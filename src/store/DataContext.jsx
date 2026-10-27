@@ -55,6 +55,14 @@ export function DataProvider({ children }) {
   }, [user, report])
 
   // helper tunggal: jalankan mutasi backend → refresh data → toast kalau gagal
+  const resetAllData = useCallback(async () => {
+    if (!user) return
+    if (backend.resetAll) {
+      await backend.resetAll(user.uid)
+    }
+    await refresh()
+  }, [user, refresh])
+
   const mutate = useCallback(
     (promise, errMsg) => {
       if (!user) return Promise.resolve()
@@ -86,8 +94,9 @@ export function DataProvider({ children }) {
       notify,
       refresh,
       mutate,
+      resetAllData,
     }),
-    [wallets, walletsReceived, months, templates, budgetTemplates, notice, notify, refresh, mutate],
+    [wallets, walletsReceived, months, templates, budgetTemplates, notice, notify, refresh, mutate, resetAllData],
   )
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>

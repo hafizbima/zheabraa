@@ -128,4 +128,41 @@ describe('Gimme Money smoke', () => {
     await user.click(getByRole('button', { name: 'Mode terang' }))
     expect(document.documentElement.classList.contains('dark')).toBe(false)
   })
+
+  it('reset data requires double validation before wiping data', async () => {
+    const user = userEvent.setup()
+    const { getByPlaceholderText, getByRole, findByText, findByRole } = render(<App />)
+
+    await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
+    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.click(getByRole('button', { name: 'Masuk' }))
+    await findByText('Total Pemasukan')
+
+    // Open settings menu
+    await user.click(getByRole('button', { name: 'Pengaturan' }))
+    await user.click(await findByRole('button', { name: /Reset Semua Data/ }))
+
+    // Stage 1 validation modal appears
+    expect(await findByRole('heading', { name: /Reset Semua Data \(Tahap 1\/2\)/ })).toBeInTheDocument()
+    await user.click(getByRole('button', { name: 'Lanjutkan' }))
+
+    // Stage 2 validation modal appears
+    expect(await findByRole('heading', { name: /Konfirmasi Terakhir \(Tahap 2\/2\)/ })).toBeInTheDocument()
+    const confirmBtn = getByRole('button', { name: 'Hapus Semua Data' })
+    expect(confirmBtn).toBeDisabled()
+
+    // Typing wrong text keeps button disabled
+    const resetInput = getByPlaceholderText('RESET')
+    await user.type(resetInput, 'SALAH')
+    expect(confirmBtn).toBeDisabled()
+
+    // Typing 'RESET' enables the button
+    await user.clear(resetInput)
+    await user.type(resetInput, 'RESET')
+    expect(confirmBtn).toBeEnabled()
+
+    // Clicking it triggers reset
+    await user.click(confirmBtn)
+    expect(await findByText('Semua data berhasil direset ke kondisi awal')).toBeInTheDocument()
+  })
 })

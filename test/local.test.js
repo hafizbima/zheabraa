@@ -195,4 +195,22 @@ describe('recurring templates (local backend)', () => {
     expect(t.toWalletId).toBe('w2')
     expect(t.amount).toBe(200000)
   })
+
+  it('resetAll resets all user data back to blank state with default wallets', async () => {
+    local.ensureMonth('u1', curMonth)
+    await local.setTransaction('u1', curMonth, {
+      id: 'tx-123',
+      date: `${curMonth}-05`,
+      amount: 100000,
+      type: 'expense',
+      description: 'Makan',
+    })
+    expect(getDetail(curMonth).transactions.length).toBe(1)
+
+    await local.resetAll('u1')
+    expect(getDetail(curMonth).transactions.length).toBe(0)
+    const all = await local.loadAll('u1')
+    expect(all.wallets.length).toBeGreaterThan(0)
+    expect(all.templates.length).toBe(0)
+  })
 })

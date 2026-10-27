@@ -711,6 +711,30 @@ export async function moveTransaction(uid, mId, id, targetId, newTx) {
   if (insErr) throw insErr
 }
 
+export async function resetAll(uid) {
+  needClient()
+  const t1 = await supabase.from('transactions').delete().eq('user_id', uid)
+  if (t1.error && !isMissingTable(t1.error)) throw t1.error
+
+  const t2 = await supabase.from('categories').delete().eq('user_id', uid)
+  if (t2.error && !isMissingTable(t2.error)) throw t2.error
+
+  const t3 = await supabase.from('recurring_templates').delete().eq('user_id', uid)
+  if (t3.error && !isMissingTable(t3.error)) throw t3.error
+
+  const t4 = await supabase.from('budget_templates').delete().eq('user_id', uid)
+  if (t4.error && !isMissingTable(t4.error)) throw t4.error
+
+  const t5 = await supabase.from('months').delete().eq('user_id', uid)
+  if (t5.error && !isMissingTable(t5.error)) throw t5.error
+
+  const t6 = await supabase.from('wallets').delete().eq('user_id', uid)
+  if (t6.error && !isMissingTable(t6.error)) throw t6.error
+
+  recurringGenerated.clear()
+  await ensureSeeded(uid)
+}
+
 export default {
   mode: 'supabase',
   onAuthChange,
@@ -718,6 +742,7 @@ export default {
   signUp,
   signOut,
   ensureSeeded,
+  resetAll,
   subscribeWallets,
   subscribeMonths,
   subscribeMonthDetail,
