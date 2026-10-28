@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah, toInt } from '../lib/money.js'
-import { monthIdOf } from '../lib/dates.js'
+import { monthIdOf, labelOf } from '../lib/dates.js'
 import {
   totalInflow,
   totalAllocated,
@@ -167,30 +167,116 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   return (
     <>
       <div className="space-y-5">
-      {/* Hero Card: Free Money Left (Revolut / Apple Card style) */}
-      <section className="relative overflow-hidden rounded-3xl border border-teal-500/25 bg-gradient-to-br from-teal-500/15 via-emerald-500/5 to-white p-6 shadow-tactile-md dark:from-teal-950/40 dark:via-slate-900 dark:to-slate-900 dark:border-teal-500/30">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-teal-500/15 px-3 py-1 text-xs font-semibold text-teal-700 dark:text-teal-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
-              Free Money Left (Uang Bebas)
+      {/* Hero Card: Warm Editorial Ledger */}
+      <section className="relative overflow-hidden rounded-3xl border border-stone-200/90 bg-gradient-to-b from-[#FDFBF7] via-[#FAF7F0] to-[#F4EFEB] p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(28,25,23,0.06)] ring-1 ring-inset ring-stone-900/[0.04] dark:border-stone-800/90 dark:bg-gradient-to-b dark:from-[#1D1B18] dark:via-[#171513] dark:to-[#12110F] dark:shadow-[0_6px_28px_-6px_rgba(0,0,0,0.5)] dark:ring-stone-100/[0.05]">
+        {/* Subtle decorative watermark in background */}
+        <div className="pointer-events-none absolute -right-4 -top-6 select-none opacity-[0.03] dark:opacity-[0.04]">
+          <span className="font-serif text-9xl font-black italic tracking-tighter text-stone-900 dark:text-white">
+            GM
+          </span>
+        </div>
+
+        <div className="relative">
+          {/* Header Row: Label & Status Pill */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="font-serif italic text-xs tracking-wide text-stone-600 dark:text-stone-400">
+                Buku Kas • {labelOf(month.id)}
+              </span>
+              <span className="h-1 w-1 rounded-full bg-stone-300 dark:bg-stone-700" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
+                Sisa Uang Bebas
+              </span>
             </div>
-            <p className={`mt-3 text-3xl sm:text-4xl font-bold tracking-tight font-sans ${left < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
-              {formatRupiah(left)}
-            </p>
-            <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-              Tersedia untuk dibelanjakan bulan ini • Dari total pool {formatRupiah(pool)} (terpakai {formatRupiah(freeSpent)})
-            </p>
+
+            {/* Status Pill */}
+            <div
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                left < 0
+                  ? 'border border-rose-300/80 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300'
+                  : pool > 0 && left / pool < 0.25
+                    ? 'border border-amber-300/80 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300'
+                    : 'border border-stone-300/80 bg-stone-100/80 text-stone-700 dark:border-stone-700 dark:bg-stone-800/80 dark:text-stone-300'
+              }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  left < 0 ? 'bg-rose-500' : pool > 0 && left / pool < 0.25 ? 'bg-amber-500' : 'bg-emerald-600 dark:bg-emerald-400'
+                }`}
+              />
+              {left < 0 ? 'Defisit' : pool > 0 && left / pool < 0.25 ? 'Mendekati Batas' : 'Kondisi Sehat'}
+            </div>
           </div>
-          <button
-            onClick={() => {
-              haptic.tap()
-              onNewTx(null)
-            }}
-            className="self-start sm:self-auto rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white shadow-tactile-sm transition hover:bg-slate-800 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-500"
-          >
-            Tambah Pengeluaran
-          </button>
+
+          {/* Main Amount & Action Button */}
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
+            <div>
+              <p
+                className={`font-serif text-3xl sm:text-4xl lg:text-[42px] font-medium tracking-tight ${
+                  left < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-stone-900 dark:text-stone-50'
+                }`}
+              >
+                {formatRupiah(left)}
+              </p>
+              <p className="mt-1 font-serif text-xs italic text-stone-500 dark:text-stone-400">
+                Alokasi bebas di luar anggaran pocket yang aman dibelanjakan bulan ini.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                haptic.tap()
+                onNewTx(null)
+              }}
+              className="self-start sm:self-auto inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-xs font-semibold text-stone-50 shadow-sm transition-all hover:bg-stone-800 active:scale-95 focus:outline-none focus:ring-2 focus:ring-stone-400/40 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Catat Pengeluaran
+            </button>
+          </div>
+
+          {/* Editorial Ledger Strip: Terpakai & Total Pool */}
+          <div className="mt-5 border-t border-stone-200/90 pt-3.5 dark:border-stone-800/90">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-serif italic text-stone-500 dark:text-stone-400">
+                Terpakai:{' '}
+                <strong className="font-sans font-semibold text-stone-800 dark:text-stone-200">
+                  {formatRupiah(freeSpent)}
+                </strong>
+                {pool > 0 && (
+                  <span className="ml-1 font-sans text-[11px] text-stone-400 dark:text-stone-500">
+                    ({Math.round((freeSpent / pool) * 100)}%)
+                  </span>
+                )}
+              </span>
+              <span className="font-serif italic text-stone-500 dark:text-stone-400">
+                Total Pool:{' '}
+                <strong className="font-sans font-semibold text-stone-800 dark:text-stone-200">
+                  {formatRupiah(pool)}
+                </strong>
+              </span>
+            </div>
+
+            {/* Hairline Progress Meter */}
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-stone-200/80 dark:bg-stone-800">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  left < 0
+                    ? 'bg-rose-500'
+                    : pool > 0 && left / pool < 0.25
+                      ? 'bg-amber-500'
+                      : 'bg-stone-800 dark:bg-stone-200'
+                }`}
+                style={{
+                  width: `${Math.min(100, Math.max(0, pool > 0 ? (freeSpent / pool) * 100 : 0))}%`,
+                }}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
