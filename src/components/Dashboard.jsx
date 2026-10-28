@@ -88,15 +88,13 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     setNoteDraft(month ? String(month.note ?? '') : '')
   }, [month?.note])
 
-  if (!month) return null
-
-  const txs = month.transactions || []
-  const inflow = totalInflow(month)
-  const allocated = totalAllocated(month)
-  const pool = freePool(month)
+  const txs = month?.transactions || []
+  const inflow = month ? totalInflow(month) : 0
+  const allocated = month ? totalAllocated(month) : 0
+  const pool = month ? freePool(month) : 0
   const freeSpent = freeMoneySpent(txs)
-  const left = freeLeft(month)
-  const dailySpend = safeDailySpend(month, templates)
+  const left = month ? freeLeft(month) : 0
+  const dailySpend = month ? safeDailySpend(month, templates) : { amount: 0, daysRemaining: 0, plannedBills: 0, discretionaryLeft: 0 }
   const primary = wallets[0] || null
   const primaryBalance = primary
     ? wallets.length === 1
@@ -105,13 +103,13 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     : 0
 
   // threshold 70% + top 3
-  const alerts = (month.categories || [])
+  const alerts = (month?.categories || [])
     .map((cat) => ({ cat, ...categoryStatus(cat, txs) }))
     .filter((a) => a.budget > 0 && a.pct >= 70)
     .sort((a, b) => b.pct - a.pct)
     .slice(0, 3)
 
-  const donutData = (month.categories || [])
+  const donutData = (month?.categories || [])
     .filter((c) => c.budgetAmount > 0)
     .map((c) => ({ name: c.name, value: c.budgetAmount, color: c.color }))
 
@@ -131,6 +129,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     const candidates = notificationCandidates({ month, templates })
     candidates.forEach((candidate) => sendNotificationOnce(user.uid, candidate))
   }, [user, month, templates, notificationVersion])
+
+  if (!month) return null
 
   const upcomingBills = templates.filter((t) => t.type === 'bill' && t.active !== false)
 
