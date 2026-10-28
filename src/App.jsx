@@ -1,18 +1,20 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { StoreProvider, useStore } from './store/StoreContext.jsx'
-import Login from './components/Login.jsx'
 import Header from './components/Header.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import TransactionList from './components/TransactionList.jsx'
 import TransactionForm from './components/TransactionForm.jsx'
-import Stats from './components/Stats.jsx'
-import Report from './components/Report.jsx'
-import CategoryManager from './components/CategoryManager.jsx'
-import BudgetTemplateManager from './components/BudgetTemplateManager.jsx'
-import WalletManager from './components/WalletManager.jsx'
-import RecurringManager from './components/RecurringManager.jsx'
-import TransferForm from './components/TransferForm.jsx'
-import IosInstallPrompt from './components/IosInstallPrompt.jsx'
+import Login from './components/Login.jsx'
+
+// Lazy load non-critical routes and modals to minimize initial bundle size
+const Stats = lazy(() => import('./components/Stats.jsx'))
+const Report = lazy(() => import('./components/Report.jsx'))
+const CategoryManager = lazy(() => import('./components/CategoryManager.jsx'))
+const BudgetTemplateManager = lazy(() => import('./components/BudgetTemplateManager.jsx'))
+const WalletManager = lazy(() => import('./components/WalletManager.jsx'))
+const RecurringManager = lazy(() => import('./components/RecurringManager.jsx'))
+const TransferForm = lazy(() => import('./components/TransferForm.jsx'))
+const IosInstallPrompt = lazy(() => import('./components/IosInstallPrompt.jsx'))
 
 export default function App() {
   return (
@@ -78,22 +80,30 @@ function Shell() {
       />
 
       <main className="mx-auto max-w-3xl px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-5">
-        {view === 'dashboard' ? (
-          <Dashboard
-            onNewTx={openNewTx}
-            onEditTx={openEditTx}
-            onManageCategories={() => setCatOpen(true)}
-            onManageBudgetTemplates={() => setBudgetTemplateOpen(true)}
-            onManageRecurring={() => setRecurrOpen(true)}
-            onTransfer={() => setTransferOpen(true)}
-          />
-        ) : view === 'stats' ? (
-          <Stats />
-        ) : view === 'report' ? (
-          <Report />
-        ) : (
-          <TransactionList onEditTx={openEditTx} />
-        )}
+        <Suspense
+          fallback={
+            <div className="flex h-64 items-center justify-center">
+              <div className="h-7 w-7 animate-spin rounded-full border-2 border-slate-200 border-t-teal-600 dark:border-slate-800 dark:border-t-teal-400" />
+            </div>
+          }
+        >
+          {view === 'dashboard' ? (
+            <Dashboard
+              onNewTx={openNewTx}
+              onEditTx={openEditTx}
+              onManageCategories={() => setCatOpen(true)}
+              onManageBudgetTemplates={() => setBudgetTemplateOpen(true)}
+              onManageRecurring={() => setRecurrOpen(true)}
+              onTransfer={() => setTransferOpen(true)}
+            />
+          ) : view === 'stats' ? (
+            <Stats />
+          ) : view === 'report' ? (
+            <Report />
+          ) : (
+            <TransactionList onEditTx={openEditTx} />
+          )}
+        </Suspense>
       </main>
 
       {/* FAB */}
@@ -116,16 +126,18 @@ function Shell() {
           onClose={() => setTxOpen(false)}
         />
       )}
-      {catOpen && <CategoryManager onClose={() => setCatOpen(false)} />}
-      {budgetTemplateOpen && <BudgetTemplateManager onClose={() => setBudgetTemplateOpen(false)} />}
-      {walletOpen && <WalletManager onClose={() => setWalletOpen(false)} />}
-      {recurrOpen && <RecurringManager onClose={() => setRecurrOpen(false)} />}
-      {transferOpen && <TransferForm monthId={currentMonthId} onClose={() => setTransferOpen(false)} />}
+      <Suspense fallback={null}>
+        {catOpen && <CategoryManager onClose={() => setCatOpen(false)} />}
+        {budgetTemplateOpen && <BudgetTemplateManager onClose={() => setBudgetTemplateOpen(false)} />}
+        {walletOpen && <WalletManager onClose={() => setWalletOpen(false)} />}
+        {recurrOpen && <RecurringManager onClose={() => setRecurrOpen(false)} />}
+        {transferOpen && <TransferForm monthId={currentMonthId} onClose={() => setTransferOpen(false)} />}
 
-      <IosInstallPrompt
-        open={installPromptOpen ? true : undefined}
-        onClose={() => setInstallPromptOpen(false)}
-      />
+        <IosInstallPrompt
+          open={installPromptOpen ? true : undefined}
+          onClose={() => setInstallPromptOpen(false)}
+        />
+      </Suspense>
 
       {notice && (
         <div
