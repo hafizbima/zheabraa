@@ -4,6 +4,7 @@ import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah, toInt } from '../lib/money.js'
 import { todayISO } from '../lib/dates.js'
 import { walletBalance, allTransactions } from '../lib/calc.js'
+import { haptic } from '../lib/haptics.js'
 import { btn } from '../lib/buttons.js'
 
 export default function TransferForm({ monthId, onClose }) {
@@ -50,6 +51,7 @@ export default function TransferForm({ monthId, onClose }) {
       toWalletId: toId,
       description: description.trim(),
     })
+    haptic.success()
     onClose()
   }
 

@@ -4,6 +4,7 @@ import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah, toInt } from '../lib/money.js'
 import { todayISO } from '../lib/dates.js'
 import { categoryLeft, goalSaved } from '../lib/calc.js'
+import { haptic } from '../lib/haptics.js'
 import { btn } from '../lib/buttons.js'
 
 export default function TransactionForm({ monthId, transaction, prefill, onClose }) {
@@ -79,13 +80,17 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
 
     if (transaction) updateTransaction(monthId, transaction.id, payload)
     else addTransaction(monthId, payload)
+    haptic.success()
     onClose()
   }
 
   const typeButton = (key, label, active) => (
     <button
       type="button"
-      onClick={() => setType(key)}
+      onClick={() => {
+        haptic.selection()
+        setType(key)
+      }}
       className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
         active
           ? key === 'income'

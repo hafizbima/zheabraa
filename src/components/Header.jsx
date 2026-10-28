@@ -5,6 +5,7 @@ import { useTheme } from '../theme.js'
 import { addMonths, labelOf } from '../lib/dates.js'
 import { exportBackup, importBackup } from '../lib/backup.js'
 import { disableNotifications, notificationsEnabled, notificationsSupported, requestNotifications } from '../lib/notifications.js'
+import { haptic } from '../lib/haptics.js'
 import Confirm from './Confirm.jsx'
 import Modal from './Modal.jsx'
 import { btn } from '../lib/buttons.js'
@@ -100,7 +101,10 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
     return (
       <button
         key={key}
-        onClick={() => onViewChange(key)}
+        onClick={() => {
+          haptic.tap()
+          onViewChange(key)
+        }}
         className={`flex h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${
           active
             ? isDark
@@ -271,7 +275,10 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
         {/* Month selector: baris terpisah, rata tengah */}
         <div className={`flex items-center justify-center gap-2 border-y py-2.5 ${isDark ? 'border-slate-800' : 'border-slate-200/80'}`}>
           <button
-            onClick={() => switchMonth(addMonths(currentMonthId, -1))}
+            onClick={() => {
+              haptic.selection()
+              switchMonth(addMonths(currentMonthId, -1))
+            }}
             aria-label="Bulan sebelumnya"
             className={`flex h-8 w-8 items-center justify-center rounded-xl transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
           >
@@ -287,7 +294,10 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
             {labelOf(currentMonthId)}
           </button>
           <button
-            onClick={() => switchMonth(addMonths(currentMonthId, 1))}
+            onClick={() => {
+              haptic.selection()
+              switchMonth(addMonths(currentMonthId, 1))
+            }}
             aria-label="Bulan berikutnya"
             className={`flex h-8 w-8 items-center justify-center rounded-xl transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
           >
@@ -327,7 +337,10 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
             </svg>
           )}
           <button
-            onClick={onOpenWallets}
+            onClick={() => {
+              haptic.tap()
+              onOpenWallets()
+            }}
             className={`flex h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white border border-slate-700/60' : 'bg-white/90 text-slate-600 hover:bg-white hover:text-slate-900 border border-slate-200/80 shadow-tactile-sm'}`}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

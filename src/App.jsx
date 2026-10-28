@@ -1,5 +1,6 @@
 import { useState, lazy, Suspense } from 'react'
 import { StoreProvider, useStore } from './store/StoreContext.jsx'
+import { haptic } from './lib/haptics.js'
 import Header from './components/Header.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import TransactionList from './components/TransactionList.jsx'
@@ -108,7 +109,7 @@ function Shell() {
 
       {/* FAB */}
       <button
-        onClick={() => openNewTx(null)}
+        onClick={() => { haptic.tap(); openNewTx(null) }}
         className="no-print fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-6 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-tactile-md transition-all duration-150 hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95 focus:outline-none focus:ring-2 focus:ring-slate-400/30 dark:bg-teal-600 dark:hover:bg-teal-500"
         aria-label="Tambah transaksi"
       >

@@ -16,6 +16,7 @@ import {
   safeDailySpend,
   isRecurringBillPaid,
 } from '../lib/calc.js'
+import { haptic } from '../lib/haptics.js'
 import DonutChart from './DonutChart.jsx'
 import ReallocateForm from './ReallocateForm.jsx'
 import EmptyState from './EmptyState.jsx'
@@ -140,6 +141,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     } else {
       addIncome(currentMonthId, { label: incomeLabel || 'Pemasukan', amount })
     }
+    haptic.success()
     setEditingIncome(null)
     setIncomeLabel('')
     setIncomeAmount('')
@@ -181,7 +183,10 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             </p>
           </div>
           <button
-            onClick={() => onNewTx(null)}
+            onClick={() => {
+              haptic.tap()
+              onNewTx(null)
+            }}
             className="self-start sm:self-auto rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white shadow-tactile-sm transition hover:bg-slate-800 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-500"
           >
             Tambah Pengeluaran
@@ -220,7 +225,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
         </div>
       </section>
 
-      <QuickAdd categories={month.categories || []} onPick={(prefill) => onNewTx(prefill)} />
+      <QuickAdd categories={month.categories || []} onPick={(prefill) => { haptic.tap(); onNewTx(prefill) }} />
 
       {/* Tagihan bulan ini (template tipe bill) */}
       {upcomingBills.length > 0 && (

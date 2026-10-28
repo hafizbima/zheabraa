@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah } from '../lib/money.js'
 import { formatDate, labelOf, todayISO } from '../lib/dates.js'
+import { haptic } from '../lib/haptics.js'
 import Confirm from './Confirm.jsx'
 import Modal from './Modal.jsx'
 import { DateRangePicker } from './ui/DateRangePicker.jsx'
@@ -451,6 +452,7 @@ export default function TransactionList({ onEditTx }) {
           message="Transaksi ini akan dihapus permanen. Lanjutkan?"
           onCancel={() => setConfirmId(null)}
           onConfirm={() => {
+            haptic.warning()
             removeTransaction(confirmId.mId, confirmId.id)
             setConfirmId(null)
           }}
