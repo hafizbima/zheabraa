@@ -39,12 +39,19 @@ export default function TransactionList({ onEditTx }) {
   const [importErrors, setImportErrors] = useState([])
   const [importing, setImporting] = useState(false)
   const importRef = useRef(null)
+  const [visibleCount, setVisibleCount] = useState(30)
+  const sentinelRef = useRef(null)
 
   useEffect(() => {
     setViewMonth(currentMonthId)
     setFromDate('')
     setToDate('')
   }, [currentMonthId])
+
+  useEffect(() => {
+    setVisibleCount(30)
+  }, [viewMonth, search, filterCategory, filterWallet, fromDate, toDate])
+
 
   const txs = month.transactions || []
   const categories = month.categories || []
@@ -191,10 +198,31 @@ export default function TransactionList({ onEditTx }) {
   const input =
     'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
-  const group = {}
-  for (const t of filtered) {
-    ;(group[t.date] = group[t.date] || []).push(t)
-  }
+  const displayedTxs = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount])
+
+  const group = useMemo(() => {
+    const grp = {}
+    for (const t of displayedTxs) {
+      ;(grp[t.date] = grp[t.date] || []).push(t)
+    }
+    return grp
+  }, [displayedTxs])
+
+  useEffect(() => {
+    if (visibleCount >= filtered.length) return
+    const el = sentinelRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + 30, filtered.length))
+        }
+      },
+      { rootMargin: '200px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [visibleCount, filtered.length])
 
   return (
     <>
@@ -403,6 +431,18 @@ export default function TransactionList({ onEditTx }) {
             </div>
           </section>
         ))
+      )}
+
+      {filtered.length > visibleCount && (
+        <div ref={sentinelRef} className="pt-2 text-center">
+          <button
+            type="button"
+            onClick={() => setVisibleCount((prev) => Math.min(prev + 30, filtered.length))}
+            className={`${btn.neutral} w-full py-2.5 text-xs font-semibold`}
+          >
+            Tampilkan lebih banyak ({filtered.length - visibleCount} transaksi tersisa)
+          </button>
+        </div>
       )}
 
       {confirmId && (
