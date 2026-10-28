@@ -37,42 +37,42 @@ export default function Report() {
   return (
     <div className="space-y-5 print-full">
       <header>
-        <h2 className="font-display text-lg font-bold text-carbon dark:text-white">Laporan {labelOf(month.id)}</h2>
+        <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white">Laporan {labelOf(month.id)}</h2>
         <p className="text-xs text-slate-400">Dibuat {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
       </header>
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-black/15 p-3 dark:border-white/20">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
           <p className="text-[11px] uppercase text-slate-500 dark:text-slate-400">Pemasukan</p>
-          <p className="text-base font-bold text-carbon dark:text-white">{formatRupiah(inflow)}</p>
+          <p className="text-base font-bold text-slate-900 dark:text-white">{formatRupiah(inflow)}</p>
         </div>
-        <div className="rounded-xl border border-black/15 p-3 dark:border-white/20">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
           <p className="text-[11px] uppercase text-slate-500 dark:text-slate-400">Teralokasi</p>
-          <p className="text-base font-bold text-carbon dark:text-white">{formatRupiah(allocated)}</p>
+          <p className="text-base font-bold text-slate-900 dark:text-white">{formatRupiah(allocated)}</p>
         </div>
-        <div className="rounded-xl border border-black/15 p-3 dark:border-white/20">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
           <p className="text-[11px] uppercase text-slate-500 dark:text-slate-400">Uang Bebas</p>
-          <p className="text-base font-bold text-carbon dark:text-white">{formatRupiah(pool)}</p>
+          <p className="text-base font-bold text-slate-900 dark:text-white">{formatRupiah(pool)}</p>
         </div>
-        <div className="rounded-xl border border-black/15 p-3 dark:border-white/20">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
           <p className="text-[11px] uppercase text-slate-500 dark:text-slate-400">Belanja</p>
-          <p className="text-base font-bold text-ember">{formatRupiah(spent)}</p>
+          <p className="text-base font-bold text-rose-600 dark:text-rose-400">{formatRupiah(spent)}</p>
         </div>
-        <div className="rounded-xl border border-black/15 p-3 dark:border-white/20">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
           <p className="text-[11px] uppercase text-slate-500 dark:text-slate-400">Refund</p>
-          <p className="text-base font-bold text-mint">{formatRupiah(refunded)}</p>
+          <p className="text-base font-bold text-teal-600 dark:text-teal-400">{formatRupiah(refunded)}</p>
         </div>
-        <div className="rounded-xl border border-black/15 p-3 dark:border-white/20">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
           <p className="text-[11px] uppercase text-slate-500 dark:text-slate-400">Tabungan</p>
-          <p className="text-base font-bold text-violet dark:text-lavender">{formatRupiah(saved)}</p>
+          <p className="text-base font-bold text-indigo-600 dark:text-indigo-300">{formatRupiah(saved)}</p>
         </div>
       </section>
 
       <section>
-        <h3 className="mb-2 font-semibold text-carbon dark:text-white">Ringkasan Pocket</h3>
+        <h3 className="mb-2 font-semibold text-slate-900 dark:text-white">Ringkasan Pocket</h3>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-black/20 text-left text-xs uppercase text-slate-400 dark:border-white/20">
+            <tr className="border-b border-slate-200 dark:border-slate-800 text-left text-xs uppercase text-slate-400">
               <th className="py-2">Pocket</th>
               <th className="py-2 text-right">Budget</th>
               <th className="py-2 text-right">Terpakai</th>
@@ -85,7 +85,7 @@ export default function Report() {
               const { used, budget } = categoryStatus(c, txs)
               const gs = goalSaved(c, txs)
               return (
-                <tr key={c.id} className="border-b border-black/10 dark:border-white/10">
+                <tr key={c.id} className="border-b border-slate-100 dark:border-slate-800/60">
                   <td className="py-2">{c.name}</td>
                   <td className="py-2 text-right">{formatRupiah(budget)}</td>
                   <td className="py-2 text-right">{formatRupiah(used)}</td>
@@ -99,10 +99,10 @@ export default function Report() {
       </section>
 
       <section>
-        <h3 className="mb-2 font-semibold text-carbon dark:text-white">Transaksi ({txs.length})</h3>
+        <h3 className="mb-2 font-semibold text-slate-900 dark:text-white">Transaksi ({txs.length})</h3>
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-black/20 text-left text-slate-500 dark:border-white/20 dark:text-slate-400">
+            <tr className="border-b border-slate-200 dark:border-slate-800 text-left text-slate-500 dark:text-slate-400">
               <th className="py-1.5">Tanggal</th>
               <th className="py-1.5">Keterangan</th>
               <th className="py-1.5 text-right">Nominal</th>
@@ -110,10 +110,10 @@ export default function Report() {
           </thead>
           <tbody>
             {txs.map((t) => (
-              <tr key={t.id} className="border-b border-black/5 dark:border-white/5">
+              <tr key={t.id} className="border-b border-slate-100 dark:border-slate-800/40">
                 <td className="py-1.5">{t.date}</td>
                 <td className="py-1.5">{t.description || '-'}</td>
-                <td className={`py-1.5 text-right ${t.type === 'refund' || t.type === 'income' ? 'text-mint' : 'text-ember'}`}>
+                <td className={`py-1.5 text-right ${t.type === 'refund' || t.type === 'income' ? 'text-teal-600 dark:text-teal-400' : 'text-rose-600 dark:text-rose-400'}`}>
                   {t.type === 'refund' || t.type === 'income' ? '+' : '−'}{formatRupiah(t.amount)}
                 </td>
               </tr>

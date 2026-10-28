@@ -143,7 +143,7 @@ function Shell() {
         <div
           role="alert"
           onClick={() => notify('')}
-          className="fixed left-1/2 top-4 z-[70] w-max max-w-[90vw] -translate-x-1/2 cursor-pointer rounded-full border-2 border-ember bg-paper px-4 py-2 text-sm font-medium text-ember shadow-lg dark:border-ember dark:bg-slate-900"
+          className="fixed left-1/2 top-4 z-[70] w-max max-w-[90vw] -translate-x-1/2 cursor-pointer rounded-full border-2 border-rose-500 bg-white px-4 py-2 text-sm font-medium text-rose-500 shadow-lg dark:border-rose-500 dark:bg-slate-900"
         >
           {notice}
         </div>

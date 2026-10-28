@@ -39,7 +39,7 @@ export default function DonutChart({ data, totalLabel }) {
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-xs text-slate-500 dark:text-slate-400">{totalLabel}</span>
-          <span className="text-lg font-bold text-carbon dark:text-white">
+          <span className="text-lg font-bold text-slate-900 dark:text-white">
             {total > 0 ? formatRupiah(total) : 'Rp 0'}
           </span>
         </div>
@@ -52,7 +52,7 @@ export default function DonutChart({ data, totalLabel }) {
                 <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
                 <span className="truncate text-slate-600 dark:text-slate-300">{d.name}</span>
               </span>
-              <span className="shrink-0 font-semibold text-carbon dark:text-white">{formatRupiah(d.value)}</span>
+              <span className="shrink-0 font-semibold text-slate-900 dark:text-white">{formatRupiah(d.value)}</span>
             </div>
           ))}
         </div>

@@ -106,7 +106,7 @@ export default function TransferForm({ monthId, onClose }) {
               ))}
             </select>
             {fromId && (
-              <p className={`mt-1 text-xs ${fromOver ? 'font-medium text-ember' : 'text-slate-500 dark:text-slate-400'}`}>
+              <p className={`mt-1 text-xs ${fromOver ? 'font-medium text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}>
                 {fromOver ? 'Melebihi saldo: ' : 'Saldo: '}
                 {formatRupiah(bal(fromId))}
               </p>
@@ -119,7 +119,7 @@ export default function TransferForm({ monthId, onClose }) {
               onClick={swap}
               disabled={!fromId && !toId}
               aria-label="Tukar arah transfer"
-              className="rounded-full p-2 text-carbon transition hover:bg-mist active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 dark:text-white dark:hover:bg-slate-700"
+              className="rounded-full p-2 text-slate-900 transition hover:bg-slate-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 dark:text-white dark:hover:bg-slate-800"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 16V4M7 4L3 8M7 4l4 4" />
@@ -165,13 +165,13 @@ export default function TransferForm({ monthId, onClose }) {
         </div>
 
         {wallets.length < 2 && (
-          <p className="rounded-xl border border-carbon bg-sunburst/40 px-3 py-2 text-sm text-carbon dark:border-white/20 dark:bg-white/5">
+          <p className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700/50 dark:bg-amber-950/30 dark:text-amber-200">
             Butuh minimal 2 dompet untuk transfer. Tambahkan lewat menu "Dompet".
           </p>
         )}
 
         {error && (
-          <div className="rounded-xl border border-ember/40 bg-ember/10 px-3 py-2 text-sm text-ember">{error}</div>
+          <div className="rounded-xl border border-rose-500/30 bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">{error}</div>
         )}
       </form>
     </Modal>

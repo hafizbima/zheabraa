@@ -67,7 +67,7 @@ export default function ReallocateForm({ onClose }) {
             })}
           </select>
           {fromCat && (
-            <p className={`mt-1 text-xs ${fromLeft < 0 ? 'text-ember font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
+            <p className={`mt-1 text-xs ${fromLeft < 0 ? 'text-rose-600 dark:text-rose-400 font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
               Budget saat ini {formatRupiah(fromCat.budgetAmount || 0)} → setelah re-alokasi {formatRupiah((fromCat.budgetAmount || 0) - amt)}
             </p>
           )}
@@ -97,7 +97,7 @@ export default function ReallocateForm({ onClose }) {
         </div>
 
         {error && (
-          <div className="rounded-xl border border-ember/40 bg-ember/10 px-3 py-2 text-sm text-ember">{error}</div>
+          <div className="rounded-xl border border-rose-500/30 bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">{error}</div>
         )}
       </form>
     </Modal>

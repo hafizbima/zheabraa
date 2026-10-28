@@ -213,7 +213,7 @@ export default function WalletManager({ onClose }) {
                   draggable
                   onDragStart={(e) => { setDragId(w.id); e.dataTransfer.effectAllowed = 'move' }}
                   onDragEnd={() => setDragId(null)}
-                  className="cursor-grab select-none text-lg leading-none text-slate-500 hover:text-carbon dark:text-slate-400 dark:hover:text-white"
+                  className="cursor-grab select-none text-lg leading-none text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                   title="Seret untuk mengurutkan (atau pakai tombol ↑↓)"
                   aria-label="Seret untuk mengurutkan"
                 >
@@ -249,13 +249,13 @@ export default function WalletManager({ onClose }) {
               </div>
               <div className="ml-auto w-32 shrink-0 text-right sm:ml-0 sm:w-28">
                 <p className="text-xs text-slate-500 dark:text-slate-400">saldo saat ini</p>
-                <p className={`text-sm font-semibold ${bal < 0 ? 'text-ember' : 'text-carbon dark:text-white'}`}>{formatRupiah(bal)}</p>
+                <p className={`text-sm font-semibold ${bal < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>{formatRupiah(bal)}</p>
                 <button
                   onClick={() => {
                     setAdjustId(w.id)
                     setAdjustInput(String(bal))
                   }}
-                  className="mt-1 text-[11px] font-medium text-violet underline underline-offset-2 hover:text-violet/80 dark:text-lavender"
+                  className="mt-1 text-[11px] font-medium text-indigo-600 underline underline-offset-2 hover:text-indigo-500 dark:text-indigo-300"
                 >
                   Sesuaikan
                 </button>
@@ -267,7 +267,7 @@ export default function WalletManager({ onClose }) {
                 Hapus
               </button>
               {dirty && (
-                <span className="shrink-0 rounded-full border border-carbon bg-sunburst/50 px-2 py-0.5 text-[10px] font-semibold text-carbon dark:border-white/20 dark:text-white">
+                <span className="shrink-0 rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900 dark:border-amber-700/50 dark:bg-amber-950/40 dark:text-amber-200">
                   belum disimpan
                 </span>
               )}
@@ -327,9 +327,9 @@ export default function WalletManager({ onClose }) {
               }
             >
               <div className="space-y-3">
-                <div className="rounded-xl border border-carbon bg-paper p-3 dark:border-white/20 dark:bg-slate-900">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
                   <p className="text-xs text-slate-500 dark:text-slate-400">Tercatat</p>
-                  <p className="text-base font-semibold text-carbon dark:text-white">{formatRupiah(bal)}</p>
+                  <p className="text-base font-semibold text-slate-900 dark:text-white">{formatRupiah(bal)}</p>
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Saldo Bank sebenarnya (Rp)</label>
@@ -347,7 +347,7 @@ export default function WalletManager({ onClose }) {
                   )}
                 </div>
                 {hasDelta && (
-                  <div className={`rounded-xl border px-3 py-2 text-sm ${delta > 0 ? 'border-mint bg-mint/20 text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white' : 'border-ember/30 bg-ember/10 text-ember'}`}>
+                  <div className={`rounded-xl border px-3 py-2 text-sm ${delta > 0 ? 'border-teal-300 bg-teal-50 text-teal-800 dark:border-teal-800/40 dark:bg-teal-950/40 dark:text-teal-200' : 'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300'}`}>
                     Selisih: <strong>{delta > 0 ? '+' : ''}{formatRupiah(delta)}</strong> {delta > 0 ? 'akan ditambahkan ke openingBalance' : 'akan dikurangi dari openingBalance'}
                   </div>
                 )}

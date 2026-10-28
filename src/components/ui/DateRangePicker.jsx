@@ -136,21 +136,21 @@ export function DateRangePicker({
             />
 
             {/* Footer */}
-            <div className="flex items-center justify-between border-t border-black/10 px-3 py-2 dark:border-white/10">
+            <div className="flex items-center justify-between border-t border-slate-200 px-3 py-2 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => {
                   onChange({ from: '', to: '' })
                   setOpen(false)
                 }}
-                className="text-xs font-semibold text-ember hover:underline"
+                className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline"
               >
                 Reset
               </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-xl bg-carbon px-3 py-1 text-xs font-semibold text-white transition hover:bg-black/80 dark:bg-white dark:text-carbon dark:hover:bg-white/90"
+                className="rounded-xl bg-slate-900 px-3 py-1 text-xs font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
               >
                 Selesai
               </button>

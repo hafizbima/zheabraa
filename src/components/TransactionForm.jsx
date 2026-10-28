@@ -134,7 +134,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Tipe</label>
           {isTransfer ? (
-            <p className="rounded-xl border border-carbon bg-sky px-3 py-2 text-sm text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
+            <p className="rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-sm text-slate-800 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
               Ini transaksi transfer antar dompet. Edit dari sini tidak disarankan, gunakan menu "Transfer".&nbsp; Nominal tidak mengubah pocket/uang bebas.
             </p>
           ) : (
@@ -230,7 +230,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
               </p>
             )}
             {overPocket && (
-              <p className="mt-1 rounded-xl border border-sunburst bg-sunburst/30 px-2 py-1 text-[11px] text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
+              <p className="mt-1 rounded-xl border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] text-amber-800 dark:border-amber-700/50 dark:bg-amber-950/30 dark:text-amber-300">
                 Nominal melebihi sisa pocket ({formatRupiah(catSisa)}), masih bisa disimpan, sisa pocket akan minus.
               </p>
             )}
@@ -239,7 +239,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
 
         {!isTransfer && (
           isSingle ? (
-            <p className="rounded-xl border border-black/10 bg-sky/20 px-3 py-2 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+            <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
               Tercatat di <strong>{primary?.name}</strong>{isIncome ? ' (saldo dompet bertambah)' : ': pocket adalah sekat virtual dari rekening ini'}.
             </p>
           ) : (
@@ -278,7 +278,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         </div>
 
         {error && (
-          <div className="rounded-xl border border-ember/40 bg-ember/10 px-3 py-2 text-sm text-ember">{error}</div>
+          <div className="rounded-xl border border-rose-500/30 bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">{error}</div>
         )}
       </form>
     </Modal>

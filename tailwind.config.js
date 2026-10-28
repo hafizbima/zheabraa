@@ -5,7 +5,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        porcelain: '#F4F5F7',
         teal: {
           50: '#F0FDFA',
           100: '#CCFBF1',
@@ -18,28 +17,6 @@ export default {
           800: '#115E59',
           900: '#134E4A',
         },
-        brand: {
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#2dd4bf',
-          500: '#0d9488',
-          600: '#0f766e',
-          700: '#115e59',
-          800: '#134e4a',
-          900: '#042f2e',
-        },
-        carbon: '#0F172A',
-        paper: '#ffffff',
-        sky: '#F4F5F7',
-        mist: '#F1F3F5',
-        concrete: '#E2E8F0',
-        mint: '#10B981',
-        lavender: '#EDE9FE',
-        ember: '#F43F5E',
-        sunburst: '#F59E0B',
-        violet: '#6366F1',
       },
       fontFamily: {
         sans: ['Poppins', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
@@ -48,10 +25,12 @@ export default {
       },
       boxShadow: {
         tactile: '0 8px 24px -4px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04)',
-        'tactile-sm': '0 2px 8px -1px rgba(15, 23, 42, 0.05)',
-        'tactile-md': '0 12px 32px -4px rgba(15, 23, 42, 0.08)',
-        carbon: '0 4px 16px -2px rgba(15, 23, 42, 0.08)',
-        'carbon-sm': '0 2px 6px rgba(15, 23, 42, 0.05)',
+        'tactile-sm': '0 2px 8px -2px rgba(15, 23, 42, 0.05)',
+        'tactile-lg': '0 16px 32px -8px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04)',
+        'tactile-modal': '0 24px 48px -12px rgba(15, 23, 42, 0.18)',
+      },
+      borderRadius: {
+        '2.5xl': '1.25rem',
       },
     },
   },

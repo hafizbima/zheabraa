@@ -105,7 +105,7 @@ export function Calendar({
         >
           ‹
         </button>
-        <div className="text-sm font-semibold text-carbon dark:text-white">
+        <div className="text-sm font-semibold text-slate-900 dark:text-white">
           {MONTH_NAMES[viewMonth]} {viewYear}
         </div>
         <button
@@ -156,20 +156,20 @@ export function Calendar({
           // Range styling
           const isSelected = isFrom || isTo
 
-          let bgClass = 'hover:bg-black/5 dark:hover:bg-white/10 text-carbon dark:text-white'
+          let bgClass = 'hover:bg-black/5 dark:hover:bg-white/10 text-slate-900 dark:text-white'
           let roundedClass = 'rounded-lg'
 
           if (isFrom && isTo) {
-            bgClass = 'bg-carbon text-white dark:bg-white dark:text-carbon font-semibold'
+            bgClass = 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-semibold'
             roundedClass = 'rounded-full'
           } else if (isFrom) {
-            bgClass = 'bg-carbon text-white dark:bg-white dark:text-carbon font-semibold'
+            bgClass = 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-semibold'
             roundedClass = effectiveTo ? 'rounded-l-full rounded-r-none' : 'rounded-full'
           } else if (isTo) {
-            bgClass = 'bg-carbon text-white dark:bg-white dark:text-carbon font-semibold'
+            bgClass = 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-semibold'
             roundedClass = 'rounded-r-full rounded-l-none'
           } else if (inRange) {
-            bgClass = 'bg-sunburst/60 text-carbon dark:bg-white/20 dark:text-white'
+            bgClass = 'bg-teal-500/20 text-teal-900 dark:bg-teal-500/30 dark:text-teal-200'
             roundedClass = 'rounded-none'
           }
 
@@ -177,7 +177,7 @@ export function Calendar({
             <div
               key={dayStr}
               className={`relative flex items-center justify-center p-0 ${
-                inRange ? 'bg-sunburst/40 dark:bg-white/10' : ''
+                inRange ? 'bg-teal-50 dark:bg-teal-950/20' : ''
               } ${isFrom && effectiveTo ? 'rounded-l-full' : ''} ${
                 isTo ? 'rounded-r-full' : ''
               }`}
@@ -188,7 +188,7 @@ export function Calendar({
                 onMouseEnter={() => fromISO && !toISO && setHoverDate(dayStr)}
                 onMouseLeave={() => setHoverDate(null)}
                 className={`flex h-8 w-8 items-center justify-center text-xs transition ${bgClass} ${roundedClass} ${
-                  isToday && !isSelected ? 'font-bold underline decoration-carbon/40 dark:decoration-white/40' : ''
+                  isToday && !isSelected ? 'font-bold underline decoration-slate-900/40 dark:decoration-white/40' : ''
                 }`}
               >
                 {day}

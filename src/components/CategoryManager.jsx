@@ -230,7 +230,7 @@ export default function CategoryManager({ onClose }) {
                   draggable
                   onDragStart={(e) => { setDragId(cat.id); e.dataTransfer.effectAllowed = 'move' }}
                   onDragEnd={() => setDragId(null)}
-                  className="cursor-grab select-none text-lg leading-none text-slate-500 hover:text-carbon dark:text-slate-400 dark:hover:text-white"
+                  className="cursor-grab select-none text-lg leading-none text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                   title="Seret untuk mengurutkan (atau pakai tombol ↑↓)"
                   aria-label="Seret untuk mengurutkan"
                 >
@@ -294,11 +294,11 @@ export default function CategoryManager({ onClose }) {
               </div>
               <div className="w-28 shrink-0 text-right">
                 <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">terkumpul</p>
-                <p className="text-sm font-medium text-violet dark:text-lavender">{formatRupiah(d.savedAmount || 0)}</p>
+                <p className="text-sm font-medium text-indigo-600 dark:text-indigo-300">{formatRupiah(d.savedAmount || 0)}</p>
               </div>
               <div className="w-24 shrink-0 text-right">
                 <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">terpakai</p>
-                <p className="text-sm font-medium text-carbon dark:text-white">{formatRupiah(used)}</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-white">{formatRupiah(used)}</p>
               </div>
               <div className="shrink-0">
                 <p className="mb-1 text-xs text-slate-400">&nbsp;</p>
