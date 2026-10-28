@@ -364,7 +364,7 @@ export default function TransactionList({ onEditTx }) {
       ) : (
         Object.entries(group).map(([date, items]) => (
           <section key={date}>
-            <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <p className="mb-2 px-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
               {formatDate(date)}
             </p>
             <div className="space-y-2">
@@ -373,7 +373,7 @@ export default function TransactionList({ onEditTx }) {
                 return (
                   <div
                     key={t.id}
-                    className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40"
+                    className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3.5 transition hover:bg-slate-50/80 dark:border-slate-800/80 dark:bg-slate-900/50 dark:hover:bg-slate-800/50"
                   >
                     <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: catColor(t) }} />
                     <div className="min-w-0 flex-1">

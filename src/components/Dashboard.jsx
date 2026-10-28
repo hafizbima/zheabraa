@@ -28,11 +28,11 @@ import { notificationCandidates, notificationsEnabled, sendNotificationOnce } fr
 function Card({ label, value, sub, accent, tint }) {
   return (
     <div
-      className={`group rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900 ${
+      className={`group rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 ${
         tint || ''
       }`}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{label}</p>
       <p className={`mt-1 font-sans text-xl font-bold tracking-tight ${accent || 'text-slate-900 dark:text-white'}`}>{value}</p>
       {sub && <p className="mt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">{sub}</p>}
     </div>
@@ -166,7 +166,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     <>
       <div className="space-y-5">
       {/* Hero Card: Free Money Left (Revolut / Apple Card style) */}
-      <section className="relative overflow-hidden rounded-3xl border border-teal-500/25 bg-gradient-to-br from-teal-500/15 via-emerald-500/5 to-white p-6 shadow-tactile dark:from-teal-950/40 dark:via-slate-900 dark:to-slate-900 dark:border-teal-500/30">
+      <section className="relative overflow-hidden rounded-3xl border border-teal-500/25 bg-gradient-to-br from-teal-500/15 via-emerald-500/5 to-white p-6 shadow-tactile-md dark:from-teal-950/40 dark:via-slate-900 dark:to-slate-900 dark:border-teal-500/30">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-teal-500/15 px-3 py-1 text-xs font-semibold text-teal-700 dark:text-teal-300">

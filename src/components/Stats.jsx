@@ -294,7 +294,7 @@ export default function Stats() {
           <div className="mt-3.5 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase tracking-wider text-slate-400">
+                <tr className="text-left text-xs font-semibold text-slate-500 dark:text-slate-400">
                   <th className="pb-2.5 pr-3 font-semibold">Dompet</th>
                   <th className="pb-2.5 pr-3 text-right font-semibold">Masuk</th>
                   <th className="pb-2.5 pr-3 text-right font-semibold">Keluar</th>
@@ -324,7 +324,7 @@ export default function Stats() {
               </tbody>
             </table>
           </div>
-          <p className="mt-2 text-[11px] text-slate-400">
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             Masuk/Keluar dalam rentang terpilih; Saldo = saldo saat ini dari seluruh bulan.
           </p>
         </section>
@@ -388,7 +388,7 @@ export default function Stats() {
         <div className="mt-3.5 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wider text-slate-400">
+              <tr className="text-left text-xs font-semibold text-slate-500 dark:text-slate-400">
                 <th className="pb-2.5 pr-3 font-semibold">Bulan</th>
                 <th className="pb-2.5 pr-3 text-right font-semibold">Pemasukan</th>
                 <th className="pb-2.5 pr-3 text-right font-semibold">Alokasi</th>
@@ -410,7 +410,7 @@ export default function Stats() {
               ))}
               {data.rows.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-4 text-center text-slate-400">
+                  <td colSpan={5} className="py-4 text-center text-slate-500 dark:text-slate-400">
                     Belum ada data bulan.
                   </td>
                 </tr>

@@ -16,7 +16,7 @@ export default function Modal({ title, onClose, children, footer, wide }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="modal-backdrop absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onClick={onClose} />
+      <div className="modal-backdrop absolute inset-0 bg-slate-900/60 transition-opacity" onClick={onClose} />
       <div
         className={`modal-panel relative z-10 flex max-h-[92vh] w-full flex-col rounded-t-3xl border border-slate-200/80 bg-white shadow-tactile sm:rounded-3xl dark:border-slate-800 dark:bg-slate-900 ${
           wide ? 'sm:max-w-2xl' : 'sm:max-w-md'

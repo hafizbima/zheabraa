@@ -52,7 +52,7 @@ export default function IosInstallPrompt({ open, onClose }) {
 
   return (
     <div className="no-print fixed inset-x-0 bottom-0 z-50 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-      <div className="mx-auto max-w-md rounded-2xl border border-slate-200/90 bg-white/95 p-4 shadow-2xl backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 dark:text-white">
+      <div className="mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-800 dark:bg-slate-900 dark:text-white">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-tactile-sm dark:border-slate-700">

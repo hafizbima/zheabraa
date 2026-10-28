@@ -12,7 +12,7 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-900/60 transition-opacity" onClick={onClose} />
       <div className="modal-panel relative z-10 w-full max-w-sm rounded-3xl border border-slate-200/80 bg-white p-6 shadow-tactile dark:border-slate-800 dark:bg-slate-900">
         <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white">
           {isUse ? 'Pakai tabungan ' : 'Simpan ke '}{cat.name}

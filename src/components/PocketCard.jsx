@@ -28,7 +28,7 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
           onClick?.(e)
         }
       }}
-      className="block w-full cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-tactile-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-tactile active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+      className="block w-full cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-sm transition hover:border-slate-300 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
