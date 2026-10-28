@@ -297,13 +297,13 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
           <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Pemasukan & Carry-over</h3>
           <button
             onClick={() => {
-              setEditingIncome(null)
+              setEditingIncome(editingIncome ? null : { id: null })
               setIncomeLabel('')
               setIncomeAmount('')
             }}
             className={btn.ghost}
           >
-            + Tambah
+            {editingIncome && !editingIncome.id ? '✕ Batal' : '+ Tambah'}
           </button>
         </div>
 

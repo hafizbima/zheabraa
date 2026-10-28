@@ -30,13 +30,14 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   }, [isSingle, primary, transaction, walletId])
 
   const isTransfer = transaction?.type === 'transfer' || type === 'transfer'
-  const isFree = !isTransfer && categoryId === 'free'
+  const isIncome = transaction?.type === 'income' || type === 'income'
+  const isFree = !isTransfer && !isIncome && categoryId === 'free'
   const targetMonth = date ? date.slice(0, 7) : monthId
   const monthMismatch = targetMonth !== monthId
   const categorySourceMonth = months[targetMonth] || month
   // sisa dana pocket yang dipilih (di bulan tujuan):
   // pocket tabungan (bertarget) → saldo tabungan; pocket biasa → sisa budget
-  const selectedCat = !isTransfer && !isFree
+  const selectedCat = !isTransfer && !isIncome && !isFree
     ? (categorySourceMonth?.categories || []).find((c) => c.id === categoryId)
     : null
   const catSisa = selectedCat
@@ -61,17 +62,19 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
       if (walletId === toWalletId) return setError('Dompet asal dan tujuan tidak boleh sama')
     } else if (isFree && !description.trim()) {
       return setError('Keterangan wajib diisi untuk Uang Bebas')
+    } else if (isIncome && !description.trim()) {
+      return setError('Keterangan wajib diisi untuk Pemasukan (mis. Gaji, Bonus)')
     }
 
     const payload = {
       date,
       type,
       amount: amt,
-      categoryId: isTransfer ? null : isFree ? null : categoryId,
+      categoryId: isTransfer || isIncome ? null : isFree ? null : categoryId,
       walletId: isTransfer ? walletId : walletId || (isSingle ? primary?.id : null),
       toWalletId: isTransfer ? toWalletId : null,
       recurringTemplateId: transaction?.recurringTemplateId || prefill?.recurringTemplateId || null,
-      description: description.trim(),
+      description: description.trim() || (isIncome ? 'Pemasukan' : ''),
     }
 
     if (transaction) updateTransaction(monthId, transaction.id, payload)
@@ -85,19 +88,21 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
       onClick={() => setType(key)}
       className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
         active
-          ? key === 'refund'
-            ? 'border-teal-300 bg-teal-50 text-teal-700 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300'
-            : 'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300'
+          ? key === 'income'
+            ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+            : key === 'refund'
+              ? 'border-teal-300 bg-teal-50 text-teal-700 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300'
+              : 'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300'
           : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
       }`}
     >
-      {key === 'refund' ? 'Refund / Koreksi' : 'Pengeluaran'}
+      {label}
     </button>
   )
 
   return (
     <Modal
-      title={transaction ? 'Edit Transaksi' : 'Tambah Transaksi'}
+      title={transaction ? (isIncome ? 'Edit Pemasukan' : 'Edit Transaksi') : (isIncome ? 'Tambah Pemasukan' : 'Tambah Transaksi')}
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
@@ -134,14 +139,17 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
             </p>
           ) : (
             <>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {typeButton('expense', 'Pengeluaran', type === 'expense')}
+                {typeButton('income', 'Pemasukan', type === 'income')}
                 {typeButton('refund', 'Refund / Koreksi', type === 'refund')}
               </div>
               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                {type === 'refund'
-                  ? 'Refund menambah sisa (uang kembali ke pocket/uang bebas).'
-                  : 'Pengeluaran mengurangi sisa pocket/uang bebas.'}
+                {type === 'income'
+                  ? 'Pemasukan menambah saldo dompet dan total uang bebas bulan ini.'
+                  : type === 'refund'
+                    ? 'Refund menambah sisa (uang kembali ke pocket/uang bebas).'
+                    : 'Pengeluaran mengurangi sisa pocket/uang bebas.'}
               </p>
             </>
           )}
@@ -188,6 +196,12 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
               </select>
             </div>
           </>
+        ) : isIncome ? (
+          <div>
+            <p className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-xs text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+              Pemasukan tidak memerlukan pocket. Dana akan langsung menambah saldo dompet dan total Uang Bebas bulan ini.
+            </p>
+          </div>
         ) : (
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Kategori / Pocket {monthMismatch && `(pocket bulan ${targetMonth})`}</label>
@@ -226,11 +240,11 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         {!isTransfer && (
           isSingle ? (
             <p className="rounded-xl border border-black/10 bg-sky/20 px-3 py-2 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-              Tercatat di <strong>{primary?.name}</strong>: pocket adalah sekat virtual dari rekening ini.
+              Tercatat di <strong>{primary?.name}</strong>{isIncome ? ' (saldo dompet bertambah)' : ': pocket adalah sekat virtual dari rekening ini'}.
             </p>
           ) : (
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dompet (opsional)</label>
+              <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">{isIncome ? 'Dompet Penerima' : 'Dompet (opsional)'}</label>
               <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
                 <option value="">(Tidak dilacak)</option>
                 {wallets.map((w) => (
@@ -245,16 +259,18 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
 
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-            Keterangan {isFree && <span className="text-ember">*</span>}
+            {isIncome ? 'Keterangan Pemasukan' : 'Keterangan'} {(isFree || isIncome) && <span className="text-rose-500">*</span>}
           </label>
           <input
             className={input}
             placeholder={
               isTransfer
                 ? 'Opsional, mis. pindah saldo ke rekening'
-                : isFree
-                  ? 'Wajib diisi untuk uang bebas'
-                  : 'Contoh: bensin, makan siang'
+                : isIncome
+                  ? 'Contoh: Gaji, Bonus, Freelance'
+                  : isFree
+                    ? 'Wajib diisi untuk uang bebas'
+                    : 'Contoh: bensin, makan siang'
             }
             value={description}
             onChange={(e) => setDescription(e.target.value)}

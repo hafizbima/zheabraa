@@ -165,4 +165,28 @@ describe('Gimme Money smoke', () => {
     await user.click(confirmBtn)
     expect(await findByText('Semua data berhasil direset ke kondisi awal')).toBeInTheDocument()
   })
+
+  it('input income via Add Transaction modal increases Total Pemasukan', async () => {
+    const user = userEvent.setup()
+    const { getByPlaceholderText, getByRole, findByText, queryByText, findAllByText } = render(<App />)
+
+    await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
+    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.click(getByRole('button', { name: 'Masuk' }))
+    await findByText('Total Pemasukan')
+
+    // Open transaction modal via FAB
+    await user.click(getByRole('button', { name: 'Tambah transaksi' }))
+    expect(await findByText('Pengeluaran')).toBeInTheDocument()
+
+    // Select Pemasukan
+    await user.click(getByRole('button', { name: 'Pemasukan' }))
+    await user.type(getByPlaceholderText('0'), '5000000')
+    await user.type(getByPlaceholderText('Contoh: Gaji, Bonus, Freelance'), 'Gaji Bulanan')
+    await user.click(getByRole('button', { name: 'Simpan' }))
+
+    await waitFor(() => expect(queryByText('Tambah Pemasukan')).not.toBeInTheDocument())
+    expect((await findAllByText('Rp 5.000.000')).length).toBeGreaterThan(0)
+    expect(await findByText('Gaji Bulanan')).toBeInTheDocument()
+  })
 })
