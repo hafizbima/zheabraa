@@ -93,35 +93,35 @@ export function DateRangePicker({
               <button
                 type="button"
                 onClick={() => applyPreset('all')}
-                className="rounded-lg px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-black/5 hover:text-black dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                className="rounded-xl px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-black/5 hover:text-black dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 Semua
               </button>
               <button
                 type="button"
                 onClick={() => applyPreset('today')}
-                className="rounded-lg px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-black/5 hover:text-black dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                className="rounded-xl px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-black/5 hover:text-black dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 Hari Ini
               </button>
               <button
                 type="button"
                 onClick={() => applyPreset('yesterday')}
-                className="rounded-lg px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-black/5 hover:text-black dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                className="rounded-xl px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-black/5 hover:text-black dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 Kemarin
               </button>
               <button
                 type="button"
                 onClick={() => applyPreset('last7')}
-                className="rounded-lg px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-black/5 hover:text-black dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                className="rounded-xl px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-black/5 hover:text-black dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 7 Hari
               </button>
               <button
                 type="button"
                 onClick={() => applyPreset('month')}
-                className="rounded-lg px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-black/5 hover:text-black dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                className="rounded-xl px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:bg-black/5 hover:text-black dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 Bulan Ini
               </button>
@@ -150,7 +150,7 @@ export function DateRangePicker({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-lg bg-carbon px-3 py-1 text-xs font-semibold text-white transition hover:bg-black/80 dark:bg-white dark:text-carbon dark:hover:bg-white/90"
+                className="rounded-xl bg-carbon px-3 py-1 text-xs font-semibold text-white transition hover:bg-black/80 dark:bg-white dark:text-carbon dark:hover:bg-white/90"
               >
                 Selesai
               </button>

@@ -184,7 +184,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             onClick={() => onNewTx(null)}
             className="self-start sm:self-auto rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white shadow-tactile-sm transition hover:bg-slate-800 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-500"
           >
-            Catat Pengeluaran
+            Tambah Pengeluaran
           </button>
         </div>
       </section>

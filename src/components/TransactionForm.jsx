@@ -216,7 +216,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
               </p>
             )}
             {overPocket && (
-              <p className="mt-1 rounded-lg border border-sunburst bg-sunburst/30 px-2 py-1 text-[11px] text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
+              <p className="mt-1 rounded-xl border border-sunburst bg-sunburst/30 px-2 py-1 text-[11px] text-carbon dark:border-white/20 dark:bg-white/5 dark:text-white">
                 Nominal melebihi sisa pocket ({formatRupiah(catSisa)}), masih bisa disimpan, sisa pocket akan minus.
               </p>
             )}

@@ -220,8 +220,8 @@ export default function WalletManager({ onClose }) {
                   ⋮⋮
                 </span>
                 <span className="mt-0.5 flex gap-1">
-                  <button type="button" onClick={() => moveBy(w.id, -1)} aria-label="Naikkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▲</button>
-                  <button type="button" onClick={() => moveBy(w.id, 1)} aria-label="Turunkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▼</button>
+                  <button type="button" onClick={() => moveBy(w.id, -1)} aria-label="Naikkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▲</button>
+                  <button type="button" onClick={() => moveBy(w.id, 1)} aria-label="Turunkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▼</button>
                 </span>
               </div>
               <input

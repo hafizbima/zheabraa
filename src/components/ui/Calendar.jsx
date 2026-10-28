@@ -100,7 +100,7 @@ export function Calendar({
         <button
           type="button"
           onClick={prevMonth}
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-slate-600 transition hover:bg-black/5 hover:text-black dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+          className="flex h-8 w-8 items-center justify-center rounded-xl border border-black/10 text-slate-600 transition hover:bg-black/5 hover:text-black dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
           aria-label="Bulan sebelumnya"
         >
           ‹
@@ -111,7 +111,7 @@ export function Calendar({
         <button
           type="button"
           onClick={nextMonth}
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-slate-600 transition hover:bg-black/5 hover:text-black dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+          className="flex h-8 w-8 items-center justify-center rounded-xl border border-black/10 text-slate-600 transition hover:bg-black/5 hover:text-black dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
           aria-label="Bulan berikutnya"
         >
           ›

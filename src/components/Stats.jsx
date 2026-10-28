@@ -13,6 +13,7 @@ import {
   allTransactions,
 } from '../lib/calc.js'
 import DonutChart from './DonutChart.jsx'
+import EmptyState from './EmptyState.jsx'
 import { btn } from '../lib/buttons.js'
 import { buildSpendingInsights } from '../lib/insights.js'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
@@ -176,6 +177,20 @@ export default function Stats() {
   const granBtn = (key, label) =>
     `rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${gran === key ? 'bg-slate-900 text-white shadow-tactile-sm dark:bg-teal-500 dark:text-slate-950' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'}`
 
+  if (ids.length === 0) {
+    return (
+      <div className="space-y-5">
+        <section className="space-y-3">
+          <h2 className="font-sans text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">Statistik</h2>
+        </section>
+        <EmptyState
+          title="Belum ada data statistik"
+          sub="Statistik dan grafik tren akan muncul otomatis setelah Anda mencatat transaksi atau memiliki data bulan aktif."
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-5">
       <section className="space-y-3">
@@ -207,19 +222,19 @@ export default function Stats() {
 
       <section className="grid grid-cols-2 gap-3.5">
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Pemasukan</p>
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Total Pemasukan</p>
           <p className="mt-1 font-sans text-lg font-bold text-teal-600 dark:text-teal-400">{formatRupiah(data.income)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Dialokasikan</p>
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Total Dialokasikan</p>
           <p className="mt-1 font-sans text-lg font-bold text-slate-900 dark:text-white">{formatRupiah(data.allocated)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Belanja (net)</p>
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Total Belanja (net)</p>
           <p className="mt-1 font-sans text-lg font-bold text-rose-600 dark:text-rose-400">{formatRupiah(data.spent)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Sisa Akhir Bulan</p>
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Sisa Akhir Bulan</p>
           <p className={`mt-1 font-sans text-lg font-bold ${data.left < 0 ? 'text-rose-600' : 'text-slate-900 dark:text-white'}`}>
             {formatRupiah(data.left)}
           </p>

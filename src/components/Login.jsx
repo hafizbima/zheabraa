@@ -115,7 +115,7 @@ export default function Login() {
                       type="button"
                       onClick={() => setShowPw((v) => !v)}
                       aria-label={showPw ? 'Sembunyikan password' : 'Tampilkan password'}
-                      className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:text-slate-700 dark:hover:text-white dark:focus-visible:text-white"
+                      className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:text-slate-700 dark:hover:text-white dark:focus-visible:text-white"
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         {showPw ? (

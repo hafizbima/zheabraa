@@ -64,17 +64,17 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onSave(cat) }}
-                className="shrink-0 whitespace-nowrap rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                className="shrink-0 whitespace-nowrap rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
-                Simpan +
+                Nabung
               </button>
               {savedAmt > 0 && (
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onUse(cat) }}
-                  className="shrink-0 whitespace-nowrap rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-700 shadow-sm transition hover:bg-teal-100 active:scale-95 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300 dark:hover:bg-teal-900/50"
+                  className="shrink-0 whitespace-nowrap rounded-xl border border-teal-200 bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-700 shadow-sm transition hover:bg-teal-100 active:scale-95 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300 dark:hover:bg-teal-900/50"
                 >
-                  Gunakan
+                  Pakai
                 </button>
               )}
             </span>
