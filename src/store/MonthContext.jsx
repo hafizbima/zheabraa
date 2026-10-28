@@ -5,6 +5,7 @@ import { useData } from './DataContext.jsx'
 import { monthIdOf, addMonths, labelOf, todayISO } from '../lib/dates.js'
 import { uid, slugify } from '../lib/id.js'
 import { categoryUsed, carryOverAmount } from '../lib/calc.js'
+import { createBlankMonth } from './defaults.js'
 
 const MonthContext = createContext(null)
 
@@ -13,7 +14,7 @@ const catKey = (c) => (c && (c.key || c.name)) || ''
 
 export function MonthProvider({ children }) {
   const { user, authReady } = useAuth()
-  const { wallets, walletsReceived, months, mutate } = useData()
+  const { wallets, setWallets, walletsReceived, months, setMonths, mutate } = useData()
   const [currentMonthId, setCurrentMonthId] = useState(() => monthIdOf(new Date()))
 
   const monthIds = Object.keys(months)
@@ -135,9 +136,20 @@ export function MonthProvider({ children }) {
         toWalletId: null,
         description: data.label || 'Pemasukan',
       }
+      // Optimistic update: langsung muncul seketika (0ms)
+      setMonths((prev) => {
+        const m = prev[mId] || { ...createBlankMonth(mId), categories: [] }
+        return {
+          ...prev,
+          [mId]: {
+            ...m,
+            transactions: [tx, ...(m.transactions || [])],
+          },
+        }
+      })
       mutate(backend.setTransaction(user.uid, mId, tx), 'Gagal menyimpan pemasukan')
     },
-    [user, wallets, mutate],
+    [user, wallets, setMonths, mutate],
   )
 
   const updateIncome = useCallback(
@@ -154,9 +166,21 @@ export function MonthProvider({ children }) {
   const removeIncome = useCallback(
     (mId, incomeId) => {
       if (!user) return
+      // Optimistic remove
+      setMonths((prev) => {
+        const m = prev[mId]
+        if (!m) return prev
+        return {
+          ...prev,
+          [mId]: {
+            ...m,
+            transactions: (m.transactions || []).filter((t) => t.id !== incomeId),
+          },
+        }
+      })
       mutate(backend.removeTransaction(user.uid, mId, incomeId), 'Gagal menghapus pemasukan')
     },
-    [user, mutate],
+    [user, setMonths, mutate],
   )
 
   const setCarryOver = useCallback(
@@ -230,9 +254,21 @@ export function MonthProvider({ children }) {
   const updateCategory = useCallback(
     (mId, categoryId, patch) => {
       if (!user) return Promise.resolve()
+      // Optimistic update kategori / budget
+      setMonths((prev) => {
+        const m = prev[mId]
+        if (!m) return prev
+        return {
+          ...prev,
+          [mId]: {
+            ...m,
+            categories: (m.categories || []).map((c) => (c.id === categoryId ? { ...c, ...patch } : c)),
+          },
+        }
+      })
       return mutate(backend.updateCategory(user.uid, mId, categoryId, patch), 'Gagal mengubah kategori')
     },
-    [user, mutate],
+    [user, setMonths, mutate],
   )
 
   const removeCategory = useCallback(
@@ -260,12 +296,25 @@ export function MonthProvider({ children }) {
         }
       }
       const tx = { id: uid(), createdAt: Date.now(), ...data, categoryId: resolvedCatId }
+
+      // Optimistic update: langsung terlihat di UI seketika
+      setMonths((prev) => {
+        const targetMonth = prev[targetId] || { ...createBlankMonth(targetId), categories: [] }
+        return {
+          ...prev,
+          [targetId]: {
+            ...targetMonth,
+            transactions: [tx, ...(targetMonth.transactions || [])],
+          },
+        }
+      })
+
       const save = targetId !== mId
         ? backend.ensureMonth(user.uid, targetId).then(() => backend.setTransaction(user.uid, targetId, tx))
         : backend.setTransaction(user.uid, targetId, tx)
       return mutate(save, 'Gagal menyimpan transaksi')
     },
-    [user, months, mutate],
+    [user, months, setMonths, mutate],
   )
 
   const updateTransaction = useCallback(
@@ -291,17 +340,41 @@ export function MonthProvider({ children }) {
           return
         }
       }
+      // Optimistic update transaksi
+      setMonths((prev) => {
+        const m = prev[mId]
+        if (!m) return prev
+        return {
+          ...prev,
+          [mId]: {
+            ...m,
+            transactions: (m.transactions || []).map((t) => (t.id === txId ? { ...t, ...patch } : t)),
+          },
+        }
+      })
       mutate(backend.updateTransaction(user.uid, mId, txId, patch), 'Gagal menyimpan transaksi')
     },
-    [user, months, mutate],
+    [user, months, setMonths, mutate],
   )
 
   const removeTransaction = useCallback(
     (mId, txId) => {
       if (!user) return
+      // Optimistic remove
+      setMonths((prev) => {
+        const m = prev[mId]
+        if (!m) return prev
+        return {
+          ...prev,
+          [mId]: {
+            ...m,
+            transactions: (m.transactions || []).filter((t) => t.id !== txId),
+          },
+        }
+      })
       mutate(backend.removeTransaction(user.uid, mId, txId), 'Gagal menghapus transaksi')
     },
-    [user, mutate],
+    [user, setMonths, mutate],
   )
 
   // tabungan manual: keluarkan dari uang bebas (expense) lalu tambah ke savedAmount

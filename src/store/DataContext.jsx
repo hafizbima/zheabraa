@@ -27,7 +27,7 @@ export function DataProvider({ children }) {
     [notify],
   )
 
-  // load semua data sekali (tanpa realtime); panggil ulang setelah tiap mutasi
+  // load semua data sekali (dengan offline cache fallback); panggil ulang setelah tiap mutasi
   const refresh = useCallback(async () => {
     if (!user) return
     try {
@@ -40,7 +40,26 @@ export function DataProvider({ children }) {
       setMonths(d.months || {})
       setTemplates(d.templates || [])
       setBudgetTemplates(d.budgetTemplates || [])
+      try {
+        localStorage.setItem('gmm_cache_' + user.uid, JSON.stringify(d))
+      } catch {}
     } catch (e) {
+      // Jika jaringan gagal / offline, gunakan cache lokal bila ada
+      try {
+        const raw = localStorage.getItem('gmm_cache_' + user.uid)
+        if (raw) {
+          const cached = JSON.parse(raw)
+          if (cached && typeof cached === 'object') {
+            setWallets(cached.wallets || [])
+            setMonths(cached.months || {})
+            setTemplates(cached.templates || [])
+            setBudgetTemplates(cached.budgetTemplates || [])
+            notify('Menampilkan data offline dari penyimpanan lokal')
+            return
+          }
+        }
+      } catch {}
+
       const msg = String(e?.message || e?.code || '')
       if (msg.includes('PGRST303') || msg.includes('JWT issued at future')) {
         report(e, 'Konfigurasi tidak valid (JWT). Setel ulang anon key di Supabase Dashboard > Settings > API > Reset anon key, lalu update .env & Vercel env.')
@@ -52,7 +71,7 @@ export function DataProvider({ children }) {
     } finally {
       setWalletsReceived(true)
     }
-  }, [user, report])
+  }, [user, report, notify])
 
   // helper tunggal: jalankan mutasi backend → refresh data → toast kalau gagal
   const resetAllData = useCallback(async () => {
@@ -60,17 +79,24 @@ export function DataProvider({ children }) {
     if (backend.resetAll) {
       await backend.resetAll(user.uid)
     }
+    try {
+      localStorage.removeItem('gmm_cache_' + user.uid)
+    } catch {}
     await refresh()
   }, [user, refresh])
 
   const mutate = useCallback(
-    (promise, errMsg) => {
+    (promise, errMsg, rollbackFn) => {
       if (!user) return Promise.resolve()
-      return promise.then(() => refresh()).catch((e) => report(e, errMsg))
+      return promise.then(() => refresh()).catch((e) => {
+        if (typeof rollbackFn === 'function') rollbackFn()
+        report(e, errMsg)
+      })
     },
     [user, refresh, report],
   )
 
+  // Saat user terdeteksi, langsung baca dari cache lokal (0ms render), lalu sinkron data terbaru
   useEffect(() => {
     if (!user) {
       setWallets([])
@@ -80,16 +106,33 @@ export function DataProvider({ children }) {
       setWalletsReceived(false)
       return
     }
+    try {
+      const raw = localStorage.getItem('gmm_cache_' + user.uid)
+      if (raw) {
+        const cached = JSON.parse(raw)
+        if (cached && typeof cached === 'object') {
+          if (cached.wallets) setWallets(cached.wallets)
+          if (cached.months) setMonths(cached.months)
+          if (cached.templates) setTemplates(cached.templates)
+          if (cached.budgetTemplates) setBudgetTemplates(cached.budgetTemplates)
+          setWalletsReceived(true)
+        }
+      }
+    } catch {}
     refresh()
   }, [user, refresh])
 
   const value = useMemo(
     () => ({
       wallets,
+      setWallets,
       walletsReceived,
       months,
+      setMonths,
       templates,
+      setTemplates,
       budgetTemplates,
+      setBudgetTemplates,
       notice,
       notify,
       refresh,
