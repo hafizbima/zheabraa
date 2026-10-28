@@ -312,7 +312,7 @@ export default function TransactionList({ onEditTx }) {
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
           <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Hasil pencarian "{globalSearch.trim()}"</h3>
           {globalResults.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-400">Tidak ditemukan.</p>
+            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Tidak ditemukan.</p>
           ) : (
             <div className="mt-3.5 space-y-2">
               {globalResults.map(({ mId, tx }) => {
@@ -364,7 +364,7 @@ export default function TransactionList({ onEditTx }) {
       ) : (
         Object.entries(group).map(([date, items]) => (
           <section key={date}>
-            <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {formatDate(date)}
             </p>
             <div className="space-y-2">
@@ -389,10 +389,10 @@ export default function TransactionList({ onEditTx }) {
                         {isTransfer ? '⇄ ' : t.type === 'refund' || t.type === 'income' ? '+' : '−'}{formatRupiah(t.amount)}
                       </p>
                       <div className="mt-1 flex justify-end gap-1">
-                        <button onClick={() => onEditTx(viewMonth, t)} className={btn.subtle}>
+                        <button onClick={() => onEditTx(viewMonth, t)} className={`${btn.subtle} min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 px-2.5 py-1.5`}>
                           Ubah
                         </button>
-                        <button onClick={() => setConfirmId({ mId: viewMonth, id: t.id })} className={btn.subtleDanger}>
+                        <button onClick={() => setConfirmId({ mId: viewMonth, id: t.id })} className={`${btn.subtleDanger} min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 px-2.5 py-1.5`}>
                           Hapus
                         </button>
                       </div>
@@ -440,7 +440,7 @@ export default function TransactionList({ onEditTx }) {
               <p className="shrink-0 font-sans font-bold text-slate-900 dark:text-white">{formatRupiah(row.amount)}</p>
             </div>
           ))}
-          {importRows.length > 20 && <p className="px-3.5 py-2 text-xs text-slate-400">Menampilkan 20 transaksi pertama.</p>}
+          {importRows.length > 20 && <p className="px-3.5 py-2 text-xs text-slate-500 dark:text-slate-400">Menampilkan 20 transaksi pertama.</p>}
         </div>
         <div className="mt-4 flex justify-end gap-2">
           <button onClick={() => setImportOpen(false)} disabled={importing} className={btn.neutral}>Batal</button>

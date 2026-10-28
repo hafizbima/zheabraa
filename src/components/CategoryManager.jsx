@@ -170,7 +170,7 @@ export default function CategoryManager({ onClose }) {
       wide
       footer={
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Perubahan hanya tersimpan saat menekan "Simpan Perubahan". Seret ⋮⋮ untuk mengurutkan.
           </p>
           <button
@@ -237,8 +237,8 @@ export default function CategoryManager({ onClose }) {
                   ⋮⋮
                 </span>
                 <span className="mt-0.5 flex gap-1">
-                  <button type="button" onClick={() => moveBy(cat.id, -1)} aria-label="Naikkan urutan" className="flex h-5 w-5 items-center justify-center rounded text-xs text-slate-500 hover:bg-black/5 hover:text-carbon focus:outline-none focus:ring-1 focus:ring-black/20 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">▲</button>
-                  <button type="button" onClick={() => moveBy(cat.id, 1)} aria-label="Turunkan urutan" className="flex h-5 w-5 items-center justify-center rounded text-xs text-slate-500 hover:bg-black/5 hover:text-carbon focus:outline-none focus:ring-1 focus:ring-black/20 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">▼</button>
+                  <button type="button" onClick={() => moveBy(cat.id, -1)} aria-label="Naikkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▲</button>
+                  <button type="button" onClick={() => moveBy(cat.id, 1)} aria-label="Turunkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▼</button>
                 </span>
               </div>
               <div className="w-8 shrink-0">
@@ -260,7 +260,7 @@ export default function CategoryManager({ onClose }) {
                 />
               </div>
               <div className="w-32 shrink-0 sm:w-28">
-                <p className="mb-1 text-xs text-slate-400">Budget/bulan</p>
+                <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Budget/bulan</p>
                 <input
                   className={input + ' text-right'}
                   type="text"
@@ -271,7 +271,7 @@ export default function CategoryManager({ onClose }) {
                 />
               </div>
               <div className="w-36 shrink-0">
-                <p className="mb-1 text-xs text-slate-400">Deadline</p>
+                <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Deadline</p>
                 <input
                   className={input + ' w-full'}
                   type="date"
@@ -281,7 +281,7 @@ export default function CategoryManager({ onClose }) {
                 />
               </div>
               <div className="w-32 shrink-0 sm:w-28">
-                <p className="mb-1 text-xs text-slate-400">Target</p>
+                <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Target</p>
                 <input
                   className={input + ' text-right'}
                   type="text"
@@ -293,11 +293,11 @@ export default function CategoryManager({ onClose }) {
                 />
               </div>
               <div className="w-28 shrink-0 text-right">
-                <p className="mb-1 text-xs text-slate-400">terkumpul</p>
+                <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">terkumpul</p>
                 <p className="text-sm font-medium text-violet dark:text-lavender">{formatRupiah(d.savedAmount || 0)}</p>
               </div>
               <div className="w-24 shrink-0 text-right">
-                <p className="mb-1 text-xs text-slate-400">terpakai</p>
+                <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">terpakai</p>
                 <p className="text-sm font-medium text-carbon dark:text-white">{formatRupiah(used)}</p>
               </div>
               <div className="shrink-0">

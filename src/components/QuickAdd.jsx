@@ -28,7 +28,7 @@ export default function QuickAdd({ categories, onPick }) {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-tactile-sm transition-all focus-within:border-teal-500/50 focus-within:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
+    <form onSubmit={submit} className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-tactile-sm transition-all focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20 focus-within:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
       <div className="flex items-center gap-2.5">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-slate-400">
           <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" strokeLinecap="round" strokeLinejoin="round" />
@@ -40,7 +40,7 @@ export default function QuickAdd({ categories, onPick }) {
           onChange={(e) => setQuick(e.target.value)}
           aria-label="Catat cepat"
         />
-        <span className="hidden font-sans text-[11px] font-medium text-slate-400 sm:inline">Enter untuk buka form</span>
+        <span className="hidden font-sans text-[11px] font-medium text-slate-500 dark:text-slate-400 sm:inline">Enter untuk buka form</span>
       </div>
     </form>
   )

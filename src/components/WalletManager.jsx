@@ -220,8 +220,8 @@ export default function WalletManager({ onClose }) {
                   ⋮⋮
                 </span>
                 <span className="mt-0.5 flex gap-1">
-                  <button type="button" onClick={() => moveBy(w.id, -1)} aria-label="Naikkan urutan" className="flex h-5 w-5 items-center justify-center rounded text-xs text-slate-500 hover:bg-black/5 hover:text-carbon focus:outline-none focus:ring-1 focus:ring-black/20 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">▲</button>
-                  <button type="button" onClick={() => moveBy(w.id, 1)} aria-label="Turunkan urutan" className="flex h-5 w-5 items-center justify-center rounded text-xs text-slate-500 hover:bg-black/5 hover:text-carbon focus:outline-none focus:ring-1 focus:ring-black/20 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">▼</button>
+                  <button type="button" onClick={() => moveBy(w.id, -1)} aria-label="Naikkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▲</button>
+                  <button type="button" onClick={() => moveBy(w.id, 1)} aria-label="Turunkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▼</button>
                 </span>
               </div>
               <input
@@ -248,7 +248,7 @@ export default function WalletManager({ onClose }) {
                 />
               </div>
               <div className="ml-auto w-32 shrink-0 text-right sm:ml-0 sm:w-28">
-                <p className="text-xs text-slate-400">saldo saat ini</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">saldo saat ini</p>
                 <p className={`text-sm font-semibold ${bal < 0 ? 'text-ember' : 'text-carbon dark:text-white'}`}>{formatRupiah(bal)}</p>
                 <button
                   onClick={() => {
@@ -343,7 +343,7 @@ export default function WalletManager({ onClose }) {
                     autoFocus
                   />
                   {adjustInput.trim() !== '' && (
-                    <p className="mt-1 text-xs text-slate-400">{formatRupiah(target)}</p>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{formatRupiah(target)}</p>
                   )}
                 </div>
                 {hasDelta && (
@@ -352,9 +352,9 @@ export default function WalletManager({ onClose }) {
                   </div>
                 )}
                 {!hasDelta && adjustInput.trim() !== '' && (
-                  <p className="text-xs text-slate-400">Tidak ada perubahan.</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Tidak ada perubahan.</p>
                 )}
-                <p className="text-xs text-slate-400">Hanya openingBalance yang diubah, tidak ada transaksi baru. Pocket & carry-over tidak berubah. Tekan Simpan Perubahan di belakang untuk menyimpan permanen.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Hanya openingBalance yang diubah, tidak ada transaksi baru. Pocket & carry-over tidak berubah. Tekan Simpan Perubahan di belakang untuk menyimpan permanen.</p>
               </div>
             </Modal>
           )

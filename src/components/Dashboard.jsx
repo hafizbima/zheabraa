@@ -34,7 +34,7 @@ function Card({ label, value, sub, accent, tint }) {
     >
       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
       <p className={`mt-1 font-sans text-xl font-bold tracking-tight ${accent || 'text-slate-900 dark:text-white'}`}>{value}</p>
-      {sub && <p className="mt-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">{sub}</p>}
+      {sub && <p className="mt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">{sub}</p>}
     </div>
   )
 }
@@ -205,7 +205,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
               Aman Dibelanjakan / Hari
             </div>
             <p className={`mt-2 font-sans text-2xl font-bold tracking-tight ${left < 0 ? 'text-rose-600 dark:text-rose-300' : 'text-slate-900 dark:text-white'}`}>
-              {dailySpend.daysRemaining > 0 ? formatRupiah(dailySpend.amount) : '—'}
+              {dailySpend.daysRemaining > 0 ? formatRupiah(dailySpend.amount) : '-'}
             </p>
           </div>
           <p className="max-w-sm text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">

@@ -1,7 +1,10 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { formatRupiah } from '../lib/money.js'
+import { useTheme } from '../theme.js'
 
 export default function DonutChart({ data, totalLabel }) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const total = data.reduce((a, d) => a + d.value, 0)
 
   return (
@@ -22,7 +25,16 @@ export default function DonutChart({ data, totalLabel }) {
                 <Cell key={d.name} fill={d.color} />
               ))}
             </Pie>
-            <Tooltip formatter={(value, name) => [formatRupiah(Number(value)), name]} />
+            <Tooltip
+              formatter={(value, name) => [formatRupiah(Number(value)), name]}
+              contentStyle={{
+                borderRadius: 16,
+                backgroundColor: isDark ? '#0f172a' : '#ffffff',
+                border: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0',
+                color: isDark ? '#f8fafc' : '#0f172a',
+                boxShadow: '0 4px 20px -2px rgba(0,0,0,0.12)',
+              }}
+            />
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">

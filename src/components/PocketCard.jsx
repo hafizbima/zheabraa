@@ -19,8 +19,16 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      className="block w-full cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-tactile-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-tactile active:scale-[0.99] dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick?.(e)
+        }
+      }}
+      className="block w-full cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-tactile-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-tactile active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
@@ -37,7 +45,7 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
             {formatRupiah(used)}
             {budget > 0 && <span className="text-xs font-normal text-slate-500 dark:text-slate-400"> / {formatRupiah(budget)}</span>}
           </p>
-          <p className={`text-[11px] font-semibold ${status === 'over' ? 'text-rose-500' : status === 'warn' ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'}`}>
+          <p className={`text-[11px] font-semibold ${status === 'over' ? 'text-rose-500' : status === 'warn' ? 'text-amber-500' : 'text-slate-500 dark:text-slate-400'}`}>
             sisa {formatRupiah(left)}
           </p>
         </div>

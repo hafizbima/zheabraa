@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
+import { useTheme } from '../theme.js'
 import { formatRupiah } from '../lib/money.js'
 import { labelOf } from '../lib/dates.js'
 import {
@@ -36,6 +37,8 @@ function fmtDayMonth(iso) {
 }
 
 export default function Stats() {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const { months, wallets } = useStore()
   const [rangeKey, setRangeKey] = useState('3')
   const [gran, setGran] = useState('bulanan')
@@ -347,10 +350,20 @@ export default function Stats() {
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={trend.rows} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.08} />
-              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} width={56} tickFormatter={compactNum} />
-              <Tooltip formatter={(v) => formatRupiah(Number(v))} labelStyle={{ color: '#0f172a' }} contentStyle={{ borderRadius: 16, border: '1px solid #e2e8f0', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.06)' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={isDark ? 0.15 : 0.08} />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: isDark ? '#cbd5e1' : '#64748b' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+              <YAxis tick={{ fontSize: 11, fill: isDark ? '#cbd5e1' : '#64748b' }} tickLine={false} axisLine={false} width={56} tickFormatter={compactNum} />
+              <Tooltip
+                formatter={(v) => formatRupiah(Number(v))}
+                labelStyle={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600 }}
+                contentStyle={{
+                  borderRadius: 16,
+                  backgroundColor: isDark ? '#0f172a' : '#ffffff',
+                  border: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0',
+                  color: isDark ? '#f8fafc' : '#0f172a',
+                  boxShadow: '0 4px 20px -2px rgba(0,0,0,0.12)',
+                }}
+              />
               {gran === 'bulanan' && <Line type="monotone" dataKey="income" name="Pemasukan" stroke="#0d9488" strokeWidth={2.5} dot={false} />}
               <Line type="monotone" dataKey="spent" name="Belanja" stroke="#f43f5e" strokeWidth={2.5} dot={false} />
             </LineChart>
