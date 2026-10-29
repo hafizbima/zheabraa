@@ -4,11 +4,11 @@ import { CATEGORY_COLORS, WALLET_COLORS } from '../lib/palette.js'
 
 export const DEFAULT_CATEGORY_NAMES = [
   'Transport',
-  'Gym',
-  'Date',
-  'Giving',
-  'Saving',
-  'Skincare',
+  'Makan & Belanja',
+  'Tagihan & Utilitas',
+  'Sedekah & Donasi',
+  'Tabungan',
+  'Hiburan',
 ]
 
 export function defaultCategories() {

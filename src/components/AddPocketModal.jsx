@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Modal from './Modal.jsx'
 import { CATEGORY_COLORS } from '../lib/palette.js'
-import { toInt } from '../lib/money.js'
+import { toInt, formatNumberInput, formatRupiah } from '../lib/money.js'
 import { btn } from '../lib/buttons.js'
 import { haptic } from '../lib/haptics.js'
 
@@ -23,6 +23,7 @@ function ColorPicker({ value, onChange }) {
 }
 
 export default function AddPocketModal({ onClose, onAdd }) {
+  const [pocketType, setPocketType] = useState('expense') // 'expense' | 'saving'
   const [name, setName] = useState('')
   const [budget, setBudget] = useState('')
   const [goal, setGoal] = useState('')
@@ -40,10 +41,10 @@ export default function AddPocketModal({ onClose, onAdd }) {
     try {
       await onAdd({
         name: name.trim(),
-        budgetAmount: toInt(budget),
+        budgetAmount: pocketType === 'expense' ? toInt(budget) : 0,
         color,
-        goalAmount: toInt(goal),
-        goalDeadline: deadline || null,
+        goalAmount: pocketType === 'saving' ? toInt(goal) : 0,
+        goalDeadline: pocketType === 'saving' ? (deadline || null) : null,
       })
       haptic.success()
       onClose()
@@ -55,6 +56,36 @@ export default function AddPocketModal({ onClose, onAdd }) {
   return (
     <Modal title="Tambah Pocket Baru" onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+            Tipe Pocket
+          </label>
+          <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+            <button
+              type="button"
+              onClick={() => setPocketType('expense')}
+              className={`rounded-lg py-2 text-xs font-semibold transition ${
+                pocketType === 'expense'
+                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+              }`}
+            >
+              Pengeluaran Bulanan
+            </button>
+            <button
+              type="button"
+              onClick={() => setPocketType('saving')}
+              className={`rounded-lg py-2 text-xs font-semibold transition ${
+                pocketType === 'saving'
+                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+              }`}
+            >
+              Target Tabungan
+            </button>
+          </div>
+        </div>
+
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
             Nama Pocket <span className="text-rose-500">*</span>
@@ -69,46 +100,57 @@ export default function AddPocketModal({ onClose, onAdd }) {
           />
         </div>
 
-        <div>
-          <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Alokasi Budget / Bulan (Rp)
-          </label>
-          <input
-            className={inputClass}
-            type="text"
-            inputMode="numeric"
-            placeholder="Nominal alokasi bulanan (opsional)"
-            value={budget}
-            onChange={(e) => setBudget(e.target.value)}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {pocketType === 'expense' ? (
           <div>
             <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Target Tabungan (Rp)
+              Alokasi Budget / Bulan (Rp)
             </label>
             <input
               className={inputClass}
               type="text"
               inputMode="numeric"
-              placeholder="Target tabungan (opsional)"
-              value={goal}
-              onChange={(e) => setGoal(e.target.value)}
+              placeholder="Nominal alokasi bulanan (opsional)"
+              value={budget}
+              onChange={(e) => setBudget(formatNumberInput(e.target.value))}
             />
+            {budget && toInt(budget) > 0 && (
+              <p className="mt-1 text-xs font-semibold text-teal-600 dark:text-teal-400">{formatRupiah(toInt(budget))}</p>
+            )}
+            <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+              Uang akan dialokasikan tiap bulan dari Uang Bebas untuk belanja pos ini.
+            </p>
           </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Target Tercapai Pada
-            </label>
-            <input
-              className={inputClass}
-              type="date"
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-            />
+        ) : (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Target Tabungan (Rp)
+              </label>
+              <input
+                className={inputClass}
+                type="text"
+                inputMode="numeric"
+                placeholder="Target tabungan (opsional)"
+                value={goal}
+                onChange={(e) => setGoal(formatNumberInput(e.target.value))}
+              />
+              {goal && toInt(goal) > 0 && (
+                <p className="mt-1 text-xs font-semibold text-teal-600 dark:text-teal-400">{formatRupiah(toInt(goal))}</p>
+              )}
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Target Tercapai Pada
+              </label>
+              <input
+                className={inputClass}
+                type="date"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div>
           <label className="mb-2 block text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -129,4 +171,3 @@ export default function AddPocketModal({ onClose, onAdd }) {
     </Modal>
   )
 }
-

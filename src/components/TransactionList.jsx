@@ -21,13 +21,11 @@ function downloadCSV(filename, rows) {
 }
 
 export default function TransactionList({ onEditTx }) {
-  const { months, currentMonthId, removeTransaction, addTransaction, notify } = useStore()
-  const { wallets } = useStore()
+  const { months, currentMonthId, switchMonth, removeTransaction, addTransaction, notify, wallets } = useStore()
 
   const monthIds = Object.keys(months).sort().reverse()
-  const [viewMonth, setViewMonth] = useState(currentMonthId)
-  const [globalSearch, setGlobalSearch] = useState('')
-  const month = months[viewMonth] || { id: viewMonth }
+  const [searchScope, setSearchScope] = useState('month') // 'month' | 'all'
+  const month = months[currentMonthId] || { id: currentMonthId }
 
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('all')
@@ -44,14 +42,13 @@ export default function TransactionList({ onEditTx }) {
   const sentinelRef = useRef(null)
 
   useEffect(() => {
-    setViewMonth(currentMonthId)
     setFromDate('')
     setToDate('')
   }, [currentMonthId])
 
   useEffect(() => {
     setVisibleCount(30)
-  }, [viewMonth, search, filterCategory, filterWallet, fromDate, toDate])
+  }, [currentMonthId, search, filterCategory, filterWallet, fromDate, toDate])
 
 
   const txs = month.transactions || []
@@ -129,7 +126,7 @@ export default function TransactionList({ onEditTx }) {
           continue
         }
         seen.add(key)
-        await addTransaction(viewMonth, {
+        await addTransaction(currentMonthId, {
           date: row.date,
           type: row.type,
           amount: row.amount,
@@ -149,10 +146,12 @@ export default function TransactionList({ onEditTx }) {
     }
   }
 
-  // pencarian lintas bulan: cari di semua bulan jika globalSearch diisi
+  const isGlobal = searchScope === 'all' && search.trim() !== ''
+
+  // pencarian lintas bulan jika mode Semua Bulan aktif
   const globalResults = useMemo(() => {
-    const q = globalSearch.trim().toLowerCase()
-    if (!q) return []
+    if (!isGlobal) return []
+    const q = search.trim().toLowerCase()
     const out = []
     for (const mId of Object.keys(months)) {
       for (const t of months[mId]?.transactions || []) {
@@ -160,7 +159,7 @@ export default function TransactionList({ onEditTx }) {
       }
     }
     return out.sort((a, b) => (a.tx.date === b.tx.date ? b.tx.createdAt - a.tx.createdAt : a.tx.date < b.tx.date ? 1 : -1))
-  }, [globalSearch, months])
+  }, [isGlobal, search, months])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -230,27 +229,53 @@ export default function TransactionList({ onEditTx }) {
     <div className="space-y-4">
       {/* Filters */}
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Lihat bulan</label>
-          <select className={input + ' w-52'} value={viewMonth} onChange={(e) => setViewMonth(e.target.value)} aria-label="Bulan transaksi">
-            {monthIds.map((m) => (
-              <option key={m} value={m}>
-                {labelOf(m)}
-              </option>
-            ))}
-          </select>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Bulan:</label>
+            <select
+              className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              value={currentMonthId}
+              onChange={(e) => switchMonth(e.target.value)}
+              aria-label="Bulan transaksi"
+            >
+              {monthIds.map((m) => (
+                <option key={m} value={m}>
+                  {labelOf(m)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="inline-flex rounded-xl border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-700 dark:bg-slate-800">
+            <button
+              type="button"
+              onClick={() => setSearchScope('month')}
+              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                searchScope === 'month'
+                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+              }`}
+            >
+              Bulan Ini
+            </button>
+            <button
+              type="button"
+              onClick={() => setSearchScope('all')}
+              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                searchScope === 'all'
+                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+              }`}
+            >
+              Semua Bulan
+            </button>
+          </div>
         </div>
-        <input
-          className={input + ' mb-3'}
-          placeholder="Cari di semua bulan…"
-          value={globalSearch}
-          onChange={(e) => setGlobalSearch(e.target.value)}
-          aria-label="Cari semua bulan"
-        />
+
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           <input
             className={input}
-            placeholder="Cari keterangan…"
+            placeholder={searchScope === 'all' ? 'Cari keterangan di semua bulan…' : 'Cari keterangan…'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -281,7 +306,7 @@ export default function TransactionList({ onEditTx }) {
               setFromDate(from)
               setToDate(to)
             }}
-            defaultMonth={viewMonth}
+            defaultMonth={currentMonthId}
           />
         </div>
 
@@ -337,9 +362,9 @@ export default function TransactionList({ onEditTx }) {
       </section>
 
       {/* Cari global — hasil dari semua bulan */}
-      {globalSearch.trim() && (
+      {isGlobal && (
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-          <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Hasil pencarian "{globalSearch.trim()}"</h3>
+          <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Hasil pencarian "{search.trim()}" (Semua Bulan)</h3>
           {globalResults.length === 0 ? (
             <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Tidak ditemukan.</p>
           ) : (

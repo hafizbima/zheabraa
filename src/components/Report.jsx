@@ -36,9 +36,23 @@ export default function Report() {
 
   return (
     <div className="space-y-5 print-full">
-      <header>
-        <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white">Laporan {labelOf(month.id)}</h2>
-        <p className="text-xs text-slate-400">Dibuat {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+      <header className="flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white">Laporan {labelOf(month.id)}</h2>
+          <p className="text-xs text-slate-400">Dibuat {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        </div>
+        <button
+          onClick={() => window.print()}
+          className="no-print inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-tactile-sm transition hover:bg-slate-50 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          aria-label="Cetak laporan"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 9V3h12v6" />
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+            <rect x="6" y="14" width="12" height="8" rx="1" />
+          </svg>
+          <span>Cetak</span>
+        </button>
       </header>
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-3">

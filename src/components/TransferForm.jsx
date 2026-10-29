@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Modal from './Modal.jsx'
 import { useStore } from '../store/StoreContext.jsx'
-import { formatRupiah, toInt } from '../lib/money.js'
+import { formatRupiah, toInt, formatNumberInput } from '../lib/money.js'
 import { todayISO } from '../lib/dates.js'
 import { walletBalance, allTransactions } from '../lib/calc.js'
 import { haptic } from '../lib/haptics.js'
@@ -83,7 +83,7 @@ export default function TransferForm({ monthId, onClose }) {
             className={input}
             placeholder="0"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => setAmount(formatNumberInput(e.target.value))}
             autoFocus
           />
           {amt > 0 && <p className="mt-1 text-xs text-slate-400">{formatRupiah(amt)}</p>}

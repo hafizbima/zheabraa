@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Modal from './Modal.jsx'
 import { useStore } from '../store/StoreContext.jsx'
-import { formatRupiah, toInt } from '../lib/money.js'
+import { formatRupiah, toInt, formatNumberInput } from '../lib/money.js'
 import { categoryLeft } from '../lib/calc.js'
 import { btn } from '../lib/buttons.js'
 
@@ -75,7 +75,7 @@ export default function ReallocateForm({ onClose }) {
 
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Nominal (Rp)</label>
-          <input type="text" inputMode="numeric" className={input} placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} autoFocus />
+          <input type="text" inputMode="numeric" className={input} placeholder="0" value={amount} onChange={(e) => setAmount(formatNumberInput(e.target.value))} autoFocus />
           {amt > 0 && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{formatRupiah(amt)}</p>}
         </div>
 

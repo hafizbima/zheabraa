@@ -3,7 +3,7 @@ import Modal from './Modal.jsx'
 import Confirm from './Confirm.jsx'
 import { useStore } from '../store/StoreContext.jsx'
 import { CATEGORY_COLORS } from '../lib/palette.js'
-import { formatRupiah, toInt } from '../lib/money.js'
+import { formatRupiah, toInt, formatNumberInput } from '../lib/money.js'
 import { categoryStatus } from '../lib/calc.js'
 import { btn } from '../lib/buttons.js'
 import EmptyState from './EmptyState.jsx'
@@ -40,6 +40,12 @@ export default function CategoryManager({ onClose }) {
   const [overId, setOverId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false)
+
+  const handleClose = () => {
+    if (dirtyCount > 0) setShowDiscardConfirm(true)
+    else onClose()
+  }
 
   const cats = month?.categories || []
   const txs = month?.transactions || []
@@ -52,7 +58,7 @@ export default function CategoryManager({ onClose }) {
       for (const cat of cats) {
         next[cat.id] =
           prev[cat.id] ||
-           { id: cat.id, name: cat.name, budgetAmount: cat.budgetAmount, color: cat.color, goalAmount: cat.goalAmount || 0, goalDeadline: cat.goalDeadline || '' }
+           { id: cat.id, name: cat.name, budgetAmount: cat.budgetAmount ? formatNumberInput(cat.budgetAmount) : '', color: cat.color, goalAmount: cat.goalAmount ? formatNumberInput(cat.goalAmount) : '', goalDeadline: cat.goalDeadline || '' }
       }
       return next
     })
@@ -81,9 +87,9 @@ export default function CategoryManager({ onClose }) {
       if (
         d &&
         (d.name !== cat.name ||
-          d.budgetAmount !== cat.budgetAmount ||
+          toInt(d.budgetAmount) !== cat.budgetAmount ||
           d.color !== cat.color ||
-          (d.goalAmount || 0) !== (cat.goalAmount || 0) ||
+          toInt(d.goalAmount) !== (cat.goalAmount || 0) ||
           (d.goalDeadline || '') !== (cat.goalDeadline || ''))
       )
         n += 1
@@ -122,10 +128,10 @@ export default function CategoryManager({ onClose }) {
     try {
       for (const cat of cats) {
         const d = drafts[cat.id]
-        if (d && (d.name !== cat.name || d.budgetAmount !== cat.budgetAmount || d.color !== cat.color || (d.goalAmount || 0) !== (cat.goalAmount || 0) || (d.goalDeadline || '') !== (cat.goalDeadline || ''))) {
+        if (d && (d.name !== cat.name || toInt(d.budgetAmount) !== cat.budgetAmount || d.color !== cat.color || toInt(d.goalAmount) !== (cat.goalAmount || 0) || (d.goalDeadline || '') !== (cat.goalDeadline || ''))) {
           await updateCategory(currentMonthId, cat.id, {
             name: d.name,
-            budgetAmount: d.budgetAmount,
+            budgetAmount: toInt(d.budgetAmount),
             color: d.color,
             goalAmount: toInt(d.goalAmount),
             goalDeadline: d.goalDeadline || null,
@@ -166,7 +172,7 @@ export default function CategoryManager({ onClose }) {
   return (
     <Modal
       title="Kelola Pocket"
-      onClose={onClose}
+      onClose={handleClose}
       wide
       footer={
         <div className="flex items-center justify-between gap-3">
@@ -192,11 +198,11 @@ export default function CategoryManager({ onClose }) {
           </div>
           <div>
             <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Budget / bulan (Rp)</p>
-            <input className={input} type="text" min="0" placeholder="Berapa yang dialokasikan tiap bulan" value={budget} onChange={(e) => setBudget(e.target.value)} />
+            <input className={input} type="text" min="0" placeholder="Berapa yang dialokasikan tiap bulan" value={budget} onChange={(e) => setBudget(formatNumberInput(e.target.value))} />
           </div>
           <div>
             <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Target tabungan (Rp)</p>
-            <input className={input} type="text" min="0" placeholder="Jumlah yang ingin dikumpulkan" value={goal} onChange={(e) => setGoal(e.target.value)} />
+            <input className={input} type="text" min="0" placeholder="Jumlah yang ingin dikumpulkan" value={goal} onChange={(e) => setGoal(formatNumberInput(e.target.value))} />
           </div>
           <div>
             <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Target tercapai pada</p>
@@ -265,8 +271,8 @@ export default function CategoryManager({ onClose }) {
                   className={input + ' text-right'}
                   type="text"
                   inputMode="numeric"
-                  value={d.budgetAmount}
-                  onChange={(e) => updateDraft(cat.id, { budgetAmount: toInt(e.target.value) })}
+                  value={d.budgetAmount ?? ''}
+                  onChange={(e) => updateDraft(cat.id, { budgetAmount: formatNumberInput(e.target.value) })}
                   aria-label="Budget"
                 />
               </div>
@@ -286,8 +292,8 @@ export default function CategoryManager({ onClose }) {
                   className={input + ' text-right'}
                   type="text"
                   inputMode="numeric"
-                  value={d.goalAmount || 0}
-                  onChange={(e) => updateDraft(cat.id, { goalAmount: toInt(e.target.value) })}
+                  value={d.goalAmount ?? ''}
+                  onChange={(e) => updateDraft(cat.id, { goalAmount: formatNumberInput(e.target.value) })}
                   aria-label="Target tabungan"
                   placeholder="Target"
                 />
@@ -317,6 +323,20 @@ export default function CategoryManager({ onClose }) {
           <EmptyState title="Belum ada pocket" sub="Tambahkan pocket untuk membagi uang jadi pos pengeluaran & tabungan." />
         )}
       </div>
+
+      {showDiscardConfirm && (
+        <Confirm
+          title="Perubahan Belum Disimpan"
+          message={`Ada ${dirtyCount} perubahan pocket yang belum disimpan. Yakin ingin membuang perubahan dan menutup?`}
+          confirmText="Buang Perubahan"
+          danger={true}
+          onCancel={() => setShowDiscardConfirm(false)}
+          onConfirm={() => {
+            setShowDiscardConfirm(false)
+            onClose()
+          }}
+        />
+      )}
 
       {confirmId && (
         <Confirm

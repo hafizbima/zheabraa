@@ -144,9 +144,18 @@ function Shell() {
         <div
           role="alert"
           onClick={() => notify('')}
-          className="fixed left-1/2 top-4 z-[70] w-max max-w-[90vw] -translate-x-1/2 cursor-pointer rounded-full border-2 border-rose-500 bg-white px-4 py-2 text-sm font-medium text-rose-500 shadow-lg dark:border-rose-500 dark:bg-slate-900"
+          className={`fixed left-1/2 top-4 z-[70] flex w-max max-w-[90vw] -translate-x-1/2 cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium shadow-tactile-lg transition-transform active:scale-95 ${
+            (typeof notice === 'object' ? notice.type : 'error') === 'error'
+              ? 'border-rose-500/80 bg-white text-rose-600 dark:border-rose-500/60 dark:bg-slate-900 dark:text-rose-400'
+              : 'border-teal-500/80 bg-white text-teal-700 dark:border-teal-500/60 dark:bg-slate-900 dark:text-teal-300'
+          }`}
         >
-          {notice}
+          <span
+            className={`h-2 w-2 rounded-full ${
+              (typeof notice === 'object' ? notice.type : 'error') === 'error' ? 'bg-rose-500' : 'bg-teal-500'
+            }`}
+          />
+          <span>{typeof notice === 'object' ? notice.text : notice}</span>
         </div>
       )}
     </div>

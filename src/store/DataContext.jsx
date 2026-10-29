@@ -13,8 +13,28 @@ export function DataProvider({ children }) {
   const [budgetTemplates, setBudgetTemplates] = useState([])
   const [notice, setNotice] = useState(null)
 
-  const notify = useCallback((msg) => {
-    setNotice(msg)
+  const notify = useCallback((msg, type = null) => {
+    if (!msg) {
+      setNotice(null)
+      return
+    }
+    let resolvedType = type
+    if (!resolvedType) {
+      const lower = String(msg).toLowerCase()
+      if (
+        lower.includes('gagal') ||
+        lower.includes('error') ||
+        lower.includes('salah') ||
+        lower.includes('tidak valid') ||
+        lower.includes('ditolak') ||
+        lower.includes('melebihi')
+      ) {
+        resolvedType = 'error'
+      } else {
+        resolvedType = 'success'
+      }
+    }
+    setNotice({ text: String(msg), type: resolvedType })
     window.clearTimeout(notify._t)
     notify._t = window.setTimeout(() => setNotice(null), 4000)
   }, [])
@@ -22,7 +42,7 @@ export function DataProvider({ children }) {
   const report = useCallback(
     (e, fallback) => {
       console.error(e)
-      notify(fallback)
+      notify(fallback, 'error')
     },
     [notify],
   )

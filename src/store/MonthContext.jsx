@@ -63,12 +63,14 @@ export function MonthProvider({ children }) {
     [user, mutate],
   )
 
-  const startNewMonth = useCallback((budgetTemplate = null) => {
+  const startNewMonth = useCallback((optionsOrTemplate = null) => {
     if (!user) return
     const cur = months[currentMonthId]
     const nextId = addMonths(currentMonthId, 1)
     const carry = cur ? carryOverAmount(cur) : 0
     const txs = cur?.transactions || []
+    const budgetTemplate = optionsOrTemplate?.categories ? optionsOrTemplate : null
+    const copyBudgets = optionsOrTemplate?.copyBudgets !== false
     const cats = budgetTemplate?.categories?.length
       ? budgetTemplate.categories.map((c, order) => ({
           id: uid(),
@@ -85,7 +87,7 @@ export function MonthProvider({ children }) {
           const sisa = Math.max(0, (c.budgetAmount || 0) - Math.max(0, categoryUsed(c.id, txs)))
           return {
             ...c,
-            budgetAmount: 0,
+            budgetAmount: copyBudgets ? (c.budgetAmount || 0) : 0,
             savedAmount: (c.goalAmount > 0 ? (c.savedAmount || 0) + sisa : c.savedAmount || 0),
           }
         })

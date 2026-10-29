@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
-import { formatRupiah, toInt } from '../lib/money.js'
+import { formatRupiah, toInt, formatNumberInput } from '../lib/money.js'
 import { monthIdOf, labelOf } from '../lib/dates.js'
 import {
   totalInflow,
@@ -87,7 +87,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   }, [])
 
   useEffect(() => {
-    setCarryDraft(month ? String(month.carryOver ?? 0) : '')
+    setCarryDraft(month && month.carryOver ? formatNumberInput(month.carryOver) : '')
   }, [month?.carryOver])
 
   useEffect(() => {
@@ -141,7 +141,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const upcomingBills = templates.filter((t) => t.type === 'bill' && t.active !== false)
 
   const saveIncome = () => {
-    const amount = Math.round(Number(incomeAmount) || 0)
+    const amount = toInt(incomeAmount)
     if (editingIncome) {
       updateIncome(currentMonthId, editingIncome.id, { label: incomeLabel || 'Pemasukan', amount })
     } else {
@@ -156,11 +156,11 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const editIncome = (inc) => {
     setEditingIncome(inc)
     setIncomeLabel(inc.description)
-    setIncomeAmount(String(inc.amount || ''))
+    setIncomeAmount(formatNumberInput(inc.amount || ''))
   }
 
   const commitCarry = () => {
-    setCarryOver(currentMonthId, Math.round(Number(carryDraft) || 0))
+    setCarryOver(currentMonthId, toInt(carryDraft))
   }
 
   const commitNote = () => {
@@ -173,6 +173,91 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   return (
     <>
       <div className="space-y-5">
+      {/* Panduan Onboarding 3 Langkah */}
+      {inflow === 0 && allocated === 0 && (
+        <section className="relative overflow-hidden rounded-3xl border border-teal-500/30 bg-teal-50/60 p-5 shadow-tactile-sm dark:border-teal-500/30 dark:bg-teal-950/30">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-600 text-xs font-bold text-white">
+              i
+            </span>
+            <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
+              Mulai Budgeting dalam 3 Langkah
+            </h3>
+          </div>
+          <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+            Agar keuangan bulan ini tertata rapi, ikuti alur metode Pocket berikut:
+          </p>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="flex flex-col justify-between rounded-2xl border border-teal-200/80 bg-white p-4 shadow-sm dark:border-teal-800/60 dark:bg-slate-900">
+              <div>
+                <span className="inline-block rounded-lg bg-teal-100 px-2 py-0.5 text-xs font-bold text-teal-800 dark:bg-teal-900/60 dark:text-teal-200">
+                  Langkah 1
+                </span>
+                <h4 className="mt-2 text-sm font-bold text-slate-900 dark:text-white">Isi Pemasukan</h4>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Catat gaji atau modal masuk sebagai dasar budget bulan ini.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  haptic.tap()
+                  onNewTx({ type: 'income' })
+                }}
+                className="mt-3.5 inline-flex items-center justify-center rounded-xl bg-teal-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-700 active:scale-95"
+              >
+                + Isi Pemasukan
+              </button>
+            </div>
+
+            <div className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div>
+                <span className="inline-block rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  Langkah 2
+                </span>
+                <h4 className="mt-2 text-sm font-bold text-slate-900 dark:text-white">Bagi ke Pocket</h4>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Alokasikan budget untuk kebutuhan bulanan seperti makan, transport, dll.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  haptic.tap()
+                  onManageCategories()
+                }}
+                className="mt-3.5 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm transition hover:bg-slate-100 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              >
+                Atur Budget Pocket
+              </button>
+            </div>
+
+            <div className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div>
+                <span className="inline-block rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  Langkah 3
+                </span>
+                <h4 className="mt-2 text-sm font-bold text-slate-900 dark:text-white">Catat Pengeluaran</h4>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Catat transaksi harian agar sisa uang selalu terkontrol secara real-time.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  haptic.tap()
+                  onNewTx(null)
+                }}
+                className="mt-3.5 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm transition hover:bg-slate-100 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              >
+                Catat Transaksi
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Hero Card: Sisa Uang Bebas */}
       <section className="relative overflow-hidden rounded-3xl border border-teal-500/20 bg-gradient-to-br from-teal-50/70 via-white to-white p-6 shadow-tactile-sm transition-colors duration-200 dark:border-teal-500/25 dark:bg-gradient-to-br dark:from-teal-950/30 dark:via-slate-900 dark:to-slate-900">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -195,20 +280,34 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              haptic.tap()
-              onNewTx(null)
-            }}
-            className="self-start sm:self-auto inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white shadow-tactile-sm transition hover:bg-slate-800 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-500"
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Tambah Pengeluaran
-          </button>
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            {inflow === 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  haptic.tap()
+                  onNewTx({ type: 'income' })
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-teal-600 bg-teal-50 px-3.5 py-2.5 text-xs font-semibold text-teal-700 shadow-tactile-sm transition hover:bg-teal-100 active:scale-95 dark:border-teal-400 dark:bg-teal-950/60 dark:text-teal-300 dark:hover:bg-teal-900/60"
+              >
+                + Isi Pemasukan Dulu
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                haptic.tap()
+                onNewTx(null)
+              }}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white shadow-tactile-sm transition hover:bg-slate-800 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-500"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Tambah Pengeluaran
+            </button>
+          </div>
         </div>
 
         {/* Progress Bar Terpakai / Total Pool */}
@@ -248,7 +347,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Card label="Total Pemasukan" value={formatRupiah(inflow)} accent="text-teal-600 dark:text-teal-400" />
         <Card label="Teralokasi ke Pocket" value={formatRupiah(allocated)} sub={`uang bebas ${formatRupiah(pool)}`} accent="text-slate-800 dark:text-slate-200" />
-        <Card label="Sisa Uang Bebas" value={formatRupiah(left)} sub={`terpakai ${formatRupiah(freeSpent)}`} accent={left < 0 ? 'text-rose-500' : 'text-slate-800 dark:text-slate-200'} />
+        <Card label="Saldo Rekening" value={formatRupiah(primaryBalance)} sub={primary ? primary.name : 'Rekening'} accent={primaryBalance < 0 ? 'text-rose-500' : 'text-slate-800 dark:text-slate-200'} />
       </section>
 
       {/* Batas rata-rata pengeluaran dari uang bebas sampai akhir bulan */}
@@ -276,6 +375,80 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       </section>
 
       <QuickAdd categories={month.categories || []} onPick={(prefill) => { haptic.tap(); onNewTx(prefill) }} />
+
+      {/* Pocket */}
+      <section className="space-y-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          <div>
+            <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white">Pocket</h3>
+            {primary && <p className="text-[11px] text-slate-400">sekat virtual dari {primary.name}</p>}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => {
+                haptic.tap()
+                setAddPocketOpen(true)
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-tactile-sm transition hover:bg-teal-500 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-500"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Tambah Pocket</span>
+            </button>
+            <button onClick={onManageCategories} className={btn.subtle}>
+              Kelola Pocket
+            </button>
+            {(month.categories || []).length > 0 && (
+              <button onClick={() => setReallocOpen(true)} className={btn.subtle}>
+                Re-alokasi
+              </button>
+            )}
+            <button onClick={onManageBudgetTemplates} className={btn.subtle}>
+              Template Budget
+            </button>
+          </div>
+        </div>
+        {allocated > inflow && (
+          <p className="rounded-xl border border-amber-200/80 bg-amber-50 px-3.5 py-2.5 text-xs font-medium text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+            Alokasi pocket ({formatRupiah(allocated)}) melebihi pemasukan ({formatRupiah(inflow)}). Kurangi budget atau tambah pemasukan.
+          </p>
+        )}
+        {(month.categories || []).length > 0 && (
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+            {(month.categories || []).map((cat) => (
+                <PocketCard
+                 key={cat.id}
+                 cat={cat}
+                 txs={txs}
+                 currentMonthId={currentMonthId}
+                onClick={() => onNewTx({ categoryId: cat.id })}
+                onSave={(c) => setSaveModal({ cat: c, mode: 'nabung' })}
+                onUse={(c) => setSaveModal({ cat: c, mode: 'pakai' })}
+                onDelete={(c) => setDeleteConfirmCat(c)}
+              />
+            ))}
+          </div>
+        )}
+        {(month.categories || []).length === 0 && (
+          <EmptyState
+            title="Belum ada pocket"
+            sub="Tambahkan pocket baru untuk membagi alokasi belanja dan tabungan."
+            action={
+              <button
+                onClick={() => {
+                  haptic.tap()
+                  setAddPocketOpen(true)
+                }}
+                className={btn.primary}
+              >
+                + Tambah Pocket
+              </button>
+            }
+          />
+        )}
+      </section>
 
       {/* Tagihan bulan ini (template tipe bill) */}
       {upcomingBills.length > 0 && (
@@ -391,7 +564,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                 inputMode="numeric"
                 className={input + ' w-32 text-right'}
                 value={carryDraft}
-                onChange={(e) => setCarryDraft(e.target.value)}
+                onChange={(e) => setCarryDraft(formatNumberInput(e.target.value))}
                 onBlur={commitCarry}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') e.currentTarget.blur()
@@ -405,7 +578,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-tactile-sm dark:border-slate-700 dark:bg-slate-800">
               <div className="flex gap-2">
                 <input className={input + ' flex-1'} value={incomeLabel} onChange={(e) => setIncomeLabel(e.target.value)} placeholder="Label (mis. Gaji, Bonus)" />
-                <input className={input + ' w-36'} type="text" inputMode="numeric" value={incomeAmount} onChange={(e) => setIncomeAmount(e.target.value)} placeholder="Nominal" />
+                <input className={input + ' w-36 text-right'} type="text" inputMode="numeric" value={incomeAmount} onChange={(e) => setIncomeAmount(formatNumberInput(e.target.value))} placeholder="Nominal" />
               </div>
               <div className="mt-2.5 flex justify-end gap-2">
                 <button onClick={() => setEditingIncome(null)} className={btn.neutral}>Batal</button>
@@ -418,104 +591,52 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
         </div>
       </section>
 
-      {/* Catatan bulanan */}
+      {/* Rekening / Dompet */}
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-        <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Catatan Bulan Ini</h3>
-        <textarea
-          className={input + ' mt-2.5 min-h-20 w-full resize-y'}
-          placeholder="Tulis catatan keuangan bulan ini…"
-          value={noteDraft}
-          onChange={(e) => setNoteDraft(e.target.value)}
-          onBlur={commitNote}
-        />
-        <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">Tersimpan otomatis saat keluar dari kolom.</p>
-      </section>
-
-      {/* Alokasi chart */}
-      {donutData.length > 0 && (
-        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="mb-3">
-            <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Alokasi Pocket</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Berapa porsi budget yang kamu siapkan untuk tiap kebutuhan?</p>
-          </div>
-          <DonutChart data={donutData} totalLabel="Teralokasi" />
-        </section>
-      )}
-
-      {/* Pocket */}
-      <section className="space-y-3.5">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          <div>
-            <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white">Pocket</h3>
-            {primary && <p className="text-[11px] text-slate-400">sekat virtual dari {primary.name}</p>}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => {
-                haptic.tap()
-                setAddPocketOpen(true)
-              }}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-tactile-sm transition hover:bg-teal-500 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-500"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span>Tambah Pocket</span>
+        <div className="flex items-center justify-between">
+          <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">{wallets.length === 1 ? 'Rekening Utama' : 'Dompet'}</h3>
+          {wallets.length > 1 && (
+            <button onClick={onTransfer} className={btn.subtle}>
+              Transfer
             </button>
-            <button onClick={onManageCategories} className={btn.subtle}>
-              Kelola Pocket
-            </button>
-            {(month.categories || []).length > 0 && (
-              <button onClick={() => setReallocOpen(true)} className={btn.subtle}>
-                Re-alokasi
-              </button>
-            )}
-            <button onClick={onManageRecurring} className={btn.subtle}>
-              Transaksi Berulang
-            </button>
-            <button onClick={onManageBudgetTemplates} className={btn.subtle}>
-              Template Budget
-            </button>
-          </div>
+          )}
         </div>
-        {allocated > inflow && (
-          <p className="rounded-xl border border-amber-200/80 bg-amber-50 px-3.5 py-2.5 text-xs font-medium text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-            Alokasi pocket ({formatRupiah(allocated)}) melebihi pemasukan ({formatRupiah(inflow)}). Kurangi budget atau tambah pemasukan.
-          </p>
-        )}
-        {(month.categories || []).length > 0 && (
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-            {(month.categories || []).map((cat) => (
-                <PocketCard
-                 key={cat.id}
-                 cat={cat}
-                 txs={txs}
-                 currentMonthId={currentMonthId}
-                onClick={() => onNewTx({ categoryId: cat.id })}
-                onSave={(c) => setSaveModal({ cat: c, mode: 'nabung' })}
-                onUse={(c) => setSaveModal({ cat: c, mode: 'pakai' })}
-                onDelete={(c) => setDeleteConfirmCat(c)}
-              />
-            ))}
+        {wallets.length === 1 && primary ? (
+          <div className="mt-3.5 rounded-2xl border border-teal-500/20 bg-gradient-to-br from-teal-500/10 via-slate-50 to-white p-5 dark:border-teal-500/20 dark:from-teal-950/30 dark:via-slate-900 dark:to-slate-900">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="h-3 w-3 rounded-full" style={{ backgroundColor: primary.color }} />
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">{primary.name}</span>
+              <span className="rounded-full bg-slate-200/70 px-2.5 py-0.5 text-[10px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">sekat virtual</span>
+            </div>
+            <p className="mt-3 font-sans text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">{formatRupiah(primaryBalance)}</p>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Total uang di rekening (gabungan Uang Bebas & seluruh Pocket)</p>
+            <div className="mt-4 grid grid-cols-2 gap-2.5 text-xs">
+              <div className="rounded-xl border border-slate-200/60 bg-white/80 p-3 shadow-tactile-sm dark:border-slate-700/60 dark:bg-slate-800/60">
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Teralokasi</p>
+                <p className="mt-0.5 font-sans text-sm font-bold text-slate-900 dark:text-white">{formatRupiah(allocated)}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200/60 bg-white/80 p-3 shadow-tactile-sm dark:border-slate-700/60 dark:bg-slate-800/60">
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Uang Bebas</p>
+                <p className="mt-0.5 font-sans text-sm font-bold text-slate-900 dark:text-white">{formatRupiah(pool)}</p>
+              </div>
+            </div>
           </div>
-        )}
-        {(month.categories || []).length === 0 && (
-          <EmptyState
-            title="Belum ada pocket"
-            sub="Tambahkan pocket baru untuk membagi alokasi belanja dan tabungan."
-            action={
-              <button
-                onClick={() => {
-                  haptic.tap()
-                  setAddPocketOpen(true)
-                }}
-                className={btn.primary}
-              >
-                + Tambah Pocket
-              </button>
-            }
-          />
+        ) : (
+          <div className="mt-3.5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {wallets.map((w) => (
+              <div key={w.id} className="rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40">
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: w.color }} />
+                  <span className="truncate text-sm font-semibold text-slate-900 dark:text-white">{w.name}</span>
+                </div>
+                <p className="mt-2 font-sans text-base font-bold text-slate-900 dark:text-white">
+                  {formatRupiah(walletBalance(w, allTransactions(months)))}
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">saldo saat ini</p>
+              </div>
+            ))}
+            {wallets.length === 0 && <p className="col-span-full text-sm text-slate-500 dark:text-slate-400">Belum ada dompet.</p>}
+          </div>
         )}
       </section>
 
@@ -556,55 +677,29 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
         </div>
       </section>
 
-      {/* Rekening / Dompet */}
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center justify-between">
-          <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">{wallets.length === 1 ? 'Rekening Utama' : 'Dompet'}</h3>
-          {wallets.length > 1 && (
-            <button onClick={onTransfer} className={btn.subtle}>
-              Transfer
-            </button>
-          )}
-        </div>
-        {wallets.length === 1 && primary ? (
-          <div className="mt-3.5 rounded-2xl border border-teal-500/20 bg-gradient-to-br from-teal-500/10 via-slate-50 to-white p-5 dark:border-teal-500/20 dark:from-teal-950/30 dark:via-slate-900 dark:to-slate-900">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="h-3 w-3 rounded-full" style={{ backgroundColor: primary.color }} />
-              <span className="text-sm font-semibold text-slate-900 dark:text-white">{primary.name}</span>
-              <span className="rounded-full bg-slate-200/70 px-2.5 py-0.5 text-[10px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">sekat virtual</span>
-            </div>
-            <p className="mt-3 font-sans text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">{formatRupiah(primaryBalance)}</p>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">saldo saat ini (Uang Bebas = A langsung, Pocket = child A)</p>
-            <div className="mt-4 grid grid-cols-2 gap-2.5 text-xs">
-              <div className="rounded-xl border border-slate-200/60 bg-white/80 p-3 shadow-tactile-sm dark:border-slate-700/60 dark:bg-slate-800/60">
-                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Teralokasi</p>
-                <p className="mt-0.5 font-sans text-sm font-bold text-slate-900 dark:text-white">{formatRupiah(allocated)}</p>
-              </div>
-              <div className="rounded-xl border border-slate-200/60 bg-white/80 p-3 shadow-tactile-sm dark:border-slate-700/60 dark:bg-slate-800/60">
-                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Uang Bebas</p>
-                <p className="mt-0.5 font-sans text-sm font-bold text-slate-900 dark:text-white">{formatRupiah(pool)}</p>
-              </div>
-            </div>
+      {/* Alokasi chart */}
+      {donutData.length > 0 && (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-3">
+            <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Alokasi Pocket</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Berapa porsi budget yang kamu siapkan untuk tiap kebutuhan?</p>
           </div>
-        ) : (
-          <div className="mt-3.5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {wallets.map((w) => (
-              <div key={w.id} className="rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40">
-                <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: w.color }} />
-                  <span className="truncate text-sm font-semibold text-slate-900 dark:text-white">{w.name}</span>
-                </div>
-                <p className="mt-2 font-sans text-base font-bold text-slate-900 dark:text-white">
-                  {formatRupiah(walletBalance(w, allTransactions(months)))}
-                </p>
-                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">saldo saat ini</p>
-              </div>
-            ))}
-            {wallets.length === 0 && <p className="col-span-full text-sm text-slate-500 dark:text-slate-400">Belum ada dompet.</p>}
-          </div>
-        )}
-      </section>
+          <DonutChart data={donutData} totalLabel="Teralokasi" />
+        </section>
+      )}
 
+      {/* Catatan bulanan */}
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+        <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Catatan Bulan Ini</h3>
+        <textarea
+          className={input + ' mt-2.5 min-h-20 w-full resize-y'}
+          placeholder="Tulis catatan keuangan bulan ini…"
+          value={noteDraft}
+          onChange={(e) => setNoteDraft(e.target.value)}
+          onBlur={commitNote}
+        />
+        <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">Tersimpan otomatis saat keluar dari kolom.</p>
+      </section>
       <div className="h-4" />
     </div>
 

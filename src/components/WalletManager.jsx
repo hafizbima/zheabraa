@@ -3,7 +3,7 @@ import Modal from './Modal.jsx'
 import Confirm from './Confirm.jsx'
 import { useStore } from '../store/StoreContext.jsx'
 import { WALLET_COLORS } from '../lib/palette.js'
-import { formatRupiah, toInt } from '../lib/money.js'
+import { formatRupiah, toInt, formatNumberInput } from '../lib/money.js'
 import { walletBalance, singleWalletBalance, allTransactions } from '../lib/calc.js'
 import { btn } from '../lib/buttons.js'
 import EmptyState from './EmptyState.jsx'
@@ -23,6 +23,12 @@ export default function WalletManager({ onClose }) {
   const [justSaved, setJustSaved] = useState(false)
   const [adjustId, setAdjustId] = useState(null)
   const [adjustInput, setAdjustInput] = useState('')
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false)
+
+  const handleClose = () => {
+    if (dirtyCount > 0) setShowDiscardConfirm(true)
+    else onClose()
+  }
 
   const allTx = allTransactions(months)
   const input =
@@ -32,7 +38,7 @@ export default function WalletManager({ onClose }) {
     setDrafts((prev) => {
       const next = {}
       for (const w of wallets) {
-        next[w.id] = prev[w.id] || { id: w.id, name: w.name, color: w.color, openingBalance: w.openingBalance }
+        next[w.id] = prev[w.id] || { id: w.id, name: w.name, color: w.color, openingBalance: w.openingBalance ? formatNumberInput(w.openingBalance) : '' }
       }
       return next
     })
@@ -58,7 +64,7 @@ export default function WalletManager({ onClose }) {
     let n = 0
     for (const w of wallets) {
       const d = drafts[w.id]
-      if (d && (d.name !== w.name || d.color !== w.color || d.openingBalance !== w.openingBalance)) n += 1
+      if (d && (d.name !== w.name || d.color !== w.color || toInt(d.openingBalance) !== w.openingBalance)) n += 1
     }
     return n + (orderIds && savedOrderIds && orderIds.join() !== savedOrderIds.join() ? 1 : 0)
   }, [wallets, drafts, orderIds, savedOrderIds])
@@ -94,8 +100,8 @@ export default function WalletManager({ onClose }) {
     try {
       for (const w of wallets) {
         const d = drafts[w.id]
-        if (d && (d.name !== w.name || d.color !== w.color || d.openingBalance !== w.openingBalance)) {
-          await updateWallet(w.id, { name: d.name, color: d.color, openingBalance: d.openingBalance })
+        if (d && (d.name !== w.name || d.color !== w.color || toInt(d.openingBalance) !== w.openingBalance)) {
+          await updateWallet(w.id, { name: d.name, color: d.color, openingBalance: toInt(d.openingBalance) })
         }
       }
       if (orderDirty) {
@@ -126,7 +132,7 @@ export default function WalletManager({ onClose }) {
   return (
     <Modal
       title={isSingle ? 'Rekening Utama' : 'Kelola Dompet'}
-      onClose={onClose}
+      onClose={handleClose}
       wide
       footer={
         <div className="flex items-center justify-between gap-3">
@@ -170,7 +176,7 @@ export default function WalletManager({ onClose }) {
           <h4 className="mb-3 font-sans text-sm font-bold text-slate-900 dark:text-white">Tambah dompet</h4>
           <div className="grid gap-2.5 sm:grid-cols-3">
             <input className={input} placeholder="Nama (mis. GoPay)" value={name} onChange={(e) => setName(e.target.value)} required />
-            <input className={input} type="text" inputMode="numeric" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(e.target.value)} />
+            <input className={input} type="text" inputMode="numeric" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(formatNumberInput(e.target.value))} />
             <div className="flex flex-wrap items-center gap-1.5">
               {WALLET_COLORS.map((c) => (
                 <button
@@ -241,8 +247,8 @@ export default function WalletManager({ onClose }) {
                   className={input + ' text-right'}
                   type="text"
                   inputMode="numeric"
-                  value={d.openingBalance}
-                  onChange={(e) => updateDraft(w.id, { openingBalance: toInt(e.target.value) })}
+                  value={d.openingBalance ?? ''}
+                  onChange={(e) => updateDraft(w.id, { openingBalance: formatNumberInput(e.target.value) })}
                   aria-label="Saldo awal"
                   title="Saldo awal"
                 />
@@ -253,7 +259,7 @@ export default function WalletManager({ onClose }) {
                 <button
                   onClick={() => {
                     setAdjustId(w.id)
-                    setAdjustInput(String(bal))
+                    setAdjustInput(bal ? formatNumberInput(bal) : '')
                   }}
                   className="mt-1 text-[11px] font-medium text-indigo-600 underline underline-offset-2 hover:text-indigo-500 dark:text-indigo-300"
                 >
@@ -291,6 +297,20 @@ export default function WalletManager({ onClose }) {
         />
       )}
 
+      {showDiscardConfirm && (
+        <Confirm
+          title="Perubahan Belum Disimpan"
+          message={`Ada ${dirtyCount} perubahan dompet yang belum disimpan. Yakin ingin membuang perubahan dan menutup?`}
+          confirmText="Buang Perubahan"
+          danger={true}
+          onCancel={() => setShowDiscardConfirm(false)}
+          onConfirm={() => {
+            setShowDiscardConfirm(false)
+            onClose()
+          }}
+        />
+      )}
+
       {adjustId &&
         (() => {
           const w = wallets.find((x) => x.id === adjustId)
@@ -314,9 +334,11 @@ export default function WalletManager({ onClose }) {
                   </button>
                   <button
                     disabled={!hasDelta}
-                    onClick={() => {
+                    onClick={async () => {
                       const newOpening = (d.openingBalance || 0) + delta
                       updateDraft(w.id, { openingBalance: newOpening })
+                      await updateWallet(w.id, { openingBalance: toInt(newOpening) })
+                      notify(`Saldo ${w.name} berhasil disesuaikan`)
                       setAdjustId(null)
                     }}
                     className={btn.primary}
@@ -338,7 +360,7 @@ export default function WalletManager({ onClose }) {
                     type="text"
                     inputMode="numeric"
                     value={adjustInput}
-                    onChange={(e) => setAdjustInput(e.target.value)}
+                    onChange={(e) => setAdjustInput(formatNumberInput(e.target.value))}
                     placeholder="mis. 1250000"
                     autoFocus
                   />
@@ -354,7 +376,7 @@ export default function WalletManager({ onClose }) {
                 {!hasDelta && adjustInput.trim() !== '' && (
                   <p className="text-xs text-slate-500 dark:text-slate-400">Tidak ada perubahan.</p>
                 )}
-                <p className="text-xs text-slate-500 dark:text-slate-400">Hanya openingBalance yang diubah, tidak ada transaksi baru. Pocket & carry-over tidak berubah. Tekan Simpan Perubahan di belakang untuk menyimpan permanen.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Saldo langsung disesuaikan ke rekening/dompet. Tidak membuat transaksi baru; pocket & carry-over tidak berubah.</p>
               </div>
             </Modal>
           )

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Modal from './Modal.jsx'
 import Confirm from './Confirm.jsx'
 import { useStore } from '../store/StoreContext.jsx'
-import { formatRupiah, toInt } from '../lib/money.js'
+import { formatRupiah, toInt, formatNumberInput } from '../lib/money.js'
 import { btn } from '../lib/buttons.js'
 import EmptyState from './EmptyState.jsx'
 
@@ -27,6 +27,12 @@ export default function RecurringManager({ onClose }) {
   const [drafts, setDrafts] = useState({})
   const [saving, setSaving] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false)
+
+  const handleClose = () => {
+    if (dirtyCount > 0) setShowDiscardConfirm(true)
+    else onClose()
+  }
 
   const cats = month?.categories || []
   const input =
@@ -39,7 +45,7 @@ export default function RecurringManager({ onClose }) {
     setDrafts((prev) => {
       const next = {}
       for (const t of templates) {
-        next[t.id] = prev[t.id] || { ...t }
+        next[t.id] = prev[t.id] || { ...t, amount: t.amount ? formatNumberInput(t.amount) : '' }
       }
       return next
     })
@@ -49,7 +55,7 @@ export default function RecurringManager({ onClose }) {
     d &&
     (d.dayOfMonth !== t.dayOfMonth ||
       d.type !== t.type ||
-      d.amount !== t.amount ||
+      toInt(d.amount) !== t.amount ||
       d.categoryId !== t.categoryId ||
       d.walletId !== t.walletId ||
       d.toWalletId !== t.toWalletId ||
@@ -73,7 +79,7 @@ export default function RecurringManager({ onClose }) {
           await updateTemplate(t.id, {
             dayOfMonth: d.dayOfMonth,
             type: d.type,
-            amount: d.amount,
+            amount: toInt(d.amount),
             categoryId: d.categoryId,
             walletId: d.walletId,
             toWalletId: d.toWalletId,
@@ -116,7 +122,7 @@ export default function RecurringManager({ onClose }) {
   return (
     <Modal
       title="Transaksi Berulang"
-      onClose={onClose}
+      onClose={handleClose}
       wide
       footer={
         <div className="flex items-center justify-between gap-3">
@@ -135,7 +141,7 @@ export default function RecurringManager({ onClose }) {
         <h4 className="mb-3 font-sans text-sm font-bold text-slate-900 dark:text-white">Tambah template</h4>
         <div className="grid gap-2.5 sm:grid-cols-4">
           <input className={input} type="text" inputMode="numeric" placeholder="Tanggal" value={day} onChange={(e) => setDay(e.target.value)} aria-label="Tanggal" />
-          <input className={input} type="text" inputMode="numeric" placeholder="Nominal (Rp)" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Nominal" />
+          <input className={input} type="text" inputMode="numeric" placeholder="Nominal (Rp)" value={amount} onChange={(e) => setAmount(formatNumberInput(e.target.value))} aria-label="Nominal" />
           <input className={input + ' sm:col-span-2'} placeholder="Keterangan (mis. Bayar Kos)" value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
         <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -252,8 +258,8 @@ export default function RecurringManager({ onClose }) {
                 className={input + ' w-32'}
                 type="text"
                 inputMode="numeric"
-                value={d.amount}
-                onChange={(e) => updateDraft(t.id, { amount: toInt(e.target.value) })}
+                value={d.amount ?? ''}
+                onChange={(e) => updateDraft(t.id, { amount: formatNumberInput(e.target.value) })}
                 aria-label="Nominal"
               />
               <input
@@ -327,6 +333,20 @@ export default function RecurringManager({ onClose }) {
           )
         })}
       </div>
+
+      {showDiscardConfirm && (
+        <Confirm
+          title="Perubahan Belum Disimpan"
+          message={`Ada ${dirtyCount} perubahan template yang belum disimpan. Yakin ingin membuang perubahan dan menutup?`}
+          confirmText="Buang Perubahan"
+          danger={true}
+          onCancel={() => setShowDiscardConfirm(false)}
+          onConfirm={() => {
+            setShowDiscardConfirm(false)
+            onClose()
+          }}
+        />
+      )}
 
       {confirmId && (
         <Confirm

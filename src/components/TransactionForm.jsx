@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import Modal from './Modal.jsx'
 import { useStore } from '../store/StoreContext.jsx'
-import { formatRupiah, toInt } from '../lib/money.js'
+import { formatRupiah, toInt, formatNumberInput } from '../lib/money.js'
 import { todayISO } from '../lib/dates.js'
 import { categoryLeft, goalSaved } from '../lib/calc.js'
 import { haptic } from '../lib/haptics.js'
@@ -11,9 +11,9 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const { currentMonth: month, months, wallets, addTransaction, updateTransaction } = useStore()
 
   const [date, setDate] = useState(transaction?.date || prefill?.date || todayISO())
-  const [type, setType] = useState(transaction?.type || 'expense')
+  const [type, setType] = useState(transaction?.type || prefill?.type || 'expense')
   const [amount, setAmount] = useState(
-    transaction ? String(transaction.amount || '') : prefill?.amount ? String(prefill.amount) : '',
+    transaction ? formatNumberInput(transaction.amount) : prefill?.amount ? formatNumberInput(prefill.amount) : '',
   )
   const [categoryId, setCategoryId] = useState(
     transaction ? transaction.categoryId || 'free' : prefill?.categoryId || 'free',
@@ -168,7 +168,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
             className={input}
             placeholder="0"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => setAmount(formatNumberInput(e.target.value))}
             autoFocus
           />
           {amount && toInt(amount) > 0 && (
@@ -225,13 +225,13 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
             </select>
             {isFree ? (
               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                Sweep/pindah dana di myBCA tidak perlu dicatat, cukup pilih pocket asal dananya di sini.
+                Pengeluaran ini langsung memotong sisa Uang Bebas bulan ini.
               </p>
             ) : selectedCat && (
               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                 {selectedCat.goalAmount > 0
                   ? <>Pocket tabungan: uang keluar dari tabungan ini. Sisa tabungan: <strong>{formatRupiah(catSisa)}</strong>.</>
-                  : <>Tidak perlu sweep ke rekening utama dulu, cukup pilih pocket ini & nominal. Sisa: <strong>{formatRupiah(catSisa)}</strong>.</>}
+                  : <>Pengeluaran dipotong dari pocket ini. Sisa: <strong>{formatRupiah(catSisa)}</strong>.</>}
               </p>
             )}
             {overPocket && (
