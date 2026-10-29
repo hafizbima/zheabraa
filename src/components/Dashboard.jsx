@@ -23,6 +23,8 @@ import EmptyState from './EmptyState.jsx'
 import QuickAdd from './QuickAdd.jsx'
 import PocketCard from './PocketCard.jsx'
 import SaveGoalModal from './SaveGoalModal.jsx'
+import Confirm from './Confirm.jsx'
+import AddPocketModal from './AddPocketModal.jsx'
 import { btn } from '../lib/buttons.js'
 import { notificationCandidates, notificationsEnabled, sendNotificationOnce } from '../lib/notifications.js'
 
@@ -62,6 +64,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     saveToGoal,
     useGoal,
     notify,
+    addCategory,
+    removeCategory,
   } = useStore()
 
   const [editingIncome, setEditingIncome] = useState(null)
@@ -71,6 +75,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const [carryDraft, setCarryDraft] = useState('')
   const [noteDraft, setNoteDraft] = useState('')
   const [saveModal, setSaveModal] = useState(null) // { cat, mode: 'nabung' | 'pakai' }
+  const [deleteConfirmCat, setDeleteConfirmCat] = useState(null)
+  const [addPocketOpen, setAddPocketOpen] = useState(false)
   const notifiedOver = useRef(new Set())
   const [notificationVersion, setNotificationVersion] = useState(0)
 
@@ -167,115 +173,73 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   return (
     <>
       <div className="space-y-5">
-      {/* Hero Card: Warm Editorial Ledger */}
-      <section className="relative overflow-hidden rounded-3xl border border-stone-200/90 bg-gradient-to-b from-[#FDFBF7] via-[#FAF7F0] to-[#F4EFEB] p-6 sm:p-7 shadow-[0_4px_24px_-4px_rgba(28,25,23,0.06)] ring-1 ring-inset ring-stone-900/[0.04] dark:border-stone-800/90 dark:bg-gradient-to-b dark:from-[#1D1B18] dark:via-[#171513] dark:to-[#12110F] dark:shadow-[0_6px_28px_-6px_rgba(0,0,0,0.5)] dark:ring-stone-100/[0.05]">
-        {/* Subtle decorative watermark in background */}
-        <div className="pointer-events-none absolute -right-4 -top-6 select-none opacity-[0.03] dark:opacity-[0.04]">
-          <span className="font-serif text-9xl font-black italic tracking-tighter text-stone-900 dark:text-white">
-            GM
+      {/* Hero Card: Sisa Uang Bebas */}
+      <section className="relative overflow-hidden rounded-3xl border border-teal-500/20 bg-gradient-to-br from-teal-50/70 via-white to-white p-6 shadow-tactile-sm transition-colors duration-200 dark:border-teal-500/25 dark:bg-gradient-to-br dark:from-teal-950/30 dark:via-slate-900 dark:to-slate-900">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex items-center gap-2 rounded-full bg-teal-500/10 px-3 py-1 text-xs font-semibold text-teal-700 dark:bg-teal-500/15 dark:text-teal-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+            Sisa Uang Bebas
+          </div>
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            {labelOf(month.id)}
           </span>
         </div>
 
-        <div className="relative">
-          {/* Header Row: Label & Status Pill */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="font-serif italic text-xs tracking-wide text-stone-600 dark:text-stone-400">
-                Buku Kas • {labelOf(month.id)}
-              </span>
-              <span className="h-1 w-1 rounded-full bg-stone-300 dark:bg-stone-700" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400">
-                Sisa Uang Bebas
-              </span>
-            </div>
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
+          <div>
+            <p className={`font-sans text-3xl sm:text-4xl font-bold tracking-tight ${left < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
+              {formatRupiah(left)}
+            </p>
+            <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+              Tersedia untuk dibelanjakan bulan ini • Dari total pool {formatRupiah(pool)} (terpakai {formatRupiah(freeSpent)})
+            </p>
+          </div>
 
-            {/* Status Pill */}
+          <button
+            type="button"
+            onClick={() => {
+              haptic.tap()
+              onNewTx(null)
+            }}
+            className="self-start sm:self-auto inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white shadow-tactile-sm transition hover:bg-slate-800 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-500"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Tambah Pengeluaran
+          </button>
+        </div>
+
+        {/* Progress Bar Terpakai / Total Pool */}
+        <div className="mt-5 border-t border-slate-100 pt-3.5 dark:border-slate-800">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <span>
+              Terpakai: <strong className="font-semibold text-slate-900 dark:text-white">{formatRupiah(freeSpent)}</strong>
+              {pool > 0 && (
+                <span className="ml-1 text-[11px] text-slate-400 dark:text-slate-500">
+                  ({Math.min(100, Math.round((freeSpent / pool) * 100))}%)
+                </span>
+              )}
+            </span>
+            <span>
+              Total Pool: <strong className="font-semibold text-slate-900 dark:text-white">{formatRupiah(pool)}</strong>
+            </span>
+          </div>
+
+          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
             <div
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+              className={`h-full rounded-full transition-all duration-300 ${
                 left < 0
-                  ? 'border border-rose-300/80 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300'
+                  ? 'bg-rose-500'
                   : pool > 0 && left / pool < 0.25
-                    ? 'border border-amber-300/80 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300'
-                    : 'border border-stone-300/80 bg-stone-100/80 text-stone-700 dark:border-stone-700 dark:bg-stone-800/80 dark:text-stone-300'
+                    ? 'bg-amber-500'
+                    : 'bg-teal-500'
               }`}
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  left < 0 ? 'bg-rose-500' : pool > 0 && left / pool < 0.25 ? 'bg-amber-500' : 'bg-emerald-600 dark:bg-emerald-400'
-                }`}
-              />
-              {left < 0 ? 'Defisit' : pool > 0 && left / pool < 0.25 ? 'Mendekati Batas' : 'Kondisi Sehat'}
-            </div>
-          </div>
-
-          {/* Main Amount & Action Button */}
-          <div className="mt-4 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
-            <div>
-              <p
-                className={`font-serif text-3xl sm:text-4xl lg:text-[42px] font-medium tracking-tight ${
-                  left < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-stone-900 dark:text-stone-50'
-                }`}
-              >
-                {formatRupiah(left)}
-              </p>
-              <p className="mt-1 font-serif text-xs italic text-stone-500 dark:text-stone-400">
-                Alokasi bebas di luar anggaran pocket yang aman dibelanjakan bulan ini.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                haptic.tap()
-                onNewTx(null)
+              style={{
+                width: `${Math.min(100, Math.max(0, pool > 0 ? (freeSpent / pool) * 100 : 0))}%`,
               }}
-              className="self-start sm:self-auto inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-xs font-semibold text-stone-50 shadow-sm transition-all hover:bg-stone-800 active:scale-95 focus:outline-none focus:ring-2 focus:ring-stone-400/40 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Catat Pengeluaran
-            </button>
-          </div>
-
-          {/* Editorial Ledger Strip: Terpakai & Total Pool */}
-          <div className="mt-5 border-t border-stone-200/90 pt-3.5 dark:border-stone-800/90">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-serif italic text-stone-500 dark:text-stone-400">
-                Terpakai:{' '}
-                <strong className="font-sans font-semibold text-stone-800 dark:text-stone-200">
-                  {formatRupiah(freeSpent)}
-                </strong>
-                {pool > 0 && (
-                  <span className="ml-1 font-sans text-[11px] text-stone-400 dark:text-stone-500">
-                    ({Math.round((freeSpent / pool) * 100)}%)
-                  </span>
-                )}
-              </span>
-              <span className="font-serif italic text-stone-500 dark:text-stone-400">
-                Total Pool:{' '}
-                <strong className="font-sans font-semibold text-stone-800 dark:text-stone-200">
-                  {formatRupiah(pool)}
-                </strong>
-              </span>
-            </div>
-
-            {/* Hairline Progress Meter */}
-            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-stone-200/80 dark:bg-stone-800">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  left < 0
-                    ? 'bg-rose-500'
-                    : pool > 0 && left / pool < 0.25
-                      ? 'bg-amber-500'
-                      : 'bg-stone-800 dark:bg-stone-200'
-                }`}
-                style={{
-                  width: `${Math.min(100, Math.max(0, pool > 0 ? (freeSpent / pool) * 100 : 0))}%`,
-                }}
-              />
-            </div>
+            />
           </div>
         </div>
       </section>
@@ -480,12 +444,28 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
       {/* Pocket */}
       <section className="space-y-3.5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
           <div>
             <h3 className="font-sans text-lg font-bold text-slate-900 dark:text-white">Pocket</h3>
             {primary && <p className="text-[11px] text-slate-400">sekat virtual dari {primary.name}</p>}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => {
+                haptic.tap()
+                setAddPocketOpen(true)
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-tactile-sm transition hover:bg-teal-500 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-500"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Tambah Pocket</span>
+            </button>
+            <button onClick={onManageCategories} className={btn.subtle}>
+              Kelola Pocket
+            </button>
             {(month.categories || []).length > 0 && (
               <button onClick={() => setReallocOpen(true)} className={btn.subtle}>
                 Re-alokasi
@@ -493,9 +473,6 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             )}
             <button onClick={onManageRecurring} className={btn.subtle}>
               Transaksi Berulang
-            </button>
-            <button onClick={onManageCategories} className={btn.subtle}>
-              Kelola Kategori
             </button>
             <button onClick={onManageBudgetTemplates} className={btn.subtle}>
               Template Budget
@@ -518,6 +495,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                 onClick={() => onNewTx({ categoryId: cat.id })}
                 onSave={(c) => setSaveModal({ cat: c, mode: 'nabung' })}
                 onUse={(c) => setSaveModal({ cat: c, mode: 'pakai' })}
+                onDelete={(c) => setDeleteConfirmCat(c)}
               />
             ))}
           </div>
@@ -525,10 +503,16 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
         {(month.categories || []).length === 0 && (
           <EmptyState
             title="Belum ada pocket"
-            sub="Buat kategori + budget untuk membagi uang dari Rekening Utama."
+            sub="Tambahkan pocket baru untuk membagi alokasi belanja dan tabungan."
             action={
-              <button onClick={onManageCategories} className={btn.primary}>
-                Kelola Kategori
+              <button
+                onClick={() => {
+                  haptic.tap()
+                  setAddPocketOpen(true)
+                }}
+                className={btn.primary}
+              >
+                + Tambah Pocket
               </button>
             }
           />
@@ -636,6 +620,27 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
           if (saveModal.mode === 'pakai') useGoal(currentMonthId, saveModal.cat.id, amt, desc || undefined)
           else saveToGoal(currentMonthId, saveModal.cat.id, amt)
         }}
+      />
+    )}
+
+    {deleteConfirmCat && (
+      <Confirm
+        title={`Hapus Pocket "${deleteConfirmCat.name}"?`}
+        message="Transaksi pada pocket ini akan dialihkan ke Uang Bebas agar catatan keuangan kamu tetap aman."
+        confirmText="Hapus Pocket"
+        onCancel={() => setDeleteConfirmCat(null)}
+        onConfirm={() => {
+          removeCategory(currentMonthId, deleteConfirmCat.id)
+          haptic.tap()
+          setDeleteConfirmCat(null)
+        }}
+      />
+    )}
+
+    {addPocketOpen && (
+      <AddPocketModal
+        onClose={() => setAddPocketOpen(false)}
+        onAdd={(data) => addCategory(currentMonthId, data)}
       />
     )}
   </>

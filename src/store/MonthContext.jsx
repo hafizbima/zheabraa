@@ -242,13 +242,25 @@ export function MonthProvider({ children }) {
         key: slugify(data.name),
         budgetAmount: data.budgetAmount || 0,
         goalAmount: data.goalAmount || 0,
+        goalDeadline: data.goalDeadline || null,
         savedAmount: data.savedAmount || 0,
         color: data.color,
         order: cats.length,
       }
+      setMonths((prev) => {
+        const m = prev[mId]
+        if (!m) return prev
+        return {
+          ...prev,
+          [mId]: {
+            ...m,
+            categories: [...(m.categories || []), cat],
+          },
+        }
+      })
       mutate(backend.setCategory(user.uid, mId, cat), 'Gagal menambah kategori')
     },
-    [user, months, mutate],
+    [user, months, setMonths, mutate],
   )
 
   const updateCategory = useCallback(
@@ -274,9 +286,21 @@ export function MonthProvider({ children }) {
   const removeCategory = useCallback(
     (mId, categoryId) => {
       if (!user) return
+      setMonths((prev) => {
+        const m = prev[mId]
+        if (!m) return prev
+        return {
+          ...prev,
+          [mId]: {
+            ...m,
+            categories: (m.categories || []).filter((c) => c.id !== categoryId),
+            transactions: (m.transactions || []).map((t) => (t.categoryId === categoryId ? { ...t, categoryId: null } : t)),
+          },
+        }
+      })
       mutate(backend.removeCategory(user.uid, mId, categoryId), 'Gagal menghapus kategori')
     },
-    [user, mutate],
+    [user, setMonths, mutate],
   )
 
   // --- transactions ---

@@ -7,7 +7,7 @@ function statusStyles(status) {
   return 'bg-teal-500'
 }
 
-export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, onUse }) {
+export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, onUse, onDelete }) {
   const { used, budget, status, pct } = categoryStatus(cat, txs)
   const left = categoryLeft(cat, txs)
   const goal = cat.goalAmount > 0 ? cat.goalAmount : 0
@@ -40,14 +40,34 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
             </span>
           )}
         </div>
-        <div className="text-right">
-          <p className="font-sans text-sm font-bold text-slate-900 dark:text-white">
-            {formatRupiah(used)}
-            {budget > 0 && <span className="text-xs font-normal text-slate-500 dark:text-slate-400"> / {formatRupiah(budget)}</span>}
-          </p>
-          <p className={`text-[11px] font-semibold ${status === 'over' ? 'text-rose-500' : status === 'warn' ? 'text-amber-500' : 'text-slate-500 dark:text-slate-400'}`}>
-            sisa {formatRupiah(left)}
-          </p>
+        <div className="flex items-center gap-2 text-right">
+          <div>
+            <p className="font-sans text-sm font-bold text-slate-900 dark:text-white">
+              {formatRupiah(used)}
+              {budget > 0 && <span className="text-xs font-normal text-slate-500 dark:text-slate-400"> / {formatRupiah(budget)}</span>}
+            </p>
+            <p className={`text-[11px] font-semibold ${status === 'over' ? 'text-rose-500' : status === 'warn' ? 'text-amber-500' : 'text-slate-500 dark:text-slate-400'}`}>
+              sisa {formatRupiah(left)}
+            </p>
+          </div>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(cat)
+              }}
+              className="ml-0.5 rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 active:scale-95 dark:hover:bg-rose-950/30 dark:hover:text-rose-400"
+              title="Hapus pocket"
+              aria-label={`Hapus pocket ${cat.name}`}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
       {budget > 0 && (

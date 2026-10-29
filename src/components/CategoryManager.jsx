@@ -165,13 +165,13 @@ export default function CategoryManager({ onClose }) {
 
   return (
     <Modal
-      title="Kelola Kategori / Pocket"
+      title="Kelola Pocket"
       onClose={onClose}
       wide
       footer={
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Perubahan hanya tersimpan saat menekan "Simpan Perubahan". Seret ⋮⋮ untuk mengurutkan.
+            Perubahan nama/budget tersimpan saat menekan "Simpan Perubahan". Seret ⋮⋮ untuk mengurutkan.
           </p>
           <button
             onClick={saveAll}
@@ -184,11 +184,11 @@ export default function CategoryManager({ onClose }) {
       }
     >
       <form onSubmit={submitNew} className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4.5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-        <h4 className="mb-3 font-sans text-sm font-bold text-slate-900 dark:text-white">Tambah kategori</h4>
+        <h4 className="mb-3 font-sans text-sm font-bold text-slate-900 dark:text-white">Tambah Pocket Baru</h4>
         <div className="grid gap-2.5 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Nama</p>
-            <input className={input} placeholder="mis. Tabungan Liburan" value={name} onChange={(e) => setName(e.target.value)} required />
+            <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Nama Pocket</p>
+            <input className={input} placeholder="mis. Belanja Bulanan, Transport, Tabungan Liburan" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
           <div>
             <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Budget / bulan (Rp)</p>
@@ -208,7 +208,7 @@ export default function CategoryManager({ onClose }) {
         </div>
         <div className="mt-3.5 flex justify-end">
           <button type="submit" className={btn.primary}>
-            + Tambah
+            + Tambah Pocket
           </button>
         </div>
       </form>
@@ -252,7 +252,7 @@ export default function CategoryManager({ onClose }) {
                 />
               </div>
               <div className="min-w-36 flex-1 basis-40">
-                <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Nama</p>
+                <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Nama Pocket</p>
                 <input
                   className={input + ' w-full'}
                   value={d.name}
@@ -305,6 +305,7 @@ export default function CategoryManager({ onClose }) {
                 <button
                   onClick={() => setConfirmId(cat.id)}
                   className={btn.subtleDanger}
+                  aria-label={`Hapus pocket ${cat.name}`}
                 >
                   Hapus
                 </button>
@@ -313,17 +314,24 @@ export default function CategoryManager({ onClose }) {
           )
         })}
         {cats.length === 0 && (
-          <EmptyState title="Belum ada kategori" sub="Tambahkan kategori untuk membagi uang jadi pocket." />
+          <EmptyState title="Belum ada pocket" sub="Tambahkan pocket untuk membagi uang jadi pos pengeluaran & tabungan." />
         )}
       </div>
 
       {confirmId && (
         <Confirm
-          title="Hapus kategori"
-          message="Transaksi pada kategori ini akan dipindah ke Uang Bebas. Lanjutkan?"
+          title="Hapus Pocket"
+          message="Transaksi pada pocket ini akan dipindah ke Uang Bebas agar catatan keuangan kamu tetap aman. Lanjutkan?"
           onCancel={() => setConfirmId(null)}
           onConfirm={() => {
-            removeCategory(currentMonthId, confirmId)
+            const idToRemove = confirmId
+            removeCategory(currentMonthId, idToRemove)
+            setDrafts((prev) => {
+              const next = { ...prev }
+              delete next[idToRemove]
+              return next
+            })
+            setOrderIds((prev) => (prev ? prev.filter((id) => id !== idToRemove) : null))
             setConfirmId(null)
           }}
         />

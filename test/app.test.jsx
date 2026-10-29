@@ -13,6 +13,14 @@ vi.mock('../src/store/backend.js', async () => {
 
 const { default: App } = await import('../src/App.jsx')
 
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+global.ResizeObserver = ResizeObserverMock
+window.ResizeObserver = ResizeObserverMock
+
 beforeEach(() => {
   localStorage.clear()
   localBackend.reset()
@@ -188,5 +196,38 @@ describe('Gimme Money smoke', () => {
     await waitFor(() => expect(queryByText('Tambah Pemasukan')).not.toBeInTheDocument())
     expect((await findAllByText('Rp 5.000.000')).length).toBeGreaterThan(0)
     expect(await findByText('Gaji Bulanan')).toBeInTheDocument()
+  })
+
+  it('user can add a new pocket and delete an unneeded pocket', async () => {
+    const user = userEvent.setup()
+    const { getByPlaceholderText, getByRole, findByText, queryByText, findByRole, findAllByText } = render(<App />)
+
+    await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
+    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.click(getByRole('button', { name: 'Masuk' }))
+    await findByText('Total Pemasukan')
+
+    // Click "+ Tambah Pocket" in Pocket section
+    await user.click(getByRole('button', { name: /Tambah Pocket/ }))
+    expect(await findByRole('dialog', { name: 'Tambah Pocket Baru' })).toBeInTheDocument()
+
+    // Fill form
+    await user.type(getByPlaceholderText('mis. Belanja Bulanan, Hiburan, Tabungan'), 'Hiburan Weekend')
+    await user.type(getByPlaceholderText('Nominal alokasi bulanan (opsional)'), '300000')
+    await user.click(getByRole('button', { name: '+ Simpan Pocket' }))
+
+    // Verify pocket appears on dashboard
+    expect((await findAllByText('Hiburan Weekend')).length).toBeGreaterThan(0)
+
+    // Delete pocket directly using delete button on PocketCard
+    const deleteBtn = getByRole('button', { name: 'Hapus pocket Hiburan Weekend' })
+    await user.click(deleteBtn)
+
+    // Confirm deletion modal
+    expect(await findByRole('dialog', { name: /Hapus Pocket "Hiburan Weekend"\?/ })).toBeInTheDocument()
+    await user.click(getByRole('button', { name: 'Hapus Pocket' }))
+
+    // Verify pocket is removed
+    await waitFor(() => expect(queryByText('Hiburan Weekend')).not.toBeInTheDocument())
   })
 })
