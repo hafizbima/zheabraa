@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
 import { useRouter, Link } from '../lib/router.jsx'
+import { Icon } from './ui/Icon.jsx'
 
 export default function Login() {
   const { login, signup, resetPassword, backendMode, user } = useStore()
@@ -163,7 +164,10 @@ export default function Login() {
 
           {sent ? (
             <div className="rounded-xl border border-teal-300 bg-teal-50/70 p-4 text-sm text-teal-950 dark:border-teal-800/80 dark:bg-teal-950/40 dark:text-teal-200">
-              <p className="font-semibold text-teal-900 dark:text-teal-100">Link reset dikirim!</p>
+              <div className="flex items-center gap-2">
+                <Icon name="circle-check" className="h-4 w-4 shrink-0 text-teal-700 dark:text-teal-300" />
+                <p className="font-semibold text-teal-900 dark:text-teal-100">Link reset dikirim!</p>
+              </div>
               <p className="mt-1 text-xs text-teal-800 dark:text-teal-300">
                 Cek email <strong>{email}</strong> dan klik tautan untuk mengatur kata sandi baru.
               </p>
@@ -180,9 +184,12 @@ export default function Login() {
             </div>
           ) : mode === 'reset' && backendMode === 'local' ? (
             <div className="rounded-xl border border-amber-300 bg-amber-50/70 p-4 text-sm text-amber-950 dark:border-amber-800/80 dark:bg-amber-950/40 dark:text-amber-200">
-              <p className="text-xs">
-                Mode lokal tidak mendukung reset password. Data hanya tersimpan di perangkat ini.
-              </p>
+              <div className="flex items-center gap-2">
+                <Icon name="circle-exclamation" className="h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" />
+                <p className="text-xs">
+                  Mode lokal tidak mendukung reset password. Data hanya tersimpan di perangkat ini.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => switchMode('/login')}
@@ -319,9 +326,10 @@ export default function Login() {
               {error && (
                 <div
                   role="alert"
-                  className="mb-4 rounded-xl border border-rose-300 bg-rose-50 px-3.5 py-2.5 text-xs font-medium text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300"
+                  className="mb-4 flex items-center gap-2 rounded-xl border border-rose-300 bg-rose-50 px-3.5 py-2.5 text-xs font-medium text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300"
                 >
-                  {error}
+                  <Icon name="circle-exclamation" className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <span>{error}</span>
                 </div>
               )}
 

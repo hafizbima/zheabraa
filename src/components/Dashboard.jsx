@@ -531,7 +531,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             }}
             className={btn.ghost}
           >
-            {editingIncome && !editingIncome.id ? '✕ Batal' : '+ Tambah'}
+            {editingIncome && !editingIncome.id ? 'Batal' : '+ Tambah'}
           </button>
         </div>
 

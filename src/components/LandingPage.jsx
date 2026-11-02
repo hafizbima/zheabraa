@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from '../lib/router.jsx'
+import { Icon, IconBadge } from './ui/Icon.jsx'
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -218,7 +219,7 @@ export default function LandingPage() {
                     <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-800/50">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-teal-600" />
+                          <IconBadge name="utensils" containerClassName="!h-7 !w-7 !rounded-lg" className="!h-3.5 !w-3.5" />
                           <span className="text-xs font-bold text-slate-900 dark:text-white">Makan &amp; Minum</span>
                         </div>
                         <span className="text-xs font-bold text-teal-800 dark:text-teal-400">Sisa Rp650.000</span>
@@ -236,7 +237,7 @@ export default function LandingPage() {
                     <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-800/50">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-sky-600" />
+                          <IconBadge name="car" containerClassName="!h-7 !w-7 !rounded-lg" className="!h-3.5 !w-3.5" />
                           <span className="text-xs font-bold text-slate-900 dark:text-white">Transportasi</span>
                         </div>
                         <span className="text-xs font-bold text-teal-800 dark:text-teal-400">Sisa Rp280.000</span>
@@ -254,7 +255,7 @@ export default function LandingPage() {
                     <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-800/50">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-amber-600" />
+                          <IconBadge name="file-invoice-dollar" containerClassName="!h-7 !w-7 !rounded-lg" className="!h-3.5 !w-3.5" />
                           <span className="text-xs font-bold text-slate-900 dark:text-white">Tagihan &amp; Utilitas</span>
                         </div>
                         <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Sisa Rp0</span>
@@ -336,11 +337,8 @@ export default function LandingPage() {
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
               {/* Fitur 1 */}
               <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#dceeff] text-[#0f1b3d] dark:bg-teal-950 dark:text-teal-300">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" />
-                    <path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z" />
-                  </svg>
+                <div className="mb-4">
+                  <IconBadge name="wallet" />
                 </div>
                 <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
                   Buat pocket sesuai tujuan
@@ -352,13 +350,8 @@ export default function LandingPage() {
 
               {/* Fitur 2 */}
               <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#dceeff] text-[#0f1b3d] dark:bg-teal-950 dark:text-teal-300">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                  </svg>
+                <div className="mb-4">
+                  <IconBadge name="receipt" />
                 </div>
                 <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
                   Catat pengeluaran ke pocket yang benar
@@ -370,11 +363,8 @@ export default function LandingPage() {
 
               {/* Fitur 3 */}
               <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#dceeff] text-[#0f1b3d] dark:bg-teal-950 dark:text-teal-300">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
+                <div className="mb-4">
+                  <IconBadge name="coins" />
                 </div>
                 <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
                   Lihat sisa pocket secara real-time
@@ -384,14 +374,10 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              {/* Fitur 4 (Judul dipersingkat) */}
+              {/* Fitur 4 */}
               <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#dceeff] text-[#0f1b3d] dark:bg-teal-950 dark:text-teal-300">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                    <line x1="8" y1="21" x2="16" y2="21" />
-                    <line x1="12" y1="17" x2="12" y2="21" />
-                  </svg>
+                <div className="mb-4">
+                  <IconBadge name="rotate" />
                 </div>
                 <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
                   Tersinkron di HP dan laptop
@@ -417,8 +403,9 @@ export default function LandingPage() {
             <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3 relative">
               {/* Langkah 1 */}
               <div className="relative">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0f1b3d] text-sm font-extrabold text-white dark:bg-teal-500 dark:text-slate-950">
-                  1
+                <div className="flex items-center gap-3">
+                  <IconBadge name="user-plus" />
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Langkah 1</span>
                 </div>
                 <h3 className="mt-4 font-sans text-base font-bold text-slate-900 dark:text-white">
                   Buat akun gratis
@@ -430,8 +417,9 @@ export default function LandingPage() {
 
               {/* Langkah 2 */}
               <div className="relative">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0f1b3d] text-sm font-extrabold text-white dark:bg-teal-500 dark:text-slate-950">
-                  2
+                <div className="flex items-center gap-3">
+                  <IconBadge name="wallet" />
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Langkah 2</span>
                 </div>
                 <h3 className="mt-4 font-sans text-base font-bold text-slate-900 dark:text-white">
                   Buat pocket
@@ -443,8 +431,9 @@ export default function LandingPage() {
 
               {/* Langkah 3 */}
               <div className="relative">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0f1b3d] text-sm font-extrabold text-white dark:bg-teal-500 dark:text-slate-950">
-                  3
+                <div className="flex items-center gap-3">
+                  <IconBadge name="coins" />
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Langkah 3</span>
                 </div>
                 <h3 className="mt-4 font-sans text-base font-bold text-slate-900 dark:text-white">
                   Catat dan pantau sisa
@@ -469,22 +458,31 @@ export default function LandingPage() {
 
             <div className="mt-10 rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900 space-y-6">
               <div className="border-b border-slate-100 pb-5 dark:border-slate-800">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Awal Bulan</span>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                <div className="flex items-center gap-3">
+                  <IconBadge name="wallet" containerClassName="!h-8 !w-8 !rounded-lg" className="!h-4 !w-4" />
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Awal Bulan</span>
+                </div>
+                <p className="mt-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                   Gaji masuk sebesar Rp2.750.000 langsung dibagi ke 3 pocket: Makan &amp; Minum (Rp1.500.000), Transportasi (Rp500.000), dan Tagihan &amp; Utilitas (Rp750.000). Batas belanja tiap pos langsung terpasang sebelum uang mulai dibelanjakan.
                 </p>
               </div>
 
               <div className="border-b border-slate-100 pb-5 dark:border-slate-800">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pertengahan Bulan</span>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                <div className="flex items-center gap-3">
+                  <IconBadge name="receipt" containerClassName="!h-8 !w-8 !rounded-lg" className="!h-4 !w-4" />
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Pertengahan Bulan</span>
+                </div>
+                <p className="mt-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                   Pengeluaran harian seperti kopi harian, jajan sore, biaya kirim belanja, serta bensin dan tarif ojek dicatat ke pocket masing-masing. Di saat yang sama, tagihan listrik dan air terbayar pas Rp750.000, sehingga sisa pocket tagihan menjadi Rp0 dan tidak mengganggu pos lainnya.
                 </p>
               </div>
 
               <div>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Menjelang Akhir Bulan</span>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                <div className="flex items-center gap-3">
+                  <IconBadge name="coins" containerClassName="!h-8 !w-8 !rounded-lg" className="!h-4 !w-4" />
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Menjelang Akhir Bulan</span>
+                </div>
+                <p className="mt-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                   Pocket Makan menyisakan Rp650.000 dari alokasi Rp1.500.000 (terpakai Rp850.000) dan pocket Transportasi menyisakan Rp280.000 dari alokasi Rp500.000 (terpakai Rp220.000). Total terpakai tercatat Rp1.820.000 dengan total sisa anggaran Rp930.000. Anda tahu persis berapa yang masih aman dibelanjakan tanpa perlu menghitung ulang saldo tabungan.
                 </p>
               </div>
@@ -513,11 +511,14 @@ export default function LandingPage() {
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {/* Baris 1: Makan & Minum */}
                 <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Makan &amp; Minum</h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">Konsumsi sehari-hari, kopi harian, dan jajan sore</p>
+                  <div className="flex items-center gap-3">
+                    <IconBadge name="utensils" />
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">Makan &amp; Minum</h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">Konsumsi sehari-hari, kopi harian, dan jajan sore</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-6 text-xs sm:text-sm">
+                  <div className="flex items-center gap-6 text-xs sm:text-sm pl-12 sm:pl-0">
                     <span className="text-slate-600 dark:text-slate-400">Alokasi: <strong className="text-slate-900 dark:text-white">Rp1.500.000</strong></span>
                     <span className="text-slate-600 dark:text-slate-400">Terpakai: <strong className="text-slate-900 dark:text-white">Rp850.000</strong></span>
                     <span className="text-teal-800 font-bold dark:text-teal-400">Sisa: Rp650.000</span>
@@ -526,11 +527,14 @@ export default function LandingPage() {
 
                 {/* Baris 2: Transportasi */}
                 <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Transportasi</h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">Bensin kendaraan, tarif ojek, dan biaya tol</p>
+                  <div className="flex items-center gap-3">
+                    <IconBadge name="car" />
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">Transportasi</h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">Bensin kendaraan, tarif ojek, dan biaya tol</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-6 text-xs sm:text-sm">
+                  <div className="flex items-center gap-6 text-xs sm:text-sm pl-12 sm:pl-0">
                     <span className="text-slate-600 dark:text-slate-400">Alokasi: <strong className="text-slate-900 dark:text-white">Rp500.000</strong></span>
                     <span className="text-slate-600 dark:text-slate-400">Terpakai: <strong className="text-slate-900 dark:text-white">Rp220.000</strong></span>
                     <span className="text-teal-800 font-bold dark:text-teal-400">Sisa: Rp280.000</span>
@@ -539,11 +543,14 @@ export default function LandingPage() {
 
                 {/* Baris 3: Tagihan & Utilitas */}
                 <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">Tagihan &amp; Utilitas</h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">Listrik, internet rumah, dan iuran air</p>
+                  <div className="flex items-center gap-3">
+                    <IconBadge name="file-invoice-dollar" />
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">Tagihan &amp; Utilitas</h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">Listrik, internet rumah, dan iuran air</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-6 text-xs sm:text-sm">
+                  <div className="flex items-center gap-6 text-xs sm:text-sm pl-12 sm:pl-0">
                     <span className="text-slate-600 dark:text-slate-400">Alokasi: <strong className="text-slate-900 dark:text-white">Rp750.000</strong></span>
                     <span className="text-slate-600 dark:text-slate-400">Terpakai: <strong className="text-slate-900 dark:text-white">Rp750.000</strong></span>
                     <span className="text-slate-600 font-bold dark:text-slate-400">Sisa: Rp0</span>
@@ -552,8 +559,11 @@ export default function LandingPage() {
 
                 {/* Baris Total */}
                 <div className="p-4 sm:p-5 bg-slate-50/80 dark:bg-slate-800/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Total Keseluruhan</span>
-                  <div className="flex items-center gap-6 text-xs sm:text-sm">
+                  <div className="flex items-center gap-3">
+                    <IconBadge name="coins" />
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Total Keseluruhan</span>
+                  </div>
+                  <div className="flex items-center gap-6 text-xs sm:text-sm pl-12 sm:pl-0">
                     <span className="text-slate-700 dark:text-slate-300">Total Alokasi: <strong className="text-slate-900 dark:text-white">Rp2.750.000</strong></span>
                     <span className="text-slate-700 dark:text-slate-300">Total Terpakai: <strong className="text-slate-900 dark:text-white">Rp1.820.000</strong></span>
                     <span className="text-teal-800 font-extrabold dark:text-teal-400">Total Sisa: Rp930.000</span>
@@ -577,52 +587,77 @@ export default function LandingPage() {
             <div className="mt-10 space-y-4">
               {/* FAQ 1 */}
               <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-                <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
-                  Apakah Zheabraa gratis?
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                  Ya, gratis digunakan.
-                </p>
+                <div className="flex items-start gap-4">
+                  <IconBadge name="circle-question" />
+                  <div>
+                    <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
+                      Apakah Zheabraa gratis?
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                      Ya, gratis digunakan.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* FAQ 2 */}
               <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-                <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
-                  Apakah bisa dipakai di HP?
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                  Ya, bisa diakses dari HP maupun laptop, data tersinkron ke Supabase.
-                </p>
+                <div className="flex items-start gap-4">
+                  <IconBadge name="rotate" />
+                  <div>
+                    <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
+                      Apakah bisa dipakai di HP?
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                      Ya, bisa diakses dari HP maupun laptop, data tersinkron ke Supabase.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* FAQ 3 (Dilunakkan sesuai Tugas 5) */}
               <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-                <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
-                  Bagaimana sistem keamanan datanya?
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                  Data disimpan di Supabase dan dilindungi Row Level Security (RLS) yang memastikan setiap akun hanya dapat membaca dan menulis datanya sendiri. Kata sandi dikelola melalui Supabase Auth dan tidak disimpan sebagai teks biasa di dalam aplikasi Zheabraa, serta seluruh komunikasi data menggunakan enkripsi HTTPS.
-                </p>
+                <div className="flex items-start gap-4">
+                  <IconBadge name="lock" />
+                  <div>
+                    <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
+                      Bagaimana sistem keamanan datanya?
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                      Data disimpan di Supabase dan dilindungi Row Level Security (RLS) yang memastikan setiap akun hanya dapat membaca dan menulis datanya sendiri. Kata sandi dikelola melalui Supabase Auth dan tidak disimpan sebagai teks biasa di dalam aplikasi Zheabraa, serta seluruh komunikasi data menggunakan enkripsi HTTPS.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* FAQ 4 */}
               <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-                <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
-                  Bagaimana sisa pocket dihitung?
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                  Sisa dihitung dari pocket dikurangi pengeluaran yang sudah dicatat, dan diperbarui secara real-time.
-                </p>
+                <div className="flex items-start gap-4">
+                  <IconBadge name="coins" />
+                  <div>
+                    <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
+                      Bagaimana sisa pocket dihitung?
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                      Sisa dihitung dari pocket dikurangi pengeluaran yang sudah dicatat, dan diperbarui secara real-time.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* FAQ 5 */}
               <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
-                <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
-                  Bagaimana jika saya lupa password?
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                  Gunakan link &quot;Lupa password?&quot; pada layar masuk untuk menerima link reset melalui email pendaftaran Anda.
-                </p>
+                <div className="flex items-start gap-4">
+                  <IconBadge name="user-plus" />
+                  <div>
+                    <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">
+                      Bagaimana jika saya lupa password?
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                      Gunakan link &quot;Lupa password?&quot; pada layar masuk untuk menerima link reset melalui email pendaftaran Anda.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
