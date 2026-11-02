@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['pwa-icon-192.png', 'pwa-icon-512.png', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.ico', 'logo.png', 'robots.txt', 'sitemap.xml', 'pwa-icon-192.png', 'pwa-icon-512.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'Zheabraa Pocket Budgeting',
         short_name: 'Zheabraa',

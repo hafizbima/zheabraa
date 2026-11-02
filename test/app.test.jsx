@@ -20,11 +20,13 @@ class ResizeObserverMock {
 }
 global.ResizeObserver = ResizeObserverMock
 window.ResizeObserver = ResizeObserverMock
+window.scrollTo = vi.fn()
 
 beforeEach(() => {
   localStorage.clear()
   localBackend.reset()
   document.documentElement.classList.remove('dark')
+  window.history.replaceState({}, '', '/login')
   cleanup()
 })
 
@@ -229,5 +231,81 @@ describe('Gimme Money smoke', () => {
 
     // Verify pocket is removed
     await waitFor(() => expect(queryByText('Hiburan Weekend')).not.toBeInTheDocument())
+  })
+
+  it('renders landing page at "/" without requiring login', async () => {
+    window.history.replaceState({}, '', '/')
+    const { getByRole, getByText, getAllByText } = render(<App />)
+
+    expect(
+      getByRole('heading', { name: /Gaji masuk, langsung terbagi/i })
+    ).toBeInTheDocument()
+    expect(getAllByText(/Sistem pocket budgeting untuk keuangan pribadimu/i).length).toBeGreaterThan(0)
+    expect(getByText('Contoh ilustrasi')).toBeInTheDocument()
+    expect(getByText('Apakah Zheabraa gratis?')).toBeInTheDocument()
+  })
+
+  it('renders register mode at "/register" with required Name and terms checkbox', async () => {
+    window.history.replaceState({}, '', '/register')
+    const user = userEvent.setup()
+    const { getByRole, getByPlaceholderText, findByText } = render(<App />)
+
+    expect(getByRole('heading', { name: 'Buat akun' })).toBeInTheDocument()
+    expect(getByPlaceholderText('Nama kamu')).toBeInTheDocument()
+
+    // Test validation: empty name
+    await user.type(getByPlaceholderText('kamu@email.com'), 'user@test.com')
+    await user.type(getByPlaceholderText('Minimal 6 karakter'), '123456')
+    await user.click(getByRole('button', { name: 'Daftar' }))
+    expect(await findByText('Nama wajib diisi')).toBeInTheDocument()
+
+    // Test validation: password < 6 chars
+    await user.type(getByPlaceholderText('Nama kamu'), 'Budi')
+    await user.clear(getByPlaceholderText('Minimal 6 karakter'))
+    await user.type(getByPlaceholderText('Minimal 6 karakter'), '123')
+    await user.click(getByRole('button', { name: 'Daftar' }))
+    expect(await findByText('Password minimal 6 karakter')).toBeInTheDocument()
+
+    // Test validation: terms unchecked
+    await user.clear(getByPlaceholderText('Minimal 6 karakter'))
+    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'password123')
+    await user.click(getByRole('button', { name: 'Daftar' }))
+    expect(await findByText('Anda harus menyetujui Kebijakan Privasi dan Syarat Layanan')).toBeInTheDocument()
+  })
+
+  it('renders forgot-password mode at "/forgot-password"', async () => {
+    window.history.replaceState({}, '', '/forgot-password')
+    const { getByRole, getByText } = render(<App />)
+
+    expect(getByRole('heading', { name: 'Lupa Password' })).toBeInTheDocument()
+    expect(getByRole('button', { name: 'Kembali ke login' })).toBeInTheDocument()
+    expect(getByText(/Mode lokal tidak mendukung reset password/i)).toBeInTheDocument()
+  })
+
+  it('redirects unauthenticated user accessing "/dashboard" to "/login"', async () => {
+    window.history.replaceState({}, '', '/dashboard')
+    const { getByRole } = render(<App />)
+
+    await waitFor(() => {
+      expect(getByRole('heading', { name: 'Masuk' })).toBeInTheDocument()
+      expect(window.location.pathname).toBe('/login')
+    })
+  })
+
+  it('renders 404 page for unknown routes instead of login form', async () => {
+    window.history.replaceState({}, '', '/halaman-ngawur-tidak-dikenal')
+    const { getByRole, getByText } = render(<App />)
+
+    expect(getByRole('heading', { name: 'Halaman Tidak Ditemukan' })).toBeInTheDocument()
+    expect(getByText('Kode 404')).toBeInTheDocument()
+    expect(getByRole('link', { name: 'Kembali ke Beranda' })).toBeInTheDocument()
+  })
+
+  it('renders legal pages for "/privasi" and "/syarat"', async () => {
+    window.history.replaceState({}, '', '/privasi')
+    const { getByRole, getByText } = render(<App />)
+
+    expect(getByRole('heading', { name: 'Kebijakan Privasi Zheabraa' })).toBeInTheDocument()
+    expect(getByText(/Catatan Tinjauan Pemilik Aplikasi/i)).toBeInTheDocument()
   })
 })

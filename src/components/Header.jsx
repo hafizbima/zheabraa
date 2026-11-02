@@ -130,7 +130,7 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
         <div className="flex items-center justify-between py-3">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-tactile-sm dark:border-slate-700">
-              <img src="/logo.png" alt="" className="h-full w-full object-cover" />
+              <img src="/logo.png" alt="Logo Zheabraa" className="h-full w-full object-cover" />
             </div>
             <span className={`font-sans text-lg font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Zheabraa</span>
           </div>

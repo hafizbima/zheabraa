@@ -1,11 +1,15 @@
-import { useState, lazy, Suspense } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { StoreProvider, useStore } from './store/StoreContext.jsx'
+import { RouterProvider, useRouter } from './lib/router.jsx'
 import { haptic } from './lib/haptics.js'
 import Header from './components/Header.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import TransactionList from './components/TransactionList.jsx'
 import TransactionForm from './components/TransactionForm.jsx'
 import Login from './components/Login.jsx'
+import LandingPage from './components/LandingPage.jsx'
+import LegalPage from './components/LegalPage.jsx'
+import NotFound from './components/NotFound.jsx'
 
 // Lazy load non-critical routes and modals to minimize initial bundle size
 const Stats = lazy(() => import('./components/Stats.jsx'))
@@ -19,21 +23,39 @@ const IosInstallPrompt = lazy(() => import('./components/IosInstallPrompt.jsx'))
 
 export default function App() {
   return (
-    <StoreProvider>
-      <Root />
-    </StoreProvider>
+    <RouterProvider>
+      <StoreProvider>
+        <Root />
+      </StoreProvider>
+    </RouterProvider>
   )
 }
 
 function Root() {
   const { user, ready } = useStore()
+  const { pathname, navigate } = useRouter()
+
+  // Guard routing terproteksi dan redirect otomatis
+  useEffect(() => {
+    if (!ready) return
+
+    if (pathname === '/dashboard' && !user) {
+      navigate('/login', { replace: true })
+    } else if (
+      (pathname === '/login' || pathname === '/register' || pathname === '/forgot-password') &&
+      user
+    ) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [ready, pathname, user, navigate])
+
   if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#F4F5F7] dark:bg-[#0D1117]">
         <div className="text-center text-slate-900 dark:text-white">
           <img
             src="/logo.png"
-            alt="Gimme Money"
+            alt="Logo Zheabraa"
             className="mx-auto mb-4 h-14 w-14 rounded-2xl border border-slate-200/80 object-cover shadow-tactile-sm dark:border-slate-800"
           />
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-slate-800 dark:border-slate-800 dark:border-t-teal-400" />
@@ -42,8 +64,32 @@ function Root() {
       </div>
     )
   }
-  if (!user) return <Login />
-  return <Shell />
+
+  // Routing Pages
+  if (pathname === '/') {
+    return <LandingPage />
+  }
+
+  if (pathname === '/privasi') {
+    return <LegalPage type="privasi" />
+  }
+
+  if (pathname === '/syarat') {
+    return <LegalPage type="syarat" />
+  }
+
+  if (pathname === '/login' || pathname === '/register' || pathname === '/forgot-password') {
+    if (user) return null
+    return <Login />
+  }
+
+  if (pathname === '/dashboard') {
+    if (!user) return null
+    return <Shell />
+  }
+
+  // Rute tidak dikenal -> Halaman 404
+  return <NotFound />
 }
 
 function Shell() {
