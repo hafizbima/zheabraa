@@ -101,6 +101,44 @@ describe('Gimme Money smoke', () => {
     expect(await findByText(/jajan pasar/)).toBeInTheDocument()
   })
 
+  it('user can delete a transaction from history (Riwayat)', async () => {
+    const user = userEvent.setup()
+    const { getByPlaceholderText, getByRole, findByText, queryByText } = render(<App />)
+
+    // Login
+    await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'abcdef')
+    await user.click(getByRole('button', { name: 'Masuk' }))
+    await findByText('Total Pemasukan')
+
+    // Add transaction via FAB
+    await user.click(getByRole('button', { name: 'Tambah transaksi' }))
+    await findByText('Tambah Transaksi')
+    await user.type(getByPlaceholderText('0'), '75000')
+    await user.type(getByPlaceholderText('Wajib diisi untuk uang bebas'), 'beli kopi spesial')
+    await user.click(getByRole('button', { name: 'Simpan' }))
+
+    // Wait for modal to close
+    await waitFor(() => expect(queryByText('Tambah Transaksi')).not.toBeInTheDocument())
+
+    // Go to Riwayat
+    await user.click(getByRole('button', { name: 'Riwayat' }))
+    expect(await findByText(/beli kopi spesial/)).toBeInTheDocument()
+
+    // Click Hapus on the transaction
+    const deleteBtn = getByRole('button', { name: 'Hapus transaksi beli kopi spesial' })
+    await user.click(deleteBtn)
+
+    // Confirmation dialog
+    expect(await findByText('Transaksi ini akan dihapus permanen. Lanjutkan?')).toBeInTheDocument()
+    const confirmBtn = getByRole('button', { name: 'Hapus' })
+    await user.click(confirmBtn)
+
+    // Verify deleted
+    expect(await findByText('Transaksi berhasil dihapus')).toBeInTheDocument()
+    await waitFor(() => expect(queryByText(/beli kopi spesial/)).not.toBeInTheDocument())
+  })
+
   it('single Rekening Utama balance drops when an expense is recorded', async () => {
     const user = userEvent.setup()
     const { getByText, getByPlaceholderText, getByRole, findAllByText, findByText } = render(<App />)

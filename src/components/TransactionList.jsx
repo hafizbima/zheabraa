@@ -443,10 +443,18 @@ export default function TransactionList({ onEditTx }) {
                         {isTransfer ? '⇄ ' : t.type === 'refund' || t.type === 'income' ? '+' : '−'}{formatRupiah(t.amount)}
                       </p>
                       <div className="mt-1 flex justify-end gap-1">
-                        <button onClick={() => onEditTx(viewMonth, t)} className={`${btn.subtle} min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 px-2.5 py-1.5`}>
+                        <button
+                          onClick={() => onEditTx(currentMonthId || t.date?.slice(0, 7), t)}
+                          className={`${btn.subtle} min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 px-2.5 py-1.5`}
+                          aria-label={`Ubah transaksi ${t.description || catName(t)}`}
+                        >
                           Ubah
                         </button>
-                        <button onClick={() => setConfirmId({ mId: viewMonth, id: t.id })} className={`${btn.subtleDanger} min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 px-2.5 py-1.5`}>
+                        <button
+                          onClick={() => setConfirmId({ mId: currentMonthId || t.date?.slice(0, 7), id: t.id })}
+                          className={`${btn.subtleDanger} min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 px-2.5 py-1.5`}
+                          aria-label={`Hapus transaksi ${t.description || catName(t)}`}
+                        >
                           Hapus
                         </button>
                       </div>
@@ -479,6 +487,7 @@ export default function TransactionList({ onEditTx }) {
           onConfirm={() => {
             haptic.warning()
             removeTransaction(confirmId.mId, confirmId.id)
+            notify('Transaksi berhasil dihapus')
             setConfirmId(null)
           }}
         />
