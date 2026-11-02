@@ -247,7 +247,7 @@ export default function Login() {
                       type={showPw ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Minimal 6 karakter"
+                      placeholder="Masukkan kata sandi"
                       autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                       minLength={6}
                       required
@@ -375,7 +375,7 @@ export default function Login() {
         <p className="mt-4 text-center text-xs text-slate-600 dark:text-slate-400">
           {backendMode === 'local'
             ? 'Data tersimpan di perangkat ini (mode lokal).'
-            : 'Data tersinkron ke Supabase, bisa diakses dari HP/laptop mana saja.'}
+            : 'Data tersinkron dengan akun Supabase Anda.'}
         </p>
       </div>
     </div>

@@ -39,7 +39,7 @@ describe('Gimme Money smoke', () => {
 
     // Login
     await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
-    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'abcdef')
     await user.click(getByRole('button', { name: 'Masuk' }))
     await findByText('Total Pemasukan')
     expect(getByText('Aman Dibelanjakan / Hari')).toBeInTheDocument()
@@ -77,7 +77,7 @@ describe('Gimme Money smoke', () => {
 
     // Login
     await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
-    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'abcdef')
     await user.click(getByRole('button', { name: 'Masuk' }))
     await findByText('Total Pemasukan')
 
@@ -106,7 +106,7 @@ describe('Gimme Money smoke', () => {
     const { getByText, getByPlaceholderText, getByRole, findAllByText, findByText } = render(<App />)
 
     await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
-    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'abcdef')
     await user.click(getByRole('button', { name: 'Masuk' }))
     await findByText('Total Pemasukan')
 
@@ -128,7 +128,7 @@ describe('Gimme Money smoke', () => {
     const { getByPlaceholderText, getByRole, findByText } = render(<App />)
 
     await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
-    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'abcdef')
     await user.click(getByRole('button', { name: 'Masuk' }))
     await findByText('Total Pemasukan')
 
@@ -144,7 +144,7 @@ describe('Gimme Money smoke', () => {
     const { getByPlaceholderText, getByRole, findByText, findByRole } = render(<App />)
 
     await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
-    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'abcdef')
     await user.click(getByRole('button', { name: 'Masuk' }))
     await findByText('Total Pemasukan')
 
@@ -181,7 +181,7 @@ describe('Gimme Money smoke', () => {
     const { getByPlaceholderText, getByRole, findByText, queryByText, findAllByText } = render(<App />)
 
     await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
-    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'abcdef')
     await user.click(getByRole('button', { name: 'Masuk' }))
     await findByText('Total Pemasukan')
 
@@ -205,7 +205,7 @@ describe('Gimme Money smoke', () => {
     const { getByPlaceholderText, getByRole, findByText, queryByText, findByRole, findAllByText } = render(<App />)
 
     await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
-    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'abcdef')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'abcdef')
     await user.click(getByRole('button', { name: 'Masuk' }))
     await findByText('Total Pemasukan')
 
@@ -241,7 +241,7 @@ describe('Gimme Money smoke', () => {
       getByRole('heading', { name: /Gaji masuk, langsung terbagi/i })
     ).toBeInTheDocument()
     expect(getAllByText(/Sistem pocket budgeting untuk keuangan pribadimu/i).length).toBeGreaterThan(0)
-    expect(getByText('Contoh ilustrasi')).toBeInTheDocument()
+    expect(getAllByText('Contoh ilustrasi, nominal bisa diubah.').length).toBe(2)
     expect(getByText('Apakah Zheabraa gratis?')).toBeInTheDocument()
   })
 
@@ -255,20 +255,20 @@ describe('Gimme Money smoke', () => {
 
     // Test validation: empty name
     await user.type(getByPlaceholderText('kamu@email.com'), 'user@test.com')
-    await user.type(getByPlaceholderText('Minimal 6 karakter'), '123456')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), '123456')
     await user.click(getByRole('button', { name: 'Daftar' }))
     expect(await findByText('Nama wajib diisi')).toBeInTheDocument()
 
     // Test validation: password < 6 chars
     await user.type(getByPlaceholderText('Nama kamu'), 'Budi')
-    await user.clear(getByPlaceholderText('Minimal 6 karakter'))
-    await user.type(getByPlaceholderText('Minimal 6 karakter'), '123')
+    await user.clear(getByPlaceholderText('Masukkan kata sandi'))
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), '123')
     await user.click(getByRole('button', { name: 'Daftar' }))
     expect(await findByText('Password minimal 6 karakter')).toBeInTheDocument()
 
     // Test validation: terms unchecked
-    await user.clear(getByPlaceholderText('Minimal 6 karakter'))
-    await user.type(getByPlaceholderText('Minimal 6 karakter'), 'password123')
+    await user.clear(getByPlaceholderText('Masukkan kata sandi'))
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'password123')
     await user.click(getByRole('button', { name: 'Daftar' }))
     expect(await findByText('Anda harus menyetujui Kebijakan Privasi dan Syarat Layanan')).toBeInTheDocument()
   })
@@ -303,9 +303,11 @@ describe('Gimme Money smoke', () => {
 
   it('renders legal pages for "/privasi" and "/syarat"', async () => {
     window.history.replaceState({}, '', '/privasi')
-    const { getByRole, getByText } = render(<App />)
+    const { getByRole, getByText, getAllByText } = render(<App />)
 
     expect(getByRole('heading', { name: 'Kebijakan Privasi Zheabraa' })).toBeInTheDocument()
-    expect(getByText(/Catatan Tinjauan Pemilik Aplikasi/i)).toBeInTheDocument()
+    expect(getAllByText(/Hafiz Bima/i).length).toBeGreaterThan(0)
+    expect(getByText(/hafizbimaaa@gmail.com/i)).toBeInTheDocument()
+    expect(getByText(/Kudus, Republik Indonesia/i)).toBeInTheDocument()
   })
 })
