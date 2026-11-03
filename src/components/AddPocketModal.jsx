@@ -44,7 +44,7 @@ export default function AddPocketModal({ onClose, onAdd }) {
         budgetAmount: pocketType === 'expense' ? toInt(budget) : 0,
         color,
         goalAmount: pocketType === 'saving' ? toInt(goal) : 0,
-        goalDeadline: pocketType === 'saving' ? (deadline || null) : null,
+        ...(pocketType === 'saving' && deadline ? { goalDeadline: deadline } : {}),
       })
       haptic.success()
       onClose()

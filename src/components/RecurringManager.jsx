@@ -105,7 +105,7 @@ export default function RecurringManager({ onClose }) {
       type,
       amount: amt,
       categoryId: isOut ? (categoryId === 'free' ? null : categoryId) : null,
-      walletId: type === 'income' ? null : walletId || null,
+      walletId: walletId || wallets[0]?.id || null,
       toWalletId: type === 'transfer' ? toWalletId || null : null,
       description: description.trim(),
       active: true,
@@ -169,7 +169,7 @@ export default function RecurringManager({ onClose }) {
               ))}
             </select>
             <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
-              <option value="">Dompet: tidak dilacak</option>
+              <option value="">{wallets.length === 1 ? `Dompet: ${wallets[0]?.name || ''}` : 'Pilih dompet'}</option>
               {wallets.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.name}

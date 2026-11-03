@@ -35,6 +35,7 @@ export function createBlankMonth(mId) {
     id: mId,
     label: labelOf(mId),
     carryOver: 0,
+    carryOverWalletId: null,
     incomes: [{ id: uid(), label: 'Gaji', amount: 0 }],
     categories: defaultCategories(),
     transactions: [],

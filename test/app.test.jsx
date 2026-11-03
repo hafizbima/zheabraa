@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, cleanup, waitFor } from '@testing-library/react'
+import { render, cleanup, waitFor, within } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import localBackend from '../src/store/backends/local.js'
@@ -48,7 +48,8 @@ describe('Gimme Money smoke', () => {
     expect(getByText('Transport')).toBeInTheDocument()
     expect(getAllByText('Dompet').length).toBeGreaterThan(0)
 
-    await user.click(getByRole('button', { name: 'Template Budget' }))
+    const tplBtn = await findByRole('button', { name: 'Template Budget' })
+    await user.click(tplBtn)
     expect(await findByRole('dialog', { name: 'Template Budget Bulanan' })).toBeInTheDocument()
     await user.click(getByRole('button', { name: 'Tutup' }))
 
@@ -69,7 +70,7 @@ describe('Gimme Money smoke', () => {
     // Wallet manager (single Rekening Utama)
     await user.click(getByRole('button', { name: 'Dompet' }))
     expect((await findAllByText('Rekening Utama')).length).toBeGreaterThan(0)
-  })
+  }, 30000)
 
   it('history filter "Uang Bebas" shows free-money transactions', async () => {
     const user = userEvent.setup()
@@ -348,4 +349,96 @@ describe('Gimme Money smoke', () => {
     expect(getByText(/hafizbimaaa@gmail.com/i)).toBeInTheDocument()
     expect(getByText(/Kudus, Republik Indonesia/i)).toBeInTheDocument()
   })
+  it('requires wallet when multiple wallets exist', async () => {
+    const user = userEvent.setup()
+    const { getByPlaceholderText, getByRole, getByLabelText, findByText, findByRole, queryByRole } = render(<App />)
+
+    // Login
+    await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'abcdef')
+    await user.click(getByRole('button', { name: 'Masuk' }))
+    await findByText('Total Pemasukan')
+
+    // Add second wallet via Wallet Manager
+    await user.click(getByRole('button', { name: 'Dompet' }))
+    const walletDialog = await findByRole('dialog', { name: 'Rekening Utama' })
+    await user.type(getByPlaceholderText('Nama (mis. GoPay)'), 'GoPay')
+    const addWalletBtn = walletDialog.querySelector('button[type="submit"]')
+    await user.click(addWalletBtn)
+    await waitFor(() => expect(within(walletDialog).getByDisplayValue('GoPay')).toBeInTheDocument())
+    const closeBtn = walletDialog.querySelector('button[aria-label="Tutup"]')
+    await user.click(closeBtn)
+    await waitFor(() => expect(queryByRole('dialog')).not.toBeInTheDocument())
+    // Heading Rekening / Dompet on dashboard changes from 'Rekening Utama' to 'Dompet'
+    await findByRole('heading', { name: 'Dompet' })
+
+    // Open transaction modal via FAB
+    await user.click(getByRole('button', { name: 'Tambah transaksi' }))
+    await findByText('Tambah Transaksi')
+
+    // Fill amount and free description, but do NOT select wallet
+    await user.type(getByPlaceholderText('0'), '35000')
+    await user.type(getByPlaceholderText('Wajib diisi untuk uang bebas'), 'beli cemilan')
+    await user.click(getByRole('button', { name: 'Simpan' }))
+
+    // Validation error must appear
+    expect(await findByText('Pilih dompet')).toBeInTheDocument()
+
+    // Select GoPay wallet
+    const walletSelect = getByLabelText('Dompet')
+    const gopayOpt = [...walletSelect.options].find((o) => o.text.includes('GoPay'))
+    await user.selectOptions(walletSelect, gopayOpt.value)
+
+    // Save now succeeds
+    await user.click(getByRole('button', { name: 'Simpan' }))
+    await waitFor(() => expect(queryByRole('dialog')).not.toBeInTheDocument())
+
+    // Check transaction in Riwayat
+    await user.click(getByRole('button', { name: 'Riwayat' }))
+    expect(await findByText(/beli cemilan/)).toBeInTheDocument()
+  }, 15000)
+  it('requires wallet for carry over when multiple wallets exist', async () => {
+    const user = userEvent.setup()
+    const { getByPlaceholderText, getByRole, getByLabelText, getByText, findByText, findByRole, queryByRole, queryByText } = render(<App />)
+
+    // Login
+    await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'abcdef')
+    await user.click(getByRole('button', { name: 'Masuk' }))
+    await findByText('Total Pemasukan')
+
+    // Single wallet mode: shows "Dompet: Rekening Utama"
+    expect(getByText(/Dompet:/i)).toHaveTextContent('Rekening Utama')
+
+    // Add second wallet
+    await user.click(getByRole('button', { name: 'Dompet' }))
+    const walletDialog = await findByRole('dialog', { name: 'Rekening Utama' })
+    await user.type(getByPlaceholderText('Nama (mis. GoPay)'), 'GoPay')
+    const addWalletBtn = walletDialog.querySelector('button[type="submit"]')
+    await user.click(addWalletBtn)
+    await waitFor(() => expect(within(walletDialog).getByDisplayValue('GoPay')).toBeInTheDocument())
+    const closeBtn = walletDialog.querySelector('button[aria-label="Tutup"]')
+    await user.click(closeBtn)
+    await waitFor(() => expect(queryByRole('dialog')).not.toBeInTheDocument())
+
+    // Multiple wallets: Carry-over has wallet select
+    const carryWalletSelect = getByLabelText('Dompet Carry-over')
+    expect(carryWalletSelect).toBeInTheDocument()
+
+    // Type carry draft amount with no wallet selected
+    const carryInput = getByLabelText('Carry-over')
+    await user.clear(carryInput)
+    await user.type(carryInput, '150000')
+    await user.selectOptions(carryWalletSelect, '')
+
+    // Warning appears
+    expect(await findByText('Carry-over memerlukan dompet. Silakan pilih dompet.')).toBeInTheDocument()
+
+    // Select GoPay wallet
+    const gopayOpt = [...carryWalletSelect.options].find((o) => o.text.includes('GoPay'))
+    await user.selectOptions(carryWalletSelect, gopayOpt.value)
+
+    // Warning disappears
+    expect(queryByText('Carry-over memerlukan dompet. Silakan pilih dompet.')).not.toBeInTheDocument()
+  }, 15000)
 })

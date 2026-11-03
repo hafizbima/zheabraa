@@ -32,6 +32,7 @@ export async function importBackup(file, uid) {
       id: mId,
       label: m.label || mId,
       carryOver: m.carryOver || 0,
+      carryOverWalletId: m.carryOverWalletId || null,
       incomes: m.incomes || [],
       note: m.note || '',
       createdAt: m.createdAt || Date.now(),

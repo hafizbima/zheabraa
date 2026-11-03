@@ -18,7 +18,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const [categoryId, setCategoryId] = useState(
     transaction ? transaction.categoryId || 'free' : prefill?.categoryId || 'free',
   )
-  const [walletId, setWalletId] = useState(transaction?.walletId || '')
+  const [walletId, setWalletId] = useState(transaction?.walletId || prefill?.walletId || '')
   const [toWalletId, setToWalletId] = useState(transaction?.toWalletId || '')
   const [description, setDescription] = useState(transaction?.description || prefill?.description || '')
   const [error, setError] = useState('')
@@ -27,8 +27,8 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const primary = wallets[0] || null
 
   useEffect(() => {
-    if (!transaction && isSingle && primary && !walletId) setWalletId(primary.id)
-  }, [isSingle, primary, transaction, walletId])
+    if (isSingle && primary && !walletId) setWalletId(primary.id)
+  }, [isSingle, primary, walletId])
 
   const isTransfer = transaction?.type === 'transfer' || type === 'transfer'
   const isIncome = transaction?.type === 'income' || type === 'income'
@@ -53,26 +53,37 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
 
   const submit = (e) => {
     e.preventDefault()
-    setSubmitting(true)
     const amt = toInt(amount)
     if (amt <= 0) return setError('Nominal harus lebih dari 0')
     if (!date) return setError('Tanggal wajib diisi')
+    if (wallets.length === 0) {
+      return setError('Belum ada dompet. Tambahkan dompet terlebih dahulu di menu Dompet.')
+    }
+
+    const activeWalletId = isTransfer ? walletId : walletId || (isSingle ? primary?.id : '')
+
     if (isTransfer) {
       if (!walletId) return setError('Pilih dompet asal')
       if (!toWalletId) return setError('Pilih dompet tujuan')
       if (walletId === toWalletId) return setError('Dompet asal dan tujuan tidak boleh sama')
-    } else if (isFree && !description.trim()) {
-      return setError('Keterangan wajib diisi untuk Uang Bebas')
-    } else if (isIncome && !description.trim()) {
-      return setError('Keterangan wajib diisi untuk Pemasukan (mis. Gaji, Bonus)')
+    } else {
+      if (!activeWalletId) {
+        return setError(isIncome ? 'Pilih dompet penerima' : 'Pilih dompet')
+      }
+      if (isFree && !description.trim()) {
+        return setError('Keterangan wajib diisi untuk Uang Bebas')
+      } else if (isIncome && !description.trim()) {
+        return setError('Keterangan wajib diisi untuk Pemasukan (mis. Gaji, Bonus)')
+      }
     }
 
+    setSubmitting(true)
     const payload = {
       date,
       type,
       amount: amt,
       categoryId: isTransfer || isIncome ? null : isFree ? null : categoryId,
-      walletId: isTransfer ? walletId : walletId || (isSingle ? primary?.id : null),
+      walletId: activeWalletId,
       toWalletId: isTransfer ? toWalletId : null,
       recurringTemplateId: transaction?.recurringTemplateId || prefill?.recurringTemplateId || null,
       description: description.trim() || (isIncome ? 'Pemasukan' : ''),
@@ -243,15 +254,21 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         )}
 
         {!isTransfer && (
-          isSingle ? (
+          wallets.length === 0 ? (
+            <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
+              Belum ada dompet tersimpan. Tambahkan dompet terlebih dahulu sebelum mencatat transaksi.
+            </div>
+          ) : isSingle ? (
             <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
               Tercatat di <strong>{primary?.name}</strong>{isIncome ? ' (saldo dompet bertambah)' : ': pocket adalah sekat virtual dari rekening ini'}.
             </p>
           ) : (
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">{isIncome ? 'Dompet Penerima' : 'Dompet (opsional)'}</label>
-              <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
-                <option value="">(Tidak dilacak)</option>
+              <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                {isIncome ? 'Dompet Penerima' : 'Dompet'} <span className="text-rose-500">*</span>
+              </label>
+              <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)} aria-label={isIncome ? 'Dompet Penerima' : 'Dompet'}>
+                <option value="">(Pilih dompet)</option>
                 {wallets.map((w) => (
                   <option key={w.id} value={w.id}>
                     {w.name}

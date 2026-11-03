@@ -8,7 +8,7 @@ function needClient() {
 
 // --- row <-> shape mapping ---
 const WALLET_FIELDS = { name: 'name', color: 'color', openingBalance: 'opening_balance', order: 'sort_order', deleted: 'deleted' }
-const MONTH_FIELDS = { label: 'label', carryOver: 'carry_over', incomes: 'incomes', note: 'note', createdAt: 'created_at' }
+const MONTH_FIELDS = { label: 'label', carryOver: 'carry_over', incomes: 'incomes', note: 'note', createdAt: 'created_at', carryOverWalletId: 'carry_over_wallet_id' }
 const CAT_FIELDS = { name: 'name', budgetAmount: 'budget_amount', goalAmount: 'goal_amount', savedAmount: 'saved_amount', goalDeadline: 'goal_deadline', color: 'color', key: 'key', order: 'sort_order' }
 const TX_FIELDS = { date: 'date', amount: 'amount', type: 'type', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', recurringTemplateId: 'recurring_template_id', description: 'description', createdAt: 'created_at' }
 const TEMPLATE_FIELDS = { dayOfMonth: 'day_of_month', type: 'type', amount: 'amount', categoryId: 'category_id', walletId: 'wallet_id', toWalletId: 'to_wallet_id', description: 'description', active: 'active', skipMonths: 'skip_months', createdAt: 'created_at' }
@@ -17,11 +17,13 @@ function mapWallet(r) {
   return { id: r.id, name: r.name, color: r.color, openingBalance: r.opening_balance, order: r.sort_order }
 }
 function mapMonth(r) {
+  const metaWalletId = Array.isArray(r.incomes) ? r.incomes.find((x) => x && x._carryOverWalletId)?._carryOverWalletId : null
   return {
     id: r.id,
     label: r.label,
     carryOver: r.carry_over,
-    incomes: Array.isArray(r.incomes) ? r.incomes : [],
+    carryOverWalletId: r.carry_over_wallet_id || metaWalletId || null,
+    incomes: Array.isArray(r.incomes) ? r.incomes.filter((x) => !x?._carryOverWalletId) : [],
     note: r.note || '',
     createdAt: Number(r.created_at) || Date.now(),
   }
@@ -68,17 +70,74 @@ function isMissingTable(err) {
   return !!err && (err.code === 'PGRST205' || /Could not find the table/i.test(err.message || ''))
 }
 
-function isMissingKeyCol(err) {
-  return !!err && err.code === 'PGRST204' && /'key' column of 'categories'/.test(err.message || '')
+function getMissingCategoryCol(err) {
+  if (!err || err.code !== 'PGRST204') return null
+  const m = String(err.message || '').match(/Could not find the '([^']+)' column of 'categories'/i)
+  return m ? m[1] : null
 }
 
-let keyColumnOk = true
-function stripKey(r) { if (keyColumnOk) return r; const { key, ...rest } = r; return rest }
-async function withKeyFallback(run) {
-  if (!keyColumnOk) return run()
-  try { return await run() }
-  catch (e) {
-    if (isMissingKeyCol(e)) { keyColumnOk = false; return run() }
+const missingCategoryCols = new Set()
+
+function stripCategoryCols(r) {
+  if (!r || missingCategoryCols.size === 0) return r
+  let out = r
+  for (const col of missingCategoryCols) {
+    if (col in out) {
+      if (out === r) out = { ...r }
+      delete out[col]
+    }
+  }
+  return out
+}
+
+function stripKey(r) {
+  return stripCategoryCols(r)
+}
+
+async function withCategoryFallback(run) {
+  try {
+    return await run()
+  } catch (e) {
+    const missingCol = getMissingCategoryCol(e)
+    if (missingCol && !missingCategoryCols.has(missingCol)) {
+      missingCategoryCols.add(missingCol)
+      return await run()
+    }
+    throw e
+  }
+}
+
+const withKeyFallback = withCategoryFallback
+
+function getMissingMonthCol(err) {
+  if (!err || err.code !== 'PGRST204') return null
+  const m = String(err.message || '').match(/Could not find the '([^']+)' column of 'months'/i)
+  return m ? m[1] : null
+}
+
+const missingMonthCols = new Set()
+
+function stripMonthCols(r) {
+  if (!r || missingMonthCols.size === 0) return r
+  let out = r
+  for (const col of missingMonthCols) {
+    if (col in out) {
+      if (out === r) out = { ...r }
+      delete out[col]
+    }
+  }
+  return out
+}
+
+async function withMonthFallback(run) {
+  try {
+    return await run()
+  } catch (e) {
+    const missingCol = getMissingMonthCol(e)
+    if (missingCol && !missingMonthCols.has(missingCol)) {
+      missingMonthCols.add(missingCol)
+      return await run()
+    }
     throw e
   }
 }
@@ -113,6 +172,8 @@ function pad2(n) {
 }
 
 async function applyRecurringForMonth(uid, mId) {
+  const { data: userWallets } = await supabase.from('wallets').select('id').eq('user_id', uid).order('sort_order', { ascending: true }).limit(1)
+  const defaultWalletId = userWallets?.[0]?.id || null
   const { data, error } = await supabase
     .from('recurring_templates')
     .select('*')
@@ -138,7 +199,7 @@ async function applyRecurringForMonth(uid, mId) {
         amount: t.amount || 0,
         type: 'income',
         category_id: null,
-        wallet_id: null,
+        wallet_id: t.wallet_id || defaultWalletId,
         description: t.description || 'Pemasukan berulang',
         created_at: Date.now(),
       })
@@ -153,7 +214,7 @@ async function applyRecurringForMonth(uid, mId) {
         amount: t.amount || 0,
         type: 'transfer',
         category_id: null,
-        wallet_id: t.wallet_id || null,
+        wallet_id: t.wallet_id || defaultWalletId,
         to_wallet_id: t.to_wallet_id || null,
         description: t.description || 'Transfer berulang',
         created_at: Date.now(),
@@ -168,7 +229,7 @@ async function applyRecurringForMonth(uid, mId) {
       amount: t.amount || 0,
       type: 'expense',
       category_id: t.category_id || null,
-      wallet_id: t.wallet_id || null,
+      wallet_id: t.wallet_id || defaultWalletId,
       description: t.description || 'Transaksi berulang',
       created_at: Date.now(),
     })
@@ -475,9 +536,16 @@ export async function removeWallet(uid, id) {
 // --- months ---
 export async function setMonth(uid, month) {
   needClient()
-  return throwIfError(
-    await supabase.from('months').upsert({ id: month.id, user_id: uid, ...monthRow(month) }),
-  )
+  const incomesToSave = [
+    ...(Array.isArray(month.incomes) ? month.incomes.filter((x) => !x?._carryOverWalletId) : []),
+    ...(month.carryOverWalletId ? [{ _carryOverWalletId: month.carryOverWalletId }] : []),
+  ]
+  const row = monthRow({ ...month, incomes: incomesToSave })
+  return await withMonthFallback(async () => {
+    return throwIfError(
+      await supabase.from('months').upsert(stripMonthCols({ id: month.id, user_id: uid, ...row })),
+    )
+  })
 }
 export async function ensureMonth(uid, mId) {
   needClient()
@@ -485,13 +553,16 @@ export async function ensureMonth(uid, mId) {
   if (existing.error) throw existing.error
   if (existing.data && existing.data.length) return
   const blank = createBlankMonth(mId)
-  const res = await supabase.from('months').upsert({
-    id: blank.id,
-    user_id: uid,
-    label: blank.label,
-    carry_over: 0,
-    incomes: blank.incomes,
-    created_at: blank.createdAt,
+  let res
+  await withMonthFallback(async () => {
+    res = await supabase.from('months').upsert(stripMonthCols({
+      id: blank.id,
+      user_id: uid,
+      label: blank.label,
+      carry_over: 0,
+      incomes: blank.incomes,
+      created_at: blank.createdAt,
+    }))
   })
   if (res.error) throw res.error
   const cats = blank.categories.map((c) => ({
@@ -511,19 +582,27 @@ export async function ensureMonth(uid, mId) {
   })
   await applyRecurringQuiet(uid, mId)
 }
-export async function createNextMonth(uid, mId, carryOver, cats) {
+export async function createNextMonth(uid, mId, carryOver, cats, carryOverWalletId) {
   needClient()
   const existing = await supabase.from('months').select('id').eq('id', mId).eq('user_id', uid)
   if (existing.error) throw existing.error
   if (existing.data && existing.data.length) return
   const blank = createBlankMonth(mId)
-  const res = await supabase.from('months').upsert({
-    id: blank.id,
-    user_id: uid,
-    label: blank.label,
-    carry_over: carryOver || 0,
-    incomes: blank.incomes,
-    created_at: blank.createdAt,
+  const incomesToSave = [
+    ...(Array.isArray(blank.incomes) ? blank.incomes.filter((x) => !x?._carryOverWalletId) : []),
+    ...(carryOverWalletId ? [{ _carryOverWalletId: carryOverWalletId }] : []),
+  ]
+  let res
+  await withMonthFallback(async () => {
+    res = await supabase.from('months').upsert(stripMonthCols({
+      id: blank.id,
+      user_id: uid,
+      label: blank.label,
+      carry_over: carryOver || 0,
+      carry_over_wallet_id: carryOverWalletId || null,
+      incomes: incomesToSave,
+      created_at: blank.createdAt,
+    }))
   })
   if (res.error) throw res.error
   const list = cats && cats.length ? cats : blank.categories
@@ -614,17 +693,18 @@ export async function removeBudgetTemplate(uid, id) {
 // --- categories ---
 export async function setCategory(uid, mId, cat) {
   needClient()
-  return withKeyFallback(async () => {
-    const row = stripKey(categoryRow(cat))
+  return withCategoryFallback(async () => {
+    const row = stripCategoryCols(categoryRow(cat))
     return throwIfError(
-      await supabase.from('categories').upsert({ id: cat.id, user_id: uid, month_id: mId, ...row }),
+      await supabase.from('categories').upsert(stripCategoryCols({ id: cat.id, user_id: uid, month_id: mId, ...row })),
     )
   })
 }
 export async function updateCategory(uid, mId, id, patch) {
   needClient()
-  return withKeyFallback(async () => {
-    const row = stripKey(categoryRow(patch))
+  return withCategoryFallback(async () => {
+    const row = stripCategoryCols(categoryRow(patch))
+    if (Object.keys(row).length === 0) return null
     return throwIfError(
       await supabase
         .from('categories')

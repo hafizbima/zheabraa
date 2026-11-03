@@ -40,6 +40,7 @@ function migrate(raw) {
       id: m.id || id,
       label: m.label || id,
       carryOver: m.carryOver || 0,
+      carryOverWalletId: m.carryOverWalletId || null,
       incomes: m.incomes || [],
       createdAt: m.createdAt || Date.now(),
     }
@@ -55,7 +56,7 @@ function migrate(raw) {
           type: 'income',
           amount: inc.amount || 0,
           categoryId: null,
-          walletId: null,
+          walletId: raw.wallets?.[0]?.id || null,
           toWalletId: null,
           description: inc.label || 'Pemasukan',
           createdAt: Date.now(),
@@ -241,6 +242,7 @@ function pad2(n) {
 }
 
 function generateRecurring(uid, mId) {
+  const defaultWalletId = store.wallets[0]?.id || null
   const now = new Date()
   const curMonth = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`
   const todayDay = now.getDate()
@@ -263,7 +265,7 @@ function generateRecurring(uid, mId) {
         type: 'income',
         amount: t.amount || 0,
         categoryId: null,
-        walletId: null,
+        walletId: t.walletId || defaultWalletId,
         toWalletId: null,
         description: t.description || 'Pemasukan berulang',
         createdAt: Date.now(),
@@ -281,7 +283,7 @@ function generateRecurring(uid, mId) {
             amount: t.amount || 0,
             type: 'transfer',
             categoryId: null,
-            walletId: t.walletId || null,
+            walletId: t.walletId || defaultWalletId,
             toWalletId: t.toWalletId || null,
             description: t.description || 'Transfer berulang',
             createdAt: Date.now(),
@@ -292,7 +294,7 @@ function generateRecurring(uid, mId) {
             amount: t.amount || 0,
             type: 'expense',
             categoryId: t.categoryId || null,
-            walletId: t.walletId || null,
+            walletId: t.walletId || defaultWalletId,
             toWalletId: null,
             description: t.description || 'Transaksi berulang',
             createdAt: Date.now(),
@@ -308,7 +310,12 @@ function generateRecurring(uid, mId) {
 }
 
 export function setMonth(uid, month) {
-  store.months[month.id] = { ...(store.months[month.id] || {}), ...month }
+  const existing = store.months[month.id] || {}
+  store.months[month.id] = {
+    ...existing,
+    ...month,
+    carryOverWalletId: month.carryOverWalletId !== undefined ? month.carryOverWalletId : existing.carryOverWalletId || null,
+  }
   persist()
   emitMonths()
   return Promise.resolve()
@@ -320,6 +327,7 @@ export function ensureMonth(uid, mId) {
     id: blank.id,
     label: blank.label,
     carryOver: 0,
+    carryOverWalletId: null,
     incomes: blank.incomes,
     note: '',
     createdAt: blank.createdAt,
@@ -333,13 +341,14 @@ export function ensureMonth(uid, mId) {
   emitDetail(mId)
   return Promise.resolve()
 }
-export function createNextMonth(uid, mId, carryOver, cats) {
+export function createNextMonth(uid, mId, carryOver, cats, carryOverWalletId) {
   if (store.months[mId]) return Promise.resolve()
   const blank = createBlankMonth(mId)
   store.months[mId] = {
     id: blank.id,
     label: blank.label,
     carryOver: carryOver || 0,
+    carryOverWalletId: carryOverWalletId || store.wallets[0]?.id || null,
     incomes: blank.incomes,
     note: '',
     createdAt: blank.createdAt,

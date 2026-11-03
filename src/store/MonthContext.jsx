@@ -46,6 +46,7 @@ export function MonthProvider({ children }) {
         id: mId,
         label: m?.label || labelOf(mId),
         carryOver: m?.carryOver || 0,
+        carryOverWalletId: m?.carryOverWalletId || null,
         incomes: m?.incomes || [],
         note: m?.note || '',
         createdAt: m?.createdAt || Date.now(),
@@ -68,6 +69,7 @@ export function MonthProvider({ children }) {
     const cur = months[currentMonthId]
     const nextId = addMonths(currentMonthId, 1)
     const carry = cur ? carryOverAmount(cur) : 0
+    const carryWalletId = cur?.carryOverWalletId || (wallets.length === 1 ? wallets[0]?.id : null)
     const txs = cur?.transactions || []
     const budgetTemplate = optionsOrTemplate?.categories ? optionsOrTemplate : null
     const copyBudgets = optionsOrTemplate?.copyBudgets !== false
@@ -91,9 +93,9 @@ export function MonthProvider({ children }) {
             savedAmount: (c.goalAmount > 0 ? (c.savedAmount || 0) + sisa : c.savedAmount || 0),
           }
         })
-    mutate(backend.createNextMonth(user.uid, nextId, carry, cats), 'Gagal membuat bulan baru')
+    mutate(backend.createNextMonth(user.uid, nextId, carry, cats, carryWalletId), 'Gagal membuat bulan baru')
     setCurrentMonthId(nextId)
-  }, [user, months, currentMonthId, mutate])
+  }, [user, months, currentMonthId, wallets, mutate])
 
   const saveBudgetTemplate = useCallback(
     (name) => {
@@ -134,7 +136,7 @@ export function MonthProvider({ children }) {
         type: 'income',
         amount: data.amount || 0,
         categoryId: null,
-        walletId: wallets[0]?.id || null,
+        walletId: data.walletId || wallets[0]?.id || null,
         toWalletId: null,
         description: data.label || 'Pemasukan',
       }
@@ -158,7 +160,7 @@ export function MonthProvider({ children }) {
     (mId, incomeId, patch) => {
       if (!user) return
       mutate(
-        backend.updateTransaction(user.uid, mId, incomeId, { description: patch.label, amount: patch.amount }),
+        backend.updateTransaction(user.uid, mId, incomeId, { description: patch.label, amount: patch.amount, ...(patch.walletId ? { walletId: patch.walletId } : {}) }),
         'Gagal mengubah pemasukan',
       )
     },
@@ -186,11 +188,36 @@ export function MonthProvider({ children }) {
   )
 
   const setCarryOver = useCallback(
-    (mId, value) => {
+    (mId, value, walletId) => {
       if (!user) return
-      mutate(backend.setMonth(user.uid, { ...monthMeta(mId), carryOver: value }), 'Gagal menyimpan carry-over')
+      const currentMeta = monthMeta(mId)
+      const targetWalletId =
+        walletId !== undefined
+          ? walletId
+          : (currentMeta.carryOverWalletId || (wallets.length === 1 ? wallets[0]?.id : null))
+
+      setMonths((prev) => {
+        const m = prev[mId] || { ...createBlankMonth(mId), categories: [] }
+        return {
+          ...prev,
+          [mId]: {
+            ...m,
+            carryOver: value,
+            carryOverWalletId: targetWalletId,
+          },
+        }
+      })
+
+      mutate(
+        backend.setMonth(user.uid, {
+          ...currentMeta,
+          carryOver: value,
+          carryOverWalletId: targetWalletId,
+        }),
+        'Gagal menyimpan carry-over',
+      )
     },
-    [user, monthMeta, mutate],
+    [user, monthMeta, wallets, setMonths, mutate],
   )
 
   const setMonthNote = useCallback(
@@ -262,7 +289,7 @@ export function MonthProvider({ children }) {
       })
       mutate(backend.setCategory(user.uid, mId, cat), 'Gagal menambah kategori')
     },
-    [user, months, setMonths, mutate],
+    [user, months, wallets, setMonths, mutate],
   )
 
   const updateCategory = useCallback(
@@ -321,7 +348,8 @@ export function MonthProvider({ children }) {
           resolvedCatId = match ? match.id : null
         }
       }
-      const tx = { id: uid(), createdAt: Date.now(), ...data, categoryId: resolvedCatId }
+      const finalWalletId = data.walletId || wallets[0]?.id || null
+      const tx = { id: uid(), createdAt: Date.now(), ...data, walletId: finalWalletId, categoryId: resolvedCatId }
 
       // Optimistic update: langsung terlihat di UI seketika
       setMonths((prev) => {

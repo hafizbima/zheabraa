@@ -131,7 +131,7 @@ export default function TransactionList({ onEditTx }) {
           type: row.type,
           amount: row.amount,
           categoryId: row.type === 'transfer' ? null : category?.id || null,
-          walletId: wallet?.id || (wallets.length === 1 ? wallets[0].id : null),
+          walletId: wallet?.id || wallets[0]?.id || null,
           toWalletId: row.type === 'transfer' ? toWallet?.id || null : null,
           description: row.description,
         })

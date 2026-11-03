@@ -129,13 +129,16 @@ export default function CategoryManager({ onClose }) {
       for (const cat of cats) {
         const d = drafts[cat.id]
         if (d && (d.name !== cat.name || toInt(d.budgetAmount) !== cat.budgetAmount || d.color !== cat.color || toInt(d.goalAmount) !== (cat.goalAmount || 0) || (d.goalDeadline || '') !== (cat.goalDeadline || ''))) {
-          await updateCategory(currentMonthId, cat.id, {
+          const patch = {
             name: d.name,
             budgetAmount: toInt(d.budgetAmount),
             color: d.color,
             goalAmount: toInt(d.goalAmount),
-            goalDeadline: d.goalDeadline || null,
-          })
+          }
+          if ((d.goalDeadline || '') !== (cat.goalDeadline || '') || cat.goalDeadline) {
+            patch.goalDeadline = d.goalDeadline || null
+          }
+          await updateCategory(currentMonthId, cat.id, patch)
         }
       }
       if (orderDirty) {

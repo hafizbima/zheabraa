@@ -73,6 +73,10 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const [incomeLabel, setIncomeLabel] = useState('')
   const [incomeAmount, setIncomeAmount] = useState('')
   const [carryDraft, setCarryDraft] = useState('')
+  const [carryWalletId, setCarryWalletId] = useState(
+    month?.carryOverWalletId || (wallets.length === 1 ? wallets[0]?.id : '')
+  )
+  const [incomeWalletId, setIncomeWalletId] = useState('')
   const [noteDraft, setNoteDraft] = useState('')
   const [saveModal, setSaveModal] = useState(null) // { cat, mode: 'nabung' | 'pakai' }
   const [deleteConfirmCat, setDeleteConfirmCat] = useState(null)
@@ -89,6 +93,10 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   useEffect(() => {
     setCarryDraft(month && month.carryOver ? formatNumberInput(month.carryOver) : '')
   }, [month?.carryOver])
+
+  useEffect(() => {
+    setCarryWalletId(month?.carryOverWalletId || (wallets.length === 1 ? wallets[0]?.id : ''))
+  }, [month?.carryOverWalletId, wallets])
 
   useEffect(() => {
     setNoteDraft(month ? String(month.note ?? '') : '')
@@ -142,25 +150,29 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
   const saveIncome = () => {
     const amount = toInt(incomeAmount)
-    if (editingIncome) {
-      updateIncome(currentMonthId, editingIncome.id, { label: incomeLabel || 'Pemasukan', amount })
+    const walletId = incomeWalletId || wallets[0]?.id || null
+    if (editingIncome?.id) {
+      updateIncome(currentMonthId, editingIncome.id, { label: incomeLabel || 'Pemasukan', amount, walletId })
     } else {
-      addIncome(currentMonthId, { label: incomeLabel || 'Pemasukan', amount })
+      addIncome(currentMonthId, { label: incomeLabel || 'Pemasukan', amount, walletId })
     }
     haptic.success()
     setEditingIncome(null)
     setIncomeLabel('')
     setIncomeAmount('')
+    setIncomeWalletId('')
   }
 
   const editIncome = (inc) => {
     setEditingIncome(inc)
     setIncomeLabel(inc.description)
     setIncomeAmount(formatNumberInput(inc.amount || ''))
+    setIncomeWalletId(inc.walletId || wallets[0]?.id || '')
   }
 
-  const commitCarry = () => {
-    setCarryOver(currentMonthId, toInt(carryDraft))
+  const commitCarry = (targetWalletId) => {
+    const finalWalletId = targetWalletId !== undefined ? targetWalletId : (carryWalletId || (wallets.length === 1 ? wallets[0]?.id : null))
+    setCarryOver(currentMonthId, toInt(carryDraft), finalWalletId)
   }
 
   const commitNote = () => {
@@ -477,7 +489,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                   <div className="flex shrink-0 items-center gap-2">
                     <p className="font-sans text-sm font-bold text-slate-900 dark:text-white">{formatRupiah(b.amount)}</p>
                     <button
-                      onClick={() => onNewTx({ date: `${month.id}-${String(due).padStart(2, '0')}`, categoryId: b.categoryId, description: b.description, amount: b.amount, recurringTemplateId: b.id })}
+                      onClick={() => onNewTx({ date: `${month.id}-${String(due).padStart(2, '0')}`, categoryId: b.categoryId, walletId: b.walletId, description: b.description, amount: b.amount, recurringTemplateId: b.id })}
                       disabled={billPaid}
                       className={(billPaid ? btn.neutral : btn.primary) + ' !px-3 !py-1 !text-xs'}
                     >
@@ -525,9 +537,11 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
           <h3 className="font-sans text-base font-bold text-slate-900 dark:text-white">Pemasukan & Carry-over</h3>
           <button
             onClick={() => {
-              setEditingIncome(editingIncome ? null : { id: null })
+              const willOpen = !editingIncome || editingIncome.id !== null
+              setEditingIncome(willOpen ? { id: null } : null)
               setIncomeLabel('')
               setIncomeAmount('')
+              setIncomeWalletId(wallets[0]?.id || '')
             }}
             className={btn.ghost}
           >
@@ -540,7 +554,14 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             <div key={inc.id} className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/70 px-3.5 py-2.5 dark:border-slate-800/80 dark:bg-slate-800/40">
               <div>
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">{inc.description}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{formatRupiah(inc.amount)}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{formatRupiah(inc.amount)}</p>
+                  {wallets.length > 1 && inc.walletId && (
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                      • {wallets.find((w) => w.id === inc.walletId)?.name || 'Dompet'}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex gap-1.5">
                 <button onClick={() => editIncome(inc)} className={btn.subtle}>
@@ -553,19 +574,43 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             </div>
           ))}
 
-          <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/70 px-3.5 py-2.5 dark:border-slate-800/80 dark:bg-slate-800/40">
+          <div className="flex flex-col gap-2 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 dark:border-slate-800/80 dark:bg-slate-800/40 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-900 dark:text-white">Carry-over (sisa bulan lalu)</p>
               <p className="text-xs text-slate-500 dark:text-slate-400">otomatis dari bulan sebelumnya, bisa diubah</p>
+              {wallets.length === 1 && primary && (
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Dompet: <strong className="font-medium text-slate-700 dark:text-slate-200">{primary.name}</strong>
+                </p>
+              )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              {wallets.length > 1 && (
+                <select
+                  className={input + ' w-full sm:w-36 text-xs sm:text-sm'}
+                  value={carryWalletId}
+                  onChange={(e) => {
+                    const wid = e.target.value
+                    setCarryWalletId(wid)
+                    commitCarry(wid)
+                  }}
+                  aria-label="Dompet Carry-over"
+                >
+                  <option value="">(Pilih dompet)</option>
+                  {wallets.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))}
+                </select>
+              )}
               <input
                 min="0"
                 inputMode="numeric"
-                className={input + ' w-32 text-right'}
+                className={input + ' w-full sm:w-32 text-right'}
                 value={carryDraft}
                 onChange={(e) => setCarryDraft(formatNumberInput(e.target.value))}
-                onBlur={commitCarry}
+                onBlur={() => commitCarry()}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') e.currentTarget.blur()
                 }}
@@ -573,14 +618,31 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
               />
             </div>
           </div>
+          {wallets.length > 1 && toInt(carryDraft) > 0 && !carryWalletId && (
+            <p className="-mt-1 px-1 text-xs text-rose-500">Carry-over memerlukan dompet. Silakan pilih dompet.</p>
+          )}
 
           {editingIncome && (
-            <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-tactile-sm dark:border-slate-700 dark:bg-slate-800">
-              <div className="flex gap-2">
+            <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-tactile-sm dark:border-slate-700 dark:bg-slate-800 space-y-2.5">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input className={input + ' flex-1'} value={incomeLabel} onChange={(e) => setIncomeLabel(e.target.value)} placeholder="Label (mis. Gaji, Bonus)" />
-                <input className={input + ' w-36 text-right'} type="text" inputMode="numeric" value={incomeAmount} onChange={(e) => setIncomeAmount(formatNumberInput(e.target.value))} placeholder="Nominal" />
+                {wallets.length > 1 && (
+                  <select
+                    className={input + ' w-full sm:w-36'}
+                    value={incomeWalletId}
+                    onChange={(e) => setIncomeWalletId(e.target.value)}
+                    aria-label="Dompet Pemasukan"
+                  >
+                    {wallets.map((w) => (
+                      <option key={w.id} value={w.id}>
+                        {w.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <input className={input + ' w-full sm:w-36 text-right'} type="text" inputMode="numeric" value={incomeAmount} onChange={(e) => setIncomeAmount(formatNumberInput(e.target.value))} placeholder="Nominal" />
               </div>
-              <div className="mt-2.5 flex justify-end gap-2">
+              <div className="flex justify-end gap-2">
                 <button onClick={() => setEditingIncome(null)} className={btn.neutral}>Batal</button>
                 <button onClick={saveIncome} className={btn.primary}>
                   Simpan
