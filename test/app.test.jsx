@@ -441,4 +441,49 @@ describe('Gimme Money smoke', () => {
     // Warning disappears
     expect(queryByText('Carry-over memerlukan dompet. Silakan pilih dompet.')).not.toBeInTheDocument()
   }, 15000)
+
+  it('supports multi-source carry over across different wallets', async () => {
+    const user = userEvent.setup()
+    const { getByPlaceholderText, getByRole, getByLabelText, getByText, findByText, findByRole, queryByRole } = render(<App />)
+
+    // Login
+    await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'abcdef')
+    await user.click(getByRole('button', { name: 'Masuk' }))
+    await findByText('Total Pemasukan')
+
+    // Add second wallet: "Uang Cash"
+    await user.click(getByRole('button', { name: 'Dompet' }))
+    const walletDialog = await findByRole('dialog', { name: 'Rekening Utama' })
+    await user.type(getByPlaceholderText('Nama (mis. GoPay)'), 'Uang Cash')
+    const addWalletBtn = walletDialog.querySelector('button[type="submit"]')
+    await user.click(addWalletBtn)
+    await waitFor(() => expect(within(walletDialog).getByDisplayValue('Uang Cash')).toBeInTheDocument())
+    const closeBtn = walletDialog.querySelector('button[aria-label="Tutup"]')
+    await user.click(closeBtn)
+    await waitFor(() => expect(queryByRole('dialog')).not.toBeInTheDocument())
+
+    // First carry-over source: select Rekening Utama and type 100000
+    const carryWalletSelect1 = getByLabelText('Dompet Carry-over')
+    const mainOpt = [...carryWalletSelect1.options].find((o) => o.text.includes('Rekening Utama'))
+    await user.selectOptions(carryWalletSelect1, mainOpt.value)
+    const carryInput1 = getByLabelText('Carry-over')
+    await user.clear(carryInput1)
+    await user.type(carryInput1, '100000')
+
+    // Click "+ Tambah Sumber Dompet"
+    const addSourceBtn = getByRole('button', { name: /\+ Tambah Sumber Dompet/i })
+    await user.click(addSourceBtn)
+
+    // Second source row should appear
+    const carryWalletSelect2 = getByLabelText('Dompet Carry-over 2')
+    const cashOpt = [...carryWalletSelect2.options].find((o) => o.text.includes('Uang Cash'))
+    await user.selectOptions(carryWalletSelect2, cashOpt.value)
+    const carryInput2 = getByLabelText('Carry-over 2')
+    await user.type(carryInput2, '50000')
+
+    // Verify Total Carry-Over summary is shown with Rp 150.000
+    expect(await findByText('Total Carry-Over (2 sumber):')).toBeInTheDocument()
+    expect(getByText('Rp 150.000')).toBeInTheDocument()
+  }, 15000)
 })

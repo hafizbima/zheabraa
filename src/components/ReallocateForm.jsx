@@ -21,7 +21,7 @@ export default function ReallocateForm({ onClose }) {
   const amt = toInt(amount)
 
   const input =
-    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-sans text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
+    'w-full min-h-[44px] rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-sans text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   const submit = async (e) => {
     e.preventDefault()
@@ -54,7 +54,7 @@ export default function ReallocateForm({ onClose }) {
         </p>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dari pocket</label>
+          <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">Dari pocket</label>
           <select className={input} value={fromId} onChange={(e) => { setFromId(e.target.value); if (e.target.value === toId) setToId('') }}>
             <option value="">(Pilih pocket)</option>
             {cats.map((c) => {
@@ -67,20 +67,20 @@ export default function ReallocateForm({ onClose }) {
             })}
           </select>
           {fromCat && (
-            <p className={`mt-1 text-xs ${fromLeft < 0 ? 'text-rose-600 dark:text-rose-400 font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
+            <p className={`mt-1 text-xs tabular-nums ${fromLeft < 0 ? 'text-rose-600 dark:text-rose-400 font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
               Budget saat ini {formatRupiah(fromCat.budgetAmount || 0)} → setelah re-alokasi {formatRupiah((fromCat.budgetAmount || 0) - amt)}
             </p>
           )}
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Nominal (Rp)</label>
-          <input type="text" inputMode="numeric" className={input} placeholder="0" value={amount} onChange={(e) => setAmount(formatNumberInput(e.target.value))} autoFocus />
-          {amt > 0 && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{formatRupiah(amt)}</p>}
+          <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">Nominal (Rp)</label>
+          <input type="text" inputMode="numeric" className={`${input} tabular-nums`} placeholder="0" value={amount} onChange={(e) => setAmount(formatNumberInput(e.target.value))} autoFocus />
+          {amt > 0 && <p className="mt-1 text-xs font-semibold tabular-nums text-teal-600 dark:text-teal-400">{formatRupiah(amt)}</p>}
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Ke pocket</label>
+          <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">Ke pocket</label>
           <select className={input} value={toId} onChange={(e) => setToId(e.target.value)}>
             <option value="">(Pilih pocket)</option>
             {targetCats.map((c) => (
@@ -90,7 +90,7 @@ export default function ReallocateForm({ onClose }) {
             ))}
           </select>
           {toCat && (
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs tabular-nums text-slate-500 dark:text-slate-400">
               Budget saat ini {formatRupiah(toCat.budgetAmount || 0)} → setelah {formatRupiah((toCat.budgetAmount || 0) + amt)}
             </p>
           )}

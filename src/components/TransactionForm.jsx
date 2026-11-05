@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Modal from './Modal.jsx'
+import DatePicker from './DatePicker.jsx'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah, toInt, formatNumberInput } from '../lib/money.js'
 import { todayISO } from '../lib/dates.js'
@@ -102,14 +103,10 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         haptic.selection()
         setType(key)
       }}
-      className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+      className={`flex min-h-[38px] items-center justify-center rounded-lg py-2 px-2 text-xs font-semibold transition-all active:scale-[0.98] select-none ${
         active
-          ? key === 'income'
-            ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
-            : key === 'refund'
-              ? 'border-teal-300 bg-teal-50 text-teal-700 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300'
-              : 'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300'
-          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+          ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+          : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
       }`}
     >
       {label}
@@ -138,8 +135,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
     >
       <form id="tx-form" onSubmit={submit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Tanggal</label>
-          <input type="date" className={input} value={date} onChange={(e) => setDate(e.target.value)} />
+          <DatePicker value={date} onChange={setDate} />
           {monthMismatch && (
             <p className="mt-1 text-xs text-amber-600 dark:text-amber-300">
               Tanggal ini akan tercatat di <strong>{targetMonth}</strong>, bukan di bulan yang sedang dibuka. Pocket yang kepotong adalah pocket bulan {targetMonth}.
@@ -155,10 +151,10 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
             </p>
           ) : (
             <>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
                 {typeButton('expense', 'Pengeluaran', type === 'expense')}
                 {typeButton('income', 'Pemasukan', type === 'income')}
-                {typeButton('refund', 'Refund / Koreksi', type === 'refund')}
+                {typeButton('refund', 'Refund', type === 'refund')}
               </div>
               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                 {type === 'income'
@@ -176,14 +172,14 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
           <input
             type="text"
             inputMode="numeric"
-            className={input}
+            className={input + ' tabular-nums'}
             placeholder="0"
             value={amount}
             onChange={(e) => setAmount(formatNumberInput(e.target.value))}
             autoFocus
           />
           {amount && toInt(amount) > 0 && (
-            <p className="mt-1 text-xs text-slate-400">{formatRupiah(toInt(amount))}</p>
+            <p className="mt-1 text-xs font-semibold tabular-nums text-teal-600 dark:text-teal-400">{formatRupiah(toInt(amount))}</p>
           )}
         </div>
 

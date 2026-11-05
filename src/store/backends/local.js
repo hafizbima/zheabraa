@@ -41,6 +41,9 @@ function migrate(raw) {
       label: m.label || id,
       carryOver: m.carryOver || 0,
       carryOverWalletId: m.carryOverWalletId || null,
+      carryOvers: Array.isArray(m.carryOvers)
+        ? m.carryOvers
+        : (m.carryOver ? [{ walletId: m.carryOverWalletId || null, amount: m.carryOver }] : []),
       incomes: m.incomes || [],
       createdAt: m.createdAt || Date.now(),
     }
@@ -315,6 +318,7 @@ export function setMonth(uid, month) {
     ...existing,
     ...month,
     carryOverWalletId: month.carryOverWalletId !== undefined ? month.carryOverWalletId : existing.carryOverWalletId || null,
+    carryOvers: month.carryOvers !== undefined ? month.carryOvers : existing.carryOvers || [],
   }
   persist()
   emitMonths()
@@ -341,14 +345,19 @@ export function ensureMonth(uid, mId) {
   emitDetail(mId)
   return Promise.resolve()
 }
-export function createNextMonth(uid, mId, carryOver, cats, carryOverWalletId) {
+export function createNextMonth(uid, mId, carryOver, cats, carryOverWalletId, carryOvers) {
   if (store.months[mId]) return Promise.resolve()
   const blank = createBlankMonth(mId)
+  const finalWalletId = carryOverWalletId || store.wallets[0]?.id || null
+  const finalCarryOvers = Array.isArray(carryOvers) && carryOvers.length > 0
+    ? carryOvers
+    : (carryOver ? [{ walletId: finalWalletId, amount: carryOver }] : [])
   store.months[mId] = {
     id: blank.id,
     label: blank.label,
     carryOver: carryOver || 0,
-    carryOverWalletId: carryOverWalletId || store.wallets[0]?.id || null,
+    carryOverWalletId: finalWalletId,
+    carryOvers: finalCarryOvers,
     incomes: blank.incomes,
     note: '',
     createdAt: blank.createdAt,
@@ -386,6 +395,9 @@ export function updateCategory(uid, mId, id, patch) {
 export function removeCategory(uid, mId, id) {
   store.categories[mId] = (store.categories[mId] || []).filter((c) => c.id !== id)
   store.transactions[mId] = (store.transactions[mId] || []).map((t) =>
+    t.categoryId === id ? { ...t, categoryId: null } : t,
+  )
+  store.templates = (store.templates || []).map((t) =>
     t.categoryId === id ? { ...t, categoryId: null } : t,
   )
   persist()

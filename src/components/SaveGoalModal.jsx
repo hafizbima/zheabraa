@@ -13,7 +13,7 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
 
   return (
     <Modal
-      title={isUse ? `Pakai tabungan ${cat.name}` : `Simpan ke ${cat.name}`}
+      title={isUse ? `Pakai Tabungan ${cat.name}` : `Simpan ke ${cat.name}`}
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
@@ -39,9 +39,9 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
       </p>
       <div className="space-y-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Nominal (Rp)</label>
+          <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">Nominal (Rp)</label>
           <input
-            className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            className="w-full min-h-[44px] rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-sans text-sm tabular-nums text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             type="text"
             inputMode="numeric"
             placeholder="0"
@@ -49,13 +49,13 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
             onChange={(e) => setAmount(formatNumberInput(e.target.value))}
             autoFocus
           />
-          {amount && amt > 0 && <p className="mt-1 font-sans text-xs font-semibold text-teal-600 dark:text-teal-400">{formatRupiah(amt)}</p>}
+          {amount && amt > 0 && <p className="mt-1 font-sans text-xs font-semibold tabular-nums text-teal-600 dark:text-teal-400">{formatRupiah(amt)}</p>}
         </div>
         {isUse && (
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Keperluan</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">Keperluan</label>
             <input
-              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="w-full min-h-[44px] rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
               type="text"
               placeholder="Untuk apa? (mis. Beli laptop)"
               value={desc}
@@ -64,7 +64,7 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
           </div>
         )}
       </div>
-      {over && <p className="mt-3 text-xs font-medium text-rose-500">Melebihi tabungan tersedia ({formatRupiah(available)}).</p>}
+      {over && <p className="mt-3 text-xs font-medium tabular-nums text-rose-500">Melebihi tabungan tersedia ({formatRupiah(available)}).</p>}
     </Modal>
   )
 }

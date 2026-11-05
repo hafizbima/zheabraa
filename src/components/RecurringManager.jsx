@@ -7,10 +7,10 @@ import { btn } from '../lib/buttons.js'
 import EmptyState from './EmptyState.jsx'
 
 const TYPES = [
-  { key: 'expense', label: 'Pengeluaran', activeCls: 'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300' },
-  { key: 'income', label: 'Pemasukan', activeCls: 'border-teal-300 bg-teal-50 text-teal-700 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300' },
-  { key: 'bill', label: 'Tagihan', activeCls: 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300' },
-  { key: 'transfer', label: 'Transfer', activeCls: 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300' },
+  { key: 'expense', label: 'Pengeluaran', activeCls: 'bg-white shadow-sm dark:bg-slate-700 text-slate-900 dark:text-white' },
+  { key: 'income', label: 'Pemasukan', activeCls: 'bg-white shadow-sm dark:bg-slate-700 text-slate-900 dark:text-white' },
+  { key: 'bill', label: 'Tagihan', activeCls: 'bg-white shadow-sm dark:bg-slate-700 text-slate-900 dark:text-white' },
+  { key: 'transfer', label: 'Transfer', activeCls: 'bg-white shadow-sm dark:bg-slate-700 text-slate-900 dark:text-white' },
 ]
 const typeMeta = (k) => TYPES.find((t) => t.key === k) || TYPES[0]
 
@@ -36,10 +36,7 @@ export default function RecurringManager({ onClose }) {
 
   const cats = month?.categories || []
   const input =
-    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
-
-  const catName = (id) => (id ? cats.find((c) => c.id === id)?.name : null)
-  const walletName = (id) => (id ? wallets.find((w) => w.id === id)?.name : '-')
+    'w-full min-h-[44px] rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   useEffect(() => {
     setDrafts((prev) => {
@@ -137,21 +134,21 @@ export default function RecurringManager({ onClose }) {
         </div>
       }
     >
-      <form onSubmit={submitNew} className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4.5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+      <form onSubmit={submitNew} className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4 sm:p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
         <h4 className="mb-3 font-sans text-sm font-bold text-slate-900 dark:text-white">Tambah template</h4>
         <div className="grid gap-2.5 sm:grid-cols-4">
-          <input className={input} type="text" inputMode="numeric" placeholder="Tanggal" value={day} onChange={(e) => setDay(e.target.value)} aria-label="Tanggal" />
-          <input className={input} type="text" inputMode="numeric" placeholder="Nominal (Rp)" value={amount} onChange={(e) => setAmount(formatNumberInput(e.target.value))} aria-label="Nominal" />
+          <input className={`${input} tabular-nums`} type="text" inputMode="numeric" placeholder="Tanggal" value={day} onChange={(e) => setDay(e.target.value)} aria-label="Tanggal" />
+          <input className={`${input} tabular-nums`} type="text" inputMode="numeric" placeholder="Nominal (Rp)" value={amount} onChange={(e) => setAmount(formatNumberInput(e.target.value))} aria-label="Nominal" />
           <input className={input + ' sm:col-span-2'} placeholder="Keterangan (mis. Bayar Kos)" value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
-        <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="mt-2.5 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800 sm:grid-cols-4">
           {TYPES.map((t) => (
             <button
               key={t.key}
               type="button"
               onClick={() => setType(t.key)}
-              className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
-                type === t.key ? t.activeCls : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              className={`min-h-[38px] rounded-lg py-1.5 text-xs font-semibold transition active:scale-[0.98] ${
+                type === t.key ? t.activeCls : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
               }`}
             >
               {t.label}
@@ -214,10 +211,9 @@ export default function RecurringManager({ onClose }) {
         )}
         {templates.map((t) => {
           const d = drafts[t.id] || t
-          const dt = typeMeta(d.type || 'expense')
           const isOut = (d.type || 'expense') === 'expense' || d.type === 'bill'
           return (
-            <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40">
+            <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40">
               <label className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
                 <input
                   type="checkbox"
@@ -237,7 +233,7 @@ export default function RecurringManager({ onClose }) {
                   else arr.push(currentMonthId)
                   updateDraft(t.id, { skipMonths: arr })
                 }}
-                className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold transition ${
+                className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold transition active:scale-95 ${
                   (d.skipMonths || []).includes(currentMonthId)
                     ? 'border-amber-300 bg-amber-100 text-amber-800 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-200'
                     : 'border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
@@ -247,7 +243,7 @@ export default function RecurringManager({ onClose }) {
                 Skip bulan ini
               </button>
               <input
-                className={input + ' w-16'}
+                className={`${input} tabular-nums w-16`}
                 type="text"
                 inputMode="numeric"
                 value={d.dayOfMonth}
@@ -255,7 +251,7 @@ export default function RecurringManager({ onClose }) {
                 aria-label="Tanggal"
               />
               <input
-                className={input + ' w-32'}
+                className={`${input} tabular-nums w-32`}
                 type="text"
                 inputMode="numeric"
                 value={d.amount ?? ''}
@@ -275,7 +271,7 @@ export default function RecurringManager({ onClose }) {
                     type="button"
                     onClick={() => updateDraft(t.id, { type: tk.key })}
                     className={`px-2.5 py-1.5 text-xs font-semibold ${
-                      (d.type || 'expense') === tk.key ? tk.activeCls : 'bg-white text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                      (d.type || 'expense') === tk.key ? 'bg-slate-900 text-white dark:bg-teal-600 dark:text-white' : 'bg-white text-slate-500 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
                     }`}
                   >
                     {tk.label}

@@ -13,7 +13,7 @@ export default function BudgetTemplateManager({ onClose }) {
   const [confirmId, setConfirmId] = useState(null)
   const categories = currentMonth?.categories || []
   const input =
-    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
+    'w-full min-h-[44px] rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   const save = async (e) => {
     e.preventDefault()
@@ -29,7 +29,7 @@ export default function BudgetTemplateManager({ onClose }) {
 
   return (
     <Modal title="Template Budget Bulanan" onClose={onClose} wide>
-      <form onSubmit={save} className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4.5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+      <form onSubmit={save} className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4 sm:p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
         <h4 className="mb-1 font-sans text-sm font-bold text-slate-900 dark:text-white">Simpan budget bulan ini</h4>
         <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">Simpan nama, nominal, target, dan warna pocket untuk dipakai lagi.</p>
         <div className="flex gap-2">
@@ -46,11 +46,11 @@ export default function BudgetTemplateManager({ onClose }) {
         {budgetTemplates.map((template) => {
           const total = (template.categories || []).reduce((sum, c) => sum + (c.budgetAmount || 0), 0)
           return (
-            <div key={template.id} className="rounded-xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm dark:border-slate-800/80 dark:bg-slate-800/40">
+            <div key={template.id} className="rounded-2xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm dark:border-slate-800/80 dark:bg-slate-800/40">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">{template.name}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{template.categories?.length || 0} pocket · total {formatRupiah(total)}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{template.categories?.length || 0} pocket · total <span className="tabular-nums font-medium">{formatRupiah(total)}</span></p>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => { startNewMonth(template); onClose() }} className={btn.primary}>Pakai bulan depan</button>
@@ -60,7 +60,7 @@ export default function BudgetTemplateManager({ onClose }) {
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {(template.categories || []).map((c) => (
                   <span key={`${template.id}-${c.key || c.name}`} className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                    {c.name}: {formatRupiah(c.budgetAmount || 0)}
+                    {c.name}: <span className="tabular-nums">{formatRupiah(c.budgetAmount || 0)}</span>
                   </span>
                 ))}
               </div>

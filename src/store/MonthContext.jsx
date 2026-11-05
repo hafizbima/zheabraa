@@ -47,6 +47,7 @@ export function MonthProvider({ children }) {
         label: m?.label || labelOf(mId),
         carryOver: m?.carryOver || 0,
         carryOverWalletId: m?.carryOverWalletId || null,
+        carryOvers: m?.carryOvers || (m?.carryOver ? [{ walletId: m?.carryOverWalletId || null, amount: m?.carryOver }] : []),
         incomes: m?.incomes || [],
         note: m?.note || '',
         createdAt: m?.createdAt || Date.now(),
@@ -70,6 +71,7 @@ export function MonthProvider({ children }) {
     const nextId = addMonths(currentMonthId, 1)
     const carry = cur ? carryOverAmount(cur) : 0
     const carryWalletId = cur?.carryOverWalletId || (wallets.length === 1 ? wallets[0]?.id : null)
+    const carryOvers = cur?.carryOvers && cur.carryOvers.length > 0 ? cur.carryOvers : (carry ? [{ walletId: carryWalletId, amount: carry }] : [])
     const txs = cur?.transactions || []
     const budgetTemplate = optionsOrTemplate?.categories ? optionsOrTemplate : null
     const copyBudgets = optionsOrTemplate?.copyBudgets !== false
@@ -93,7 +95,7 @@ export function MonthProvider({ children }) {
             savedAmount: (c.goalAmount > 0 ? (c.savedAmount || 0) + sisa : c.savedAmount || 0),
           }
         })
-    mutate(backend.createNextMonth(user.uid, nextId, carry, cats, carryWalletId), 'Gagal membuat bulan baru')
+    mutate(backend.createNextMonth(user.uid, nextId, carry, cats, carryWalletId, carryOvers), 'Gagal membuat bulan baru')
     setCurrentMonthId(nextId)
   }, [user, months, currentMonthId, wallets, mutate])
 
@@ -188,13 +190,17 @@ export function MonthProvider({ children }) {
   )
 
   const setCarryOver = useCallback(
-    (mId, value, walletId) => {
+    (mId, value, walletId, carryOvers) => {
       if (!user) return
       const currentMeta = monthMeta(mId)
       const targetWalletId =
         walletId !== undefined
           ? walletId
           : (currentMeta.carryOverWalletId || (wallets.length === 1 ? wallets[0]?.id : null))
+
+      const targetCarryOvers = Array.isArray(carryOvers)
+        ? carryOvers
+        : (value ? [{ walletId: targetWalletId, amount: value }] : [])
 
       setMonths((prev) => {
         const m = prev[mId] || { ...createBlankMonth(mId), categories: [] }
@@ -204,6 +210,7 @@ export function MonthProvider({ children }) {
             ...m,
             carryOver: value,
             carryOverWalletId: targetWalletId,
+            carryOvers: targetCarryOvers,
           },
         }
       })
@@ -213,6 +220,7 @@ export function MonthProvider({ children }) {
           ...currentMeta,
           carryOver: value,
           carryOverWalletId: targetWalletId,
+          carryOvers: targetCarryOvers,
         }),
         'Gagal menyimpan carry-over',
       )

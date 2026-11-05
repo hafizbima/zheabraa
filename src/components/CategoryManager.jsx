@@ -10,13 +10,13 @@ import EmptyState from './EmptyState.jsx'
 
 function ColorPicker({ value, onChange }) {
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-2">
       {CATEGORY_COLORS.map((c) => (
         <button
           key={c}
           type="button"
           onClick={() => onChange(c)}
-          className={`h-6 w-6 rounded-full transition ${value === c ? 'ring-2 ring-slate-400 ring-offset-2' : ''}`}
+          className={`h-7 w-7 rounded-full transition active:scale-95 ${value === c ? 'ring-2 ring-slate-700 ring-offset-2 dark:ring-white dark:ring-offset-slate-900 scale-105' : 'hover:scale-105'}`}
           style={{ backgroundColor: c }}
           aria-label={`Warna ${c}`}
         />
@@ -50,7 +50,7 @@ export default function CategoryManager({ onClose }) {
   const cats = month?.categories || []
   const txs = month?.transactions || []
   const input =
-    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
+    'w-full min-h-[44px] rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   useEffect(() => {
     setDrafts((prev) => {
@@ -192,7 +192,7 @@ export default function CategoryManager({ onClose }) {
         </div>
       }
     >
-      <form onSubmit={submitNew} className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4.5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+      <form onSubmit={submitNew} className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4 sm:p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
         <h4 className="mb-3 font-sans text-sm font-bold text-slate-900 dark:text-white">Tambah Pocket Baru</h4>
         <div className="grid gap-2.5 sm:grid-cols-2">
           <div className="sm:col-span-2">
@@ -201,15 +201,15 @@ export default function CategoryManager({ onClose }) {
           </div>
           <div>
             <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Budget / bulan (Rp)</p>
-            <input className={input} type="text" min="0" placeholder="Berapa yang dialokasikan tiap bulan" value={budget} onChange={(e) => setBudget(formatNumberInput(e.target.value))} />
+            <input className={`${input} tabular-nums`} type="text" min="0" placeholder="Berapa yang dialokasikan tiap bulan" value={budget} onChange={(e) => setBudget(formatNumberInput(e.target.value))} />
           </div>
           <div>
             <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Target tabungan (Rp)</p>
-            <input className={input} type="text" min="0" placeholder="Jumlah yang ingin dikumpulkan" value={goal} onChange={(e) => setGoal(formatNumberInput(e.target.value))} />
+            <input className={`${input} tabular-nums`} type="text" min="0" placeholder="Jumlah yang ingin dikumpulkan" value={goal} onChange={(e) => setGoal(formatNumberInput(e.target.value))} />
           </div>
           <div>
             <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Target tercapai pada</p>
-            <input className={input} type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+            <input className={`${input} tabular-nums`} type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
           </div>
           <div className="sm:col-span-2">
             <ColorPicker value={color} onChange={setColor} />
@@ -232,7 +232,7 @@ export default function CategoryManager({ onClose }) {
               onDragOver={(e) => { e.preventDefault(); setOverId(cat.id) }}
               onDragLeave={() => setOverId(null)}
               onDrop={() => { setOverId(null); move(cat.id) }}
-              className={`flex flex-wrap items-end gap-x-3 gap-y-2.5 rounded-xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40 ${overId === cat.id ? 'ring-2 ring-teal-500' : ''}`}
+              className={`flex flex-wrap items-end gap-x-3 gap-y-2.5 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40 ${overId === cat.id ? 'ring-2 ring-teal-500' : ''}`}
             >
               <div className="flex h-9 shrink-0 flex-col items-center justify-center">
                 <span
@@ -246,8 +246,8 @@ export default function CategoryManager({ onClose }) {
                   ⋮⋮
                 </span>
                 <span className="mt-0.5 flex gap-1">
-                  <button type="button" onClick={() => moveBy(cat.id, -1)} aria-label="Naikkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▲</button>
-                  <button type="button" onClick={() => moveBy(cat.id, 1)} aria-label="Turunkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▼</button>
+                  <button type="button" onClick={() => moveBy(cat.id, -1)} aria-label="Naikkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▲</button>
+                  <button type="button" onClick={() => moveBy(cat.id, 1)} aria-label="Turunkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▼</button>
                 </span>
               </div>
               <div className="w-8 shrink-0">
@@ -256,7 +256,7 @@ export default function CategoryManager({ onClose }) {
                   type="color"
                   value={d.color}
                   onChange={(e) => updateDraft(cat.id, { color: e.target.value })}
-                  className="h-8 w-8 cursor-pointer rounded border-0 bg-transparent p-0"
+                  className="h-8 w-8 cursor-pointer rounded-lg border-0 bg-transparent p-0"
                   aria-label="Warna"
                 />
               </div>
@@ -271,7 +271,7 @@ export default function CategoryManager({ onClose }) {
               <div className="w-32 shrink-0 sm:w-28">
                 <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Budget/bulan</p>
                 <input
-                  className={input + ' text-right'}
+                  className={`${input} tabular-nums text-right`}
                   type="text"
                   inputMode="numeric"
                   value={d.budgetAmount ?? ''}
@@ -282,7 +282,7 @@ export default function CategoryManager({ onClose }) {
               <div className="w-36 shrink-0">
                 <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Deadline</p>
                 <input
-                  className={input + ' w-full'}
+                  className={`${input} tabular-nums w-full`}
                   type="date"
                   value={d.goalDeadline || ''}
                   onChange={(e) => updateDraft(cat.id, { goalDeadline: e.target.value })}
@@ -292,7 +292,7 @@ export default function CategoryManager({ onClose }) {
               <div className="w-32 shrink-0 sm:w-28">
                 <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">Target</p>
                 <input
-                  className={input + ' text-right'}
+                  className={`${input} tabular-nums text-right`}
                   type="text"
                   inputMode="numeric"
                   value={d.goalAmount ?? ''}
@@ -303,11 +303,11 @@ export default function CategoryManager({ onClose }) {
               </div>
               <div className="w-28 shrink-0 text-right">
                 <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">terkumpul</p>
-                <p className="text-sm font-medium text-indigo-600 dark:text-indigo-300">{formatRupiah(d.savedAmount || 0)}</p>
+                <p className="text-sm font-medium tabular-nums text-indigo-600 dark:text-indigo-300">{formatRupiah(d.savedAmount || 0)}</p>
               </div>
               <div className="w-24 shrink-0 text-right">
                 <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">terpakai</p>
-                <p className="text-sm font-medium text-slate-900 dark:text-white">{formatRupiah(used)}</p>
+                <p className="text-sm font-medium tabular-nums text-slate-900 dark:text-white">{formatRupiah(used)}</p>
               </div>
               <div className="shrink-0">
                 <p className="mb-1 text-xs text-slate-400">&nbsp;</p>

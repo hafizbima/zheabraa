@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseCSV, parseTransactionCSV } from '../src/lib/csv.js'
+import { parseCSV, parseTransactionCSV, sanitizeCSVCell } from '../src/lib/csv.js'
 
 describe('CSV transaction import', () => {
   it('parses quoted commas and escaped quotes', () => {
@@ -22,5 +22,18 @@ describe('CSV transaction import', () => {
     expect(result.rows[0]).toMatchObject({ date: '2026-10-01', type: 'expense', categoryName: 'Transport', amount: 50000 })
     expect(result.rows[1]).toMatchObject({ type: 'income', description: 'Gaji, Oktober', amount: 5000000 })
     expect(result.errors).toHaveLength(1)
+  })
+
+  it('sanitizes formula injection trigger prefixes in CSV cells', () => {
+    expect(sanitizeCSVCell('=1+1')).toBe("'=1+1")
+    expect(sanitizeCSVCell('+100')).toBe("'+100")
+    expect(sanitizeCSVCell('-500')).toBe("'-500")
+    expect(sanitizeCSVCell('@SUM(A1:A10)')).toBe("'@SUM(A1:A10)")
+    expect(sanitizeCSVCell('\tTAB')).toBe("'\tTAB")
+    expect(sanitizeCSVCell('\rCR')).toBe("'\rCR")
+    expect(sanitizeCSVCell('Gaji Bulanan')).toBe('Gaji Bulanan')
+    expect(sanitizeCSVCell(12345)).toBe('12345')
+    expect(sanitizeCSVCell(null)).toBe('')
+    expect(sanitizeCSVCell(undefined)).toBe('')
   })
 })

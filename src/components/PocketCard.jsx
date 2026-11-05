@@ -28,25 +28,51 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
           onClick?.(e)
         }
       }}
-      className="block w-full cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-sm transition hover:border-slate-300 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+      className="group block w-full cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 text-left shadow-tactile-sm transition hover:border-slate-300 hover:shadow-tactile active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 select-none"
     >
       <div className="flex items-center justify-between gap-3">
+        {/* Sisi Kiri: Dot Warna Pocket & Nama */}
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: cat.color }} />
-          <span className="truncate font-sans text-sm font-semibold text-slate-900 dark:text-white">{cat.name}</span>
+          <span
+            className="h-3 w-3 shrink-0 rounded-full shadow-sm"
+            style={{ backgroundColor: cat.color }}
+          />
+          <span className="truncate font-sans text-sm sm:text-base font-semibold tracking-tight text-slate-900 dark:text-white">
+            {cat.name}
+          </span>
           {goal > 0 && (
-            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${goalDone ? 'border border-emerald-200/80 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' : 'border border-teal-200/80 bg-teal-50 text-teal-700 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300'}`}>
+            <span
+              className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold tabular-nums ${
+                goalDone
+                  ? 'border border-emerald-200/80 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                  : 'border border-teal-200/80 bg-teal-50 text-teal-700 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300'
+              }`}
+            >
               {goalDone ? 'Target Tercapai' : `Target ${formatRupiah(goal)}`}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2 text-right">
+
+        {/* Sisi Kanan: Nominal Terpakai / Budget & Sisa Saldo */}
+        <div className="flex items-center gap-2 shrink-0 text-right">
           <div>
-            <p className="font-sans text-sm font-bold text-slate-900 dark:text-white">
+            <p className="font-sans text-sm sm:text-base font-bold tabular-nums text-slate-900 dark:text-white">
               {formatRupiah(used)}
-              {budget > 0 && <span className="text-xs font-normal text-slate-500 dark:text-slate-400"> / {formatRupiah(budget)}</span>}
+              {budget > 0 && (
+                <span className="text-xs font-normal tabular-nums text-slate-500 dark:text-slate-400">
+                  {' '}/ {formatRupiah(budget)}
+                </span>
+              )}
             </p>
-            <p className={`text-[11px] font-semibold ${status === 'over' ? 'text-rose-500' : status === 'warn' ? 'text-amber-500' : 'text-slate-500 dark:text-slate-400'}`}>
+            <p
+              className={`text-xs font-semibold tabular-nums ${
+                status === 'over'
+                  ? 'text-rose-500'
+                  : status === 'warn'
+                    ? 'text-amber-500'
+                    : 'text-slate-500 dark:text-slate-400'
+              }`}
+            >
               sisa {formatRupiah(left)}
             </p>
           </div>
@@ -57,11 +83,20 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
                 e.stopPropagation()
                 onDelete(cat)
               }}
-              className="ml-0.5 rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 active:scale-95 dark:hover:bg-rose-950/30 dark:hover:text-rose-400"
+              className="flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 active:scale-95 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
               title="Hapus pocket"
               aria-label={`Hapus pocket ${cat.name}`}
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M3 6h18" />
                 <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
                 <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
@@ -70,43 +105,69 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
           )}
         </div>
       </div>
+
+      {/* Progress Bar Pengeluaran */}
       {budget > 0 && (
-        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-          <div className={`h-full rounded-full ${statusStyles(status)} transition-all`} style={{ width: `${pct}%` }} />
+        <div className="mt-3.5 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+          <div
+            className={`h-full rounded-full transition-all duration-300 ${statusStyles(status)}`}
+            style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+          />
         </div>
       )}
+
+      {/* Bagian Target Tabungan (jika ada target) */}
       {goal > 0 && (
-        <div className="mt-3">
-          <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-            <span className="truncate">Terkumpul {formatRupiah(savedAmt)} / {formatRupiah(goal)}</span>
+        <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+          <div className="flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <span className="truncate tabular-nums">
+              Terkumpul {formatRupiah(savedAmt)} / {formatRupiah(goal)}
+            </span>
             <span className="flex shrink-0 items-center gap-1.5">
-              <span className="font-semibold text-slate-700 dark:text-slate-300">{goalPct}%</span>
+              <span className="font-semibold tabular-nums text-slate-700 dark:text-slate-300">
+                {goalPct}%
+              </span>
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); onSave(cat) }}
-                className="shrink-0 whitespace-nowrap rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onSave(cat)
+                }}
+                className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
                 Nabung
               </button>
               {savedAmt > 0 && (
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); onUse(cat) }}
-                  className="shrink-0 whitespace-nowrap rounded-xl border border-teal-200 bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-700 shadow-sm transition hover:bg-teal-100 active:scale-95 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300 dark:hover:bg-teal-900/50"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onUse(cat)
+                  }}
+                  className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700 shadow-sm transition hover:bg-teal-100 active:scale-95 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300 dark:hover:bg-teal-900/50"
                 >
                   Pakai
                 </button>
               )}
             </span>
           </div>
-          <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-            <div className={`h-full rounded-full ${goalDone ? 'bg-emerald-500' : 'bg-teal-500'} transition-all`} style={{ width: `${goalPct}%` }} />
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${goalDone ? 'bg-emerald-500' : 'bg-teal-500'}`}
+              style={{ width: `${goalPct}%` }}
+            />
           </div>
           {plan && !goalDone && (
-            <p className={`mt-1.5 text-[11px] font-medium ${plan.overdue ? 'text-rose-500' : 'text-slate-500 dark:text-slate-400'}`}>
+            <p
+              className={`mt-1.5 text-[11px] font-medium tabular-nums ${
+                plan.overdue ? 'text-rose-500' : 'text-slate-500 dark:text-slate-400'
+              }`}
+            >
               {plan.overdue
                 ? `Deadline lewat · perlu ${formatRupiah(plan.needed)} untuk mencapai target`
-                : `Butuh ${formatRupiah(plan.monthlyAmount)} / bulan sampai ${new Date(`${cat.goalDeadline}T00:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                : `Butuh ${formatRupiah(plan.monthlyAmount)} / bulan sampai ${new Date(
+                    `${cat.goalDeadline}T00:00:00`,
+                  ).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`}
             </p>
           )}
         </div>

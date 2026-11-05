@@ -105,7 +105,7 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
           haptic.tap()
           onViewChange(key)
         }}
-        className={`flex h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${
+        className={`flex h-11 sm:h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${
           active
             ? isDark
               ? 'bg-teal-600 text-white font-semibold shadow-tactile-sm'
@@ -296,7 +296,7 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
               switchMonth(addMonths(currentMonthId, -1))
             }}
             aria-label="Bulan sebelumnya"
-            className={`flex h-8 w-8 items-center justify-center rounded-xl transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
+            className={`flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center rounded-xl transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
@@ -318,7 +318,7 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
               switchMonth(addMonths(currentMonthId, 1))
             }}
             aria-label="Bulan berikutnya"
-            className={`flex h-8 w-8 items-center justify-center rounded-xl transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
+            className={`flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center rounded-xl transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />
@@ -370,7 +370,7 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
               haptic.tap()
               onOpenWallets()
             }}
-            className={`col-span-2 sm:col-span-1 flex h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white border border-slate-700/60' : 'bg-white/90 text-slate-600 hover:bg-white hover:text-slate-900 border border-slate-200/80 shadow-tactile-sm'}`}
+            className={`col-span-2 sm:col-span-1 flex h-11 sm:h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white border border-slate-700/60' : 'bg-white/90 text-slate-600 hover:bg-white hover:text-slate-900 border border-slate-200/80 shadow-tactile-sm'}`}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="7" width="18" height="12" rx="2" />

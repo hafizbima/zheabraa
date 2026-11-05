@@ -9,7 +9,7 @@ import { btn } from '../lib/buttons.js'
 import EmptyState from './EmptyState.jsx'
 
 export default function WalletManager({ onClose }) {
-  const { wallets, months, addWallet, updateWallet, deleteWallet } = useStore()
+  const { wallets, months, addWallet, updateWallet, deleteWallet, notify } = useStore()
   const [name, setName] = useState('')
   const [balance, setBalance] = useState('')
   const [color, setColor] = useState(WALLET_COLORS[0])
@@ -32,7 +32,7 @@ export default function WalletManager({ onClose }) {
 
   const allTx = allTransactions(months)
   const input =
-    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
+    'w-full min-h-[44px] rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   useEffect(() => {
     setDrafts((prev) => {
@@ -152,17 +152,17 @@ export default function WalletManager({ onClose }) {
       }
     >
       {isSingle ? (
-        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4.5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4 sm:p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
           <p className="mb-3 font-sans text-xs text-slate-600 dark:text-slate-400">
             Saat ini pakai <strong className="font-semibold text-slate-900 dark:text-white">1 Rekening Utama</strong>. Tambah dompet jika butuh rekening fisik terpisah (mis. Cash, E-Wallet).
           </p>
           <form onSubmit={submitNew}>
             <div className="grid gap-2.5 sm:grid-cols-3">
               <input className={input} placeholder="Nama (mis. GoPay)" value={name} onChange={(e) => setName(e.target.value)} required />
-              <input className={input} type="text" inputMode="numeric" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(e.target.value)} />
+              <input className={`${input} tabular-nums`} type="text" inputMode="numeric" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(formatNumberInput(e.target.value))} />
               <div className="flex flex-wrap items-center gap-1.5">
                 {WALLET_COLORS.map((c) => (
-                  <button key={c} type="button" onClick={() => setColor(c)} className={`h-6 w-6 rounded-full ${color === c ? 'ring-2 ring-slate-400 ring-offset-2' : ''}`} style={{ backgroundColor: c }} aria-label={`Warna ${c}`} />
+                  <button key={c} type="button" onClick={() => setColor(c)} className={`h-7 w-7 rounded-full transition active:scale-95 ${color === c ? 'ring-2 ring-slate-700 ring-offset-2 dark:ring-white dark:ring-offset-slate-900 scale-105' : 'hover:scale-105'}`} style={{ backgroundColor: c }} aria-label={`Warna ${c}`} />
                 ))}
               </div>
             </div>
@@ -172,18 +172,18 @@ export default function WalletManager({ onClose }) {
           </form>
         </div>
       ) : (
-        <form onSubmit={submitNew} className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4.5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+        <form onSubmit={submitNew} className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4 sm:p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
           <h4 className="mb-3 font-sans text-sm font-bold text-slate-900 dark:text-white">Tambah dompet</h4>
           <div className="grid gap-2.5 sm:grid-cols-3">
             <input className={input} placeholder="Nama (mis. GoPay)" value={name} onChange={(e) => setName(e.target.value)} required />
-            <input className={input} type="text" inputMode="numeric" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(formatNumberInput(e.target.value))} />
+            <input className={`${input} tabular-nums`} type="text" inputMode="numeric" placeholder="Saldo awal (Rp)" value={balance} onChange={(e) => setBalance(formatNumberInput(e.target.value))} />
             <div className="flex flex-wrap items-center gap-1.5">
               {WALLET_COLORS.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setColor(c)}
-                  className={`h-6 w-6 rounded-full ${color === c ? 'ring-2 ring-slate-400 ring-offset-2' : ''}`}
+                  className={`h-7 w-7 rounded-full transition active:scale-95 ${color === c ? 'ring-2 ring-slate-700 ring-offset-2 dark:ring-white dark:ring-offset-slate-900 scale-105' : 'hover:scale-105'}`}
                   style={{ backgroundColor: c }}
                   aria-label={`Warna ${c}`}
                 />
@@ -212,7 +212,7 @@ export default function WalletManager({ onClose }) {
               onDragOver={(e) => { e.preventDefault(); setOverId(w.id) }}
               onDragLeave={() => setOverId(null)}
               onDrop={() => { setOverId(null); move(w.id) }}
-              className={`flex flex-wrap items-center gap-x-3 gap-y-2.5 rounded-xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40 ${overId === w.id ? 'ring-2 ring-teal-500' : ''}`}
+              className={`flex flex-wrap items-center gap-x-3 gap-y-2.5 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40 ${overId === w.id ? 'ring-2 ring-teal-500' : ''}`}
             >
               <div className="flex h-9 shrink-0 flex-col items-center justify-center">
                 <span
@@ -226,15 +226,15 @@ export default function WalletManager({ onClose }) {
                   ⋮⋮
                 </span>
                 <span className="mt-0.5 flex gap-1">
-                  <button type="button" onClick={() => moveBy(w.id, -1)} aria-label="Naikkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▲</button>
-                  <button type="button" onClick={() => moveBy(w.id, 1)} aria-label="Turunkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▼</button>
+                  <button type="button" onClick={() => moveBy(w.id, -1)} aria-label="Naikkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▲</button>
+                  <button type="button" onClick={() => moveBy(w.id, 1)} aria-label="Turunkan urutan" className="flex h-7 w-7 sm:h-6 sm:w-6 items-center justify-center rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">▼</button>
                 </span>
               </div>
               <input
                 type="color"
                 value={d.color}
                 onChange={(e) => updateDraft(w.id, { color: e.target.value })}
-                className="h-8 w-8 shrink-0 cursor-pointer rounded border-0 bg-transparent p-0"
+                className="h-8 w-8 shrink-0 cursor-pointer rounded-lg border-0 bg-transparent p-0"
                 aria-label="Warna"
               />
               <input
@@ -244,7 +244,7 @@ export default function WalletManager({ onClose }) {
               />
               <div className="w-28 shrink-0 sm:w-32">
                 <input
-                  className={input + ' text-right'}
+                  className={`${input} tabular-nums text-right`}
                   type="text"
                   inputMode="numeric"
                   value={d.openingBalance ?? ''}
@@ -255,13 +255,13 @@ export default function WalletManager({ onClose }) {
               </div>
               <div className="ml-auto w-32 shrink-0 text-right sm:ml-0 sm:w-28">
                 <p className="text-xs text-slate-500 dark:text-slate-400">saldo saat ini</p>
-                <p className={`text-sm font-semibold ${bal < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>{formatRupiah(bal)}</p>
+                <p className={`text-sm font-semibold tabular-nums ${bal < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>{formatRupiah(bal)}</p>
                 <button
                   onClick={() => {
                     setAdjustId(w.id)
                     setAdjustInput(bal ? formatNumberInput(bal) : '')
                   }}
-                  className="mt-1 text-[11px] font-medium text-indigo-600 underline underline-offset-2 hover:text-indigo-500 dark:text-indigo-300"
+                  className="mt-1 text-[11px] font-medium text-teal-600 underline underline-offset-2 hover:text-teal-700 dark:text-teal-400"
                 >
                   Sesuaikan
                 </button>
@@ -349,14 +349,14 @@ export default function WalletManager({ onClose }) {
               }
             >
               <div className="space-y-3">
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-900">
                   <p className="text-xs text-slate-500 dark:text-slate-400">Tercatat</p>
-                  <p className="text-base font-semibold text-slate-900 dark:text-white">{formatRupiah(bal)}</p>
+                  <p className="text-base font-semibold tabular-nums text-slate-900 dark:text-white">{formatRupiah(bal)}</p>
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Saldo Bank sebenarnya (Rp)</label>
                   <input
-                    className={input}
+                    className={`${input} tabular-nums`}
                     type="text"
                     inputMode="numeric"
                     value={adjustInput}
@@ -365,12 +365,12 @@ export default function WalletManager({ onClose }) {
                     autoFocus
                   />
                   {adjustInput.trim() !== '' && (
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{formatRupiah(target)}</p>
+                    <p className="mt-1 text-xs tabular-nums text-slate-500 dark:text-slate-400">{formatRupiah(target)}</p>
                   )}
                 </div>
                 {hasDelta && (
-                  <div className={`rounded-xl border px-3 py-2 text-sm ${delta > 0 ? 'border-teal-300 bg-teal-50 text-teal-800 dark:border-teal-800/40 dark:bg-teal-950/40 dark:text-teal-200' : 'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300'}`}>
-                    Selisih: <strong>{delta > 0 ? '+' : ''}{formatRupiah(delta)}</strong> {delta > 0 ? 'akan ditambahkan ke openingBalance' : 'akan dikurangi dari openingBalance'}
+                  <div className={`rounded-xl border px-3.5 py-2.5 text-sm ${delta > 0 ? 'border-teal-300 bg-teal-50 text-teal-800 dark:border-teal-800/40 dark:bg-teal-950/40 dark:text-teal-200' : 'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300'}`}>
+                    Selisih: <strong className="tabular-nums">{delta > 0 ? '+' : ''}{formatRupiah(delta)}</strong> {delta > 0 ? 'akan ditambahkan ke openingBalance' : 'akan dikurangi dari openingBalance'}
                   </div>
                 )}
                 {!hasDelta && adjustInput.trim() !== '' && (

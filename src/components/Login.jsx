@@ -117,7 +117,7 @@ export default function Login() {
   }
 
   const inputClass =
-    'w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-[#0f1b3d] focus:ring-2 focus:ring-[#0f1b3d]/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-teal-400'
+    'w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-teal-400'
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#f8fafc] px-4 py-8 dark:bg-[#0D1117]">
@@ -125,7 +125,7 @@ export default function Login() {
       <div className="mb-4 w-full max-w-sm">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition dark:text-slate-400 dark:hover:text-white"
+          className="inline-flex min-h-[44px] items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition dark:text-slate-400 dark:hover:text-white"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12" />
@@ -263,7 +263,7 @@ export default function Login() {
                       type="button"
                       onClick={() => setShowPw((v) => !v)}
                       aria-label={showPw ? 'Sembunyikan password' : 'Tampilkan password'}
-                      className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-500 transition hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0f1b3d] dark:text-slate-400 dark:hover:text-white"
+                      className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-500 transition hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:text-slate-400 dark:hover:text-white"
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         {showPw ? (
@@ -295,7 +295,7 @@ export default function Login() {
                       id="agree-checkbox"
                       checked={agreed}
                       onChange={(e) => setAgreed(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#0f1b3d] focus:ring-[#0f1b3d] dark:border-slate-700 dark:bg-slate-800"
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800"
                       required
                     />
                     <span className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
@@ -336,7 +336,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={busy}
-                className="w-full rounded-xl bg-[#0f1b3d] py-3 font-sans text-sm font-semibold text-white shadow-tactile-sm transition hover:bg-[#1a2e66] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-teal-500 dark:text-slate-950 dark:hover:bg-teal-400"
+                className="w-full min-h-[44px] rounded-xl bg-teal-600 py-3 font-sans text-sm font-semibold text-white shadow-tactile-sm transition hover:bg-teal-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-teal-500 dark:text-slate-950 dark:hover:bg-teal-400"
               >
                 {busy ? 'Memproses…' : mode === 'reset' ? 'Kirim Link Reset' : mode === 'login' ? 'Masuk' : 'Daftar'}
               </button>

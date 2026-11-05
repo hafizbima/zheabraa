@@ -175,7 +175,11 @@ export default function Stats() {
   const insights = useMemo(() => buildSpendingInsights(months, ranged), [months, ranged])
 
   const granBtn = (key, label) =>
-    `rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${gran === key ? 'bg-slate-900 text-white shadow-tactile-sm dark:bg-teal-500 dark:text-slate-950' : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'}`
+    `rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all active:scale-[0.98] select-none ${
+      gran === key
+        ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+        : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+    }`
 
   if (ids.length === 0) {
     return (
@@ -213,7 +217,7 @@ export default function Stats() {
           </select>
         </div>
         </div>
-        <div className="flex gap-2">
+        <div className="inline-flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
           <button className={granBtn('harian', 'Harian')} onClick={() => setGran('harian')}>Harian</button>
           <button className={granBtn('mingguan', 'Mingguan')} onClick={() => setGran('mingguan')}>Mingguan</button>
           <button className={granBtn('bulanan', 'Bulanan')} onClick={() => setGran('bulanan')}>Bulanan</button>
@@ -223,19 +227,19 @@ export default function Stats() {
       <section className="grid grid-cols-2 gap-3.5">
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
           <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Total Pemasukan</p>
-          <p className="mt-1 font-sans text-lg font-bold text-teal-600 dark:text-teal-400">{formatRupiah(data.income)}</p>
+          <p className="mt-1 font-sans text-lg font-bold tabular-nums text-teal-600 dark:text-teal-400">{formatRupiah(data.income)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
           <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Total Dialokasikan</p>
-          <p className="mt-1 font-sans text-lg font-bold text-slate-900 dark:text-white">{formatRupiah(data.allocated)}</p>
+          <p className="mt-1 font-sans text-lg font-bold tabular-nums text-slate-900 dark:text-white">{formatRupiah(data.allocated)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
           <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Total Belanja (net)</p>
-          <p className="mt-1 font-sans text-lg font-bold text-rose-600 dark:text-rose-400">{formatRupiah(data.spent)}</p>
+          <p className="mt-1 font-sans text-lg font-bold tabular-nums text-rose-600 dark:text-rose-400">{formatRupiah(data.spent)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
           <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Sisa Akhir Bulan</p>
-          <p className={`mt-1 font-sans text-lg font-bold ${data.left < 0 ? 'text-rose-600' : 'text-slate-900 dark:text-white'}`}>
+          <p className={`mt-1 font-sans text-lg font-bold tabular-nums ${data.left < 0 ? 'text-rose-600' : 'text-slate-900 dark:text-white'}`}>
             {formatRupiah(data.left)}
           </p>
         </div>
@@ -255,7 +259,7 @@ export default function Stats() {
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{it.label}</span>
                     {diff !== 0 && (
-                      <span className={`text-[10px] font-semibold ${up ? 'text-rose-500' : 'text-teal-600'}`}>
+                      <span className={`text-[10px] font-semibold tabular-nums ${up ? 'text-rose-500' : 'text-teal-600'}`}>
                         {up ? '▲' : '▼'} {formatRupiah(Math.abs(diff))}
                       </span>
                     )}
@@ -326,12 +330,12 @@ export default function Stats() {
                         {w.name}
                       </span>
                     </td>
-                    <td className="py-3 pr-3 text-right font-sans font-medium text-teal-600 dark:text-teal-400">{formatRupiah(w.in)}</td>
-                    <td className="py-3 pr-3 text-right font-sans font-medium text-rose-500">{formatRupiah(w.out)}</td>
-                    <td className={`py-3 pr-3 text-right font-sans font-medium ${w.net < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
+                    <td className="py-3 pr-3 text-right font-sans font-medium tabular-nums text-teal-600 dark:text-teal-400">{formatRupiah(w.in)}</td>
+                    <td className="py-3 pr-3 text-right font-sans font-medium tabular-nums text-rose-500">{formatRupiah(w.out)}</td>
+                    <td className={`py-3 pr-3 text-right font-sans font-medium tabular-nums ${w.net < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
                       {formatRupiah(w.net)}
                     </td>
-                    <td className={`py-3 text-right font-sans font-bold ${w.balance < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
+                    <td className={`py-3 text-right font-sans font-bold tabular-nums ${w.balance < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
                       {formatRupiah(w.balance)}
                     </td>
                   </tr>

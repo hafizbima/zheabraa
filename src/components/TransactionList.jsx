@@ -7,10 +7,12 @@ import Confirm from './Confirm.jsx'
 import Modal from './Modal.jsx'
 import { DateRangePicker } from './ui/DateRangePicker.jsx'
 import { btn } from '../lib/buttons.js'
-import { parseTransactionCSV } from '../lib/csv.js'
+import { parseTransactionCSV, sanitizeCSVCell } from '../lib/csv.js'
 
 function downloadCSV(filename, rows) {
-  const csv = rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')
+  const csv = rows
+    .map((r) => r.map((v) => `"${sanitizeCSVCell(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n')
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -312,13 +314,13 @@ export default function TransactionList({ onEditTx }) {
 
         <div className="mt-3.5 flex flex-wrap items-center gap-3 text-xs">
           <span className="rounded-xl bg-rose-50 px-2.5 py-1 text-slate-600 dark:bg-rose-950/30 dark:text-slate-300">
-            <span className="font-sans font-bold text-rose-600 dark:text-rose-400">{formatRupiah(spent)}</span> keluar
+            <span className="font-sans font-bold tabular-nums text-rose-600 dark:text-rose-400">{formatRupiah(spent)}</span> keluar
           </span>
           <span className="rounded-xl bg-teal-50 px-2.5 py-1 text-slate-600 dark:bg-teal-950/30 dark:text-slate-300">
-            <span className="font-sans font-bold text-teal-600 dark:text-teal-400">{formatRupiah(refunded)}</span> refund
+            <span className="font-sans font-bold tabular-nums text-teal-600 dark:text-teal-400">{formatRupiah(refunded)}</span> refund
           </span>
           <span className="rounded-xl bg-slate-100 px-2.5 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            <span className="font-sans font-bold text-slate-900 dark:text-white">{filtered.length}</span> transaksi
+            <span className="font-sans font-bold tabular-nums text-slate-900 dark:text-white">{filtered.length}</span> transaksi
           </span>
           <button
             onClick={() => importRef.current?.click()}
@@ -384,7 +386,7 @@ export default function TransactionList({ onEditTx }) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`font-sans text-sm font-bold ${isTransfer ? 'text-indigo-600 dark:text-indigo-400' : tx.type === 'refund' || tx.type === 'income' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-900 dark:text-white'}`}>
+                      <p className={`font-sans text-sm font-bold tabular-nums ${isTransfer ? 'text-indigo-600 dark:text-indigo-400' : tx.type === 'refund' || tx.type === 'income' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-900 dark:text-white'}`}>
                         {isTransfer ? '⇄ ' : tx.type === 'refund' || tx.type === 'income' ? '+' : '−'}{formatRupiah(tx.amount)}
                       </p>
                       <div className="mt-1 flex justify-end gap-1">
@@ -439,7 +441,7 @@ export default function TransactionList({ onEditTx }) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`font-sans text-sm font-bold ${isTransfer ? 'text-indigo-600 dark:text-indigo-400' : t.type === 'refund' || t.type === 'income' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-900 dark:text-white'}`}>
+                      <p className={`font-sans text-sm font-bold tabular-nums ${isTransfer ? 'text-indigo-600 dark:text-indigo-400' : t.type === 'refund' || t.type === 'income' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-900 dark:text-white'}`}>
                         {isTransfer ? '⇄ ' : t.type === 'refund' || t.type === 'income' ? '+' : '−'}{formatRupiah(t.amount)}
                       </p>
                       <div className="mt-1 flex justify-end gap-1">
@@ -494,7 +496,19 @@ export default function TransactionList({ onEditTx }) {
       )}
     </div>
     {importOpen && (
-      <Modal title="Import CSV" onClose={() => !importing && setImportOpen(false)} wide>
+      <Modal
+        title="Import CSV"
+        onClose={() => !importing && setImportOpen(false)}
+        wide
+        footer={
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setImportOpen(false)} disabled={importing} className={btn.neutral}>Batal</button>
+            <button onClick={importTransactions} disabled={importing || importRows.length === 0} className={btn.primary}>
+              {importing ? 'Mengimpor…' : 'Impor Transaksi'}
+            </button>
+          </div>
+        }
+      >
         <p className="text-sm text-slate-600 dark:text-slate-300">
           {importRows.length} transaksi siap diimpor. Kategori dan dompet dicocokkan berdasarkan nama.
         </p>
@@ -517,12 +531,6 @@ export default function TransactionList({ onEditTx }) {
             </div>
           ))}
           {importRows.length > 20 && <p className="px-3.5 py-2 text-xs text-slate-500 dark:text-slate-400">Menampilkan 20 transaksi pertama.</p>}
-        </div>
-        <div className="mt-4 flex justify-end gap-2">
-          <button onClick={() => setImportOpen(false)} disabled={importing} className={btn.neutral}>Batal</button>
-          <button onClick={importTransactions} disabled={importing || importRows.length === 0} className={btn.primary}>
-            {importing ? 'Mengimpor…' : 'Impor Transaksi'}
-          </button>
         </div>
       </Modal>
     )}

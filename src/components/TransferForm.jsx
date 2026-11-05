@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Modal from './Modal.jsx'
+import DatePicker from './DatePicker.jsx'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah, toInt, formatNumberInput } from '../lib/money.js'
 import { todayISO } from '../lib/dates.js'
@@ -23,7 +24,7 @@ export default function TransferForm({ monthId, onClose }) {
   const [error, setError] = useState('')
 
   const input =
-    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-sans text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
+    'w-full min-h-[44px] rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-sans text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   const amt = toInt(amount)
   const fromOver = fromId && amt > 0 && amt > bal(fromId)
@@ -44,7 +45,7 @@ export default function TransferForm({ monthId, onClose }) {
 
     addTransaction(monthId, {
       date,
-      type,
+      type: 'transfer',
       amount: amt,
       categoryId: null,
       walletId: fromId,
@@ -76,22 +77,22 @@ export default function TransferForm({ monthId, onClose }) {
         </p>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Nominal (Rp)</label>
+          <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">Nominal (Rp)</label>
           <input
             type="text"
             inputMode="numeric"
-            className={input}
+            className={`${input} tabular-nums`}
             placeholder="0"
             value={amount}
             onChange={(e) => setAmount(formatNumberInput(e.target.value))}
             autoFocus
           />
-          {amt > 0 && <p className="mt-1 text-xs text-slate-400">{formatRupiah(amt)}</p>}
+          {amt > 0 && <p className="mt-1 text-xs font-semibold tabular-nums text-teal-600 dark:text-teal-400">{formatRupiah(amt)}</p>}
         </div>
 
         <div className="grid grid-cols-1 gap-2">
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dari dompet</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">Dari dompet</label>
             <select
               className={input}
               value={fromId}
@@ -108,7 +109,7 @@ export default function TransferForm({ monthId, onClose }) {
               ))}
             </select>
             {fromId && (
-              <p className={`mt-1 text-xs ${fromOver ? 'font-medium text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}>
+              <p className={`mt-1 text-xs tabular-nums ${fromOver ? 'font-medium text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}>
                 {fromOver ? 'Melebihi saldo: ' : 'Saldo: '}
                 {formatRupiah(bal(fromId))}
               </p>
@@ -121,7 +122,7 @@ export default function TransferForm({ monthId, onClose }) {
               onClick={swap}
               disabled={!fromId && !toId}
               aria-label="Tukar arah transfer"
-              className="rounded-full p-2 text-slate-900 transition hover:bg-slate-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 dark:text-white dark:hover:bg-slate-800"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-slate-900 transition hover:bg-slate-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 dark:text-white dark:hover:bg-slate-800"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 16V4M7 4L3 8M7 4l4 4" />
@@ -131,7 +132,7 @@ export default function TransferForm({ monthId, onClose }) {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Ke dompet</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">Ke dompet</label>
             <select
               className={input}
               value={toId}
@@ -147,20 +148,19 @@ export default function TransferForm({ monthId, onClose }) {
                 </option>
               ))}
             </select>
-            {toId && <p className="mt-1 text-xs text-slate-400">Saldo {formatRupiah(bal(toId))}</p>}
+            {toId && <p className="mt-1 text-xs tabular-nums text-slate-500 dark:text-slate-400">Saldo: {formatRupiah(bal(toId))}</p>}
           </div>
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Tanggal</label>
-          <input type="date" className={input} value={date} onChange={(e) => setDate(e.target.value)} />
+          <DatePicker value={date} onChange={setDate} />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Keterangan (opsional)</label>
+          <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">Keterangan (opsional)</label>
           <input
             className={input}
-            placeholder="mis. pindah saldo ke rekening"
+            placeholder="mis. Pindah saldo ke rekening"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />

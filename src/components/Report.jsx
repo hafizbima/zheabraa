@@ -43,10 +43,10 @@ export default function Report() {
         </div>
         <button
           onClick={() => window.print()}
-          className="no-print inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-tactile-sm transition hover:bg-slate-50 active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          className="no-print inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-tactile-sm transition hover:bg-slate-50 active:scale-[0.98] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
           aria-label="Cetak laporan"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 9V3h12v6" />
             <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
             <rect x="6" y="14" width="12" height="8" rx="1" />
@@ -56,91 +56,95 @@ export default function Report() {
       </header>
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
-          <p className="text-[11px] uppercase text-slate-500 dark:text-slate-400">Pemasukan</p>
-          <p className="text-base font-bold text-slate-900 dark:text-white">{formatRupiah(inflow)}</p>
+        <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-4 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900/60">
+          <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Pemasukan</p>
+          <p className="text-base font-bold tabular-nums text-slate-900 dark:text-white">{formatRupiah(inflow)}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
-          <p className="text-[11px] uppercase text-slate-500 dark:text-slate-400">Teralokasi</p>
-          <p className="text-base font-bold text-slate-900 dark:text-white">{formatRupiah(allocated)}</p>
+        <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-4 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900/60">
+          <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Teralokasi</p>
+          <p className="text-base font-bold tabular-nums text-slate-900 dark:text-white">{formatRupiah(allocated)}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
-          <p className="text-[11px] uppercase text-slate-500 dark:text-slate-400">Uang Bebas</p>
-          <p className="text-base font-bold text-slate-900 dark:text-white">{formatRupiah(pool)}</p>
+        <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-4 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900/60">
+          <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Uang Bebas</p>
+          <p className="text-base font-bold tabular-nums text-slate-900 dark:text-white">{formatRupiah(pool)}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
-          <p className="text-[11px] uppercase text-slate-500 dark:text-slate-400">Belanja</p>
-          <p className="text-base font-bold text-rose-600 dark:text-rose-400">{formatRupiah(spent)}</p>
+        <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-4 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900/60">
+          <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Belanja</p>
+          <p className="text-base font-bold tabular-nums text-rose-600 dark:text-rose-400">{formatRupiah(spent)}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
-          <p className="text-[11px] uppercase text-slate-500 dark:text-slate-400">Refund</p>
-          <p className="text-base font-bold text-teal-600 dark:text-teal-400">{formatRupiah(refunded)}</p>
+        <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-4 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900/60">
+          <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Refund</p>
+          <p className="text-base font-bold tabular-nums text-teal-600 dark:text-teal-400">{formatRupiah(refunded)}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
-          <p className="text-[11px] uppercase text-slate-500 dark:text-slate-400">Tabungan</p>
-          <p className="text-base font-bold text-indigo-600 dark:text-indigo-300">{formatRupiah(saved)}</p>
+        <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-4 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900/60">
+          <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Tabungan</p>
+          <p className="text-base font-bold tabular-nums text-indigo-600 dark:text-indigo-300">{formatRupiah(saved)}</p>
         </div>
       </section>
 
-      <section>
-        <h3 className="mb-2 font-semibold text-slate-900 dark:text-white">Ringkasan Pocket</h3>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800 text-left text-xs uppercase text-slate-400">
-              <th className="py-2">Pocket</th>
-              <th className="py-2 text-right">Budget</th>
-              <th className="py-2 text-right">Terpakai</th>
-              <th className="py-2 text-right">Sisa</th>
-              <th className="py-2 text-right">Tabungan</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(month.categories || []).map((c) => {
-              const { used, budget } = categoryStatus(c, txs)
-              const gs = goalSaved(c, txs)
-              return (
-                <tr key={c.id} className="border-b border-slate-100 dark:border-slate-800/60">
-                  <td className="py-2">{c.name}</td>
-                  <td className="py-2 text-right">{formatRupiah(budget)}</td>
-                  <td className="py-2 text-right">{formatRupiah(used)}</td>
-                  <td className="py-2 text-right">{formatRupiah(categoryLeft(c, txs))}</td>
-                  <td className="py-2 text-right">{c.goalAmount > 0 ? `${formatRupiah(gs.saved)} / ${formatRupiah(c.goalAmount)}` : '-'}</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </section>
-
-      <section>
-        <h3 className="mb-2 font-semibold text-slate-900 dark:text-white">Transaksi ({txs.length})</h3>
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800 text-left text-slate-500 dark:text-slate-400">
-              <th className="py-1.5">Tanggal</th>
-              <th className="py-1.5">Keterangan</th>
-              <th className="py-1.5 text-right">Nominal</th>
-            </tr>
-          </thead>
-          <tbody>
-            {txs.map((t) => (
-              <tr key={t.id} className="border-b border-slate-100 dark:border-slate-800/40">
-                <td className="py-1.5">{t.date}</td>
-                <td className="py-1.5">{t.description || '-'}</td>
-                <td className={`py-1.5 text-right ${t.type === 'refund' || t.type === 'income' ? 'text-teal-600 dark:text-teal-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                  {t.type === 'refund' || t.type === 'income' ? '+' : '−'}{formatRupiah(t.amount)}
-                </td>
+      <section className="space-y-2">
+        <h3 className="font-semibold text-slate-900 dark:text-white">Ringkasan Pocket</h3>
+        <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/70 p-3.5 sm:p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900/60">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wider text-slate-400 dark:border-slate-800">
+                <th className="py-3 px-3">Pocket</th>
+                <th className="py-3 px-3 text-right">Budget</th>
+                <th className="py-3 px-3 text-right">Terpakai</th>
+                <th className="py-3 px-3 text-right">Sisa</th>
+                <th className="py-3 px-3 text-right">Tabungan</th>
               </tr>
-            ))}
-            {txs.length === 0 && (
-              <tr><td colSpan="3" className="py-3 text-center text-slate-500 dark:text-slate-400">Belum ada transaksi.</td></tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {(month.categories || []).map((c) => {
+                const { used, budget } = categoryStatus(c, txs)
+                const gs = goalSaved(c, txs)
+                return (
+                  <tr key={c.id} className="border-b border-slate-100 dark:border-slate-800/60">
+                    <td className="py-3 px-3 font-medium text-slate-900 dark:text-white">{c.name}</td>
+                    <td className="py-3 px-3 text-right tabular-nums text-slate-700 dark:text-slate-300">{formatRupiah(budget)}</td>
+                    <td className="py-3 px-3 text-right tabular-nums text-slate-700 dark:text-slate-300">{formatRupiah(used)}</td>
+                    <td className="py-3 px-3 text-right tabular-nums font-semibold text-teal-600 dark:text-teal-400">{formatRupiah(categoryLeft(c, txs))}</td>
+                    <td className="py-3 px-3 text-right tabular-nums text-slate-700 dark:text-slate-300">{c.goalAmount > 0 ? `${formatRupiah(gs.saved)} / ${formatRupiah(c.goalAmount)}` : '-'}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       </section>
 
-      <p className="text-[10px] text-slate-500 dark:text-slate-400">
-        Sisa uang bebas: {formatRupiah(left)}. Total saldo dompet: {formatRupiah(totalWallet)}.
+      <section className="space-y-2">
+        <h3 className="font-semibold text-slate-900 dark:text-white">Transaksi ({txs.length})</h3>
+        <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white/70 p-3.5 sm:p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900/60">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-slate-200 text-left uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                <th className="py-2.5 px-3">Tanggal</th>
+                <th className="py-2.5 px-3">Keterangan</th>
+                <th className="py-2.5 px-3 text-right">Nominal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {txs.map((t) => (
+                <tr key={t.id} className="border-b border-slate-100 dark:border-slate-800/40">
+                  <td className="py-2.5 px-3 tabular-nums text-slate-500 dark:text-slate-400">{t.date}</td>
+                  <td className="py-2.5 px-3 text-slate-800 dark:text-slate-200">{t.description || '-'}</td>
+                  <td className={`py-2.5 px-3 text-right tabular-nums font-semibold ${t.type === 'refund' || t.type === 'income' ? 'text-teal-600 dark:text-teal-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                    {t.type === 'refund' || t.type === 'income' ? '+' : '−'}{formatRupiah(t.amount)}
+                  </td>
+                </tr>
+              ))}
+              {txs.length === 0 && (
+                <tr><td colSpan="3" className="py-4 text-center text-slate-500 dark:text-slate-400">Belum ada transaksi.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <p className="text-xs text-slate-500 dark:text-slate-400">
+        Sisa uang bebas: <span className="font-semibold tabular-nums text-slate-700 dark:text-slate-300">{formatRupiah(left)}</span>. Total saldo dompet: <span className="font-semibold tabular-nums text-slate-700 dark:text-slate-300">{formatRupiah(totalWallet)}</span>.
       </p>
     </div>
   )

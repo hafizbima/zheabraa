@@ -1,3 +1,12 @@
+export function sanitizeCSVCell(v) {
+  const s = String(v ?? '')
+  // Netralkan karakter pemicu formula Excel/Calc (=, +, -, @, \t, \r)
+  if (/^[=+\-@\t\r]/.test(s)) {
+    return "'" + s
+  }
+  return s
+}
+
 function cleanHeader(value) {
   return String(value || '')
     .replace(/^\uFEFF/, '')
