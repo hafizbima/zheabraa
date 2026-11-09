@@ -105,7 +105,7 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
           haptic.tap()
           onViewChange(key)
         }}
-        className={`flex h-11 sm:h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${
+        className={`flex h-11 sm:h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-120 ease-out-expo active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${
           active
             ? isDark
               ? 'bg-teal-600 text-white font-semibold shadow-tactile-sm'
@@ -326,8 +326,8 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
           </button>
         </div>
 
-        {/* Grid navigasi: 4 tab halaman + 1 tombol manajemen dompet */}
-        <div className="grid grid-cols-2 gap-2 py-3 sm:grid-cols-5">
+        {/* Grid navigasi: 5 tab halaman + 1 tombol manajemen dompet */}
+        <div className="grid grid-cols-2 gap-2 py-3 sm:grid-cols-6">
           {gridBtn(
             'dashboard',
             'Dashboard',
@@ -336,6 +336,15 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
               <rect x="14" y="3" width="7" height="7" rx="1" />
               <rect x="3" y="14" width="7" height="7" rx="1" />
               <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+          )}
+          {gridBtn(
+            'savings',
+            'Tabungan',
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="5" />
+              <circle cx="12" cy="12" r="1.5" />
             </svg>
           )}
           {gridBtn(
@@ -370,7 +379,7 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
               haptic.tap()
               onOpenWallets()
             }}
-            className={`col-span-2 sm:col-span-1 flex h-11 sm:h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white border border-slate-700/60' : 'bg-white/90 text-slate-600 hover:bg-white hover:text-slate-900 border border-slate-200/80 shadow-tactile-sm'}`}
+            className={`flex h-11 sm:h-10 items-center justify-center gap-2 rounded-xl text-xs sm:text-sm font-medium transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-120 ease-out-expo active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-teal-500/20 ${isDark ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white border border-slate-700/60' : 'bg-white/90 text-slate-600 hover:bg-white hover:text-slate-900 border border-slate-200/80 shadow-tactile-sm'}`}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="7" width="18" height="12" rx="2" />

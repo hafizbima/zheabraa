@@ -317,8 +317,8 @@ export default function DatePicker({ value, onChange, label = 'Tanggal', error }
             ))}
           </div>
 
-          {/* Days Grid */}
-          <div className="mt-1 grid grid-cols-7 gap-1">
+          {/* Days Grid with smooth crossfade */}
+          <div key={`${viewYear}-${viewMonth}`} className="mt-1 grid grid-cols-7 gap-1 transition-opacity duration-160 ease-out-expo">
             {calendarDays.map((item, idx) => {
               const { day, iso, isCurrentMonth, isSelected, isToday: cellIsToday } = item
               return (
@@ -326,13 +326,13 @@ export default function DatePicker({ value, onChange, label = 'Tanggal', error }
                   key={`${iso}-${idx}`}
                   type="button"
                   onClick={() => selectDate(iso)}
-                  className={`flex h-9 sm:h-10 w-full items-center justify-center rounded-xl text-xs sm:text-sm font-medium tabular-nums transition select-none ${
+                  className={`flex h-9 sm:h-10 w-full items-center justify-center rounded-xl text-xs sm:text-sm font-medium tabular-nums transition-[transform,background-color,color] duration-120 ease-out-expo select-none ${
                     isSelected
                       ? 'bg-teal-600 font-bold text-white shadow-tactile-sm'
                       : cellIsToday
                         ? 'border border-teal-500/70 bg-teal-50 font-bold text-teal-700 dark:border-teal-500/70 dark:bg-teal-950/40 dark:text-teal-300'
                         : isCurrentMonth
-                          ? 'text-slate-800 hover:bg-slate-100 active:scale-95 dark:text-slate-200 dark:hover:bg-slate-800'
+                          ? 'text-slate-800 hover:bg-slate-100 active:scale-[0.97] dark:text-slate-200 dark:hover:bg-slate-800'
                           : 'text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400'
                   }`}
                   aria-label={`${day} ${MONTH_NAMES[viewMonth]} ${viewYear}`}

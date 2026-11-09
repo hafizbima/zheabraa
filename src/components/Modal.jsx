@@ -26,7 +26,7 @@ export default function Modal({ title, onClose, children, footer, wide }) {
         onClick={onClose}
       />
       <div
-        className={`modal-panel relative z-10 flex max-h-[92vh] w-full flex-col rounded-t-3xl border border-slate-200/90 bg-white shadow-tactile-modal transition-all sm:rounded-3xl dark:border-slate-800 dark:bg-slate-900 ${
+        className={`modal-panel relative z-10 flex max-h-[92vh] w-full flex-col rounded-t-3xl border border-slate-200/90 bg-white shadow-tactile-modal transition-[transform,opacity] duration-200 ease-out-expo sm:rounded-3xl dark:border-slate-800 dark:bg-slate-900 ${
           wide ? 'sm:max-w-2xl' : 'sm:max-w-md'
         }`}
       >

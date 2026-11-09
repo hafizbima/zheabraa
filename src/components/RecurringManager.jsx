@@ -194,9 +194,19 @@ export default function RecurringManager({ onClose }) {
             </select>
           </div>
         ) : (
-          <p className="mt-2.5 rounded-xl border border-teal-200/80 bg-teal-50/60 px-3.5 py-2 text-xs text-teal-800 dark:border-teal-800/80 dark:bg-teal-950/40 dark:text-teal-200">
-            Pemasukan otomatis ditambahkan ke daftar Pemasukan di Dashboard tiap bulan.
-          </p>
+          <div className="mt-2.5 space-y-2">
+            <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)} aria-label="Dompet Penerima">
+              <option value="">{wallets.length === 1 ? `Dompet: ${wallets[0]?.name || ''}` : 'Pilih dompet penerima'}</option>
+              {wallets.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name}
+                </option>
+              ))}
+            </select>
+            <p className="rounded-xl border border-teal-200/80 bg-teal-50/60 px-3.5 py-2 text-xs text-teal-800 dark:border-teal-800/80 dark:bg-teal-950/40 dark:text-teal-200">
+              Pemasukan otomatis ditambahkan ke daftar Pemasukan di Dashboard tiap bulan ke dompet yang dipilih.
+            </p>
+          </div>
         )}
         <div className="mt-3.5 flex justify-end">
           <button type="submit" disabled={toInt(amount) <= 0} className={btn.primary}>
@@ -301,6 +311,16 @@ export default function RecurringManager({ onClose }) {
                     ))}
                   </select>
                 </>
+              )}
+              {d.type === 'income' && (
+                <select className={input + ' w-36'} value={d.walletId || ''} onChange={(e) => updateDraft(t.id, { walletId: e.target.value || null })} aria-label="Dompet Penerima">
+                  <option value="">{wallets.length === 1 ? `Dompet: ${wallets[0]?.name || ''}` : 'Pilih dompet'}</option>
+                  {wallets.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))}
+                </select>
               )}
               {d.type === 'transfer' && (
                 <>

@@ -24,7 +24,7 @@ export default function ReallocateForm({ onClose }) {
     'w-full min-h-[44px] rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-sans text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
   const submit = async (e) => {
-    e.preventDefault()
+    e?.preventDefault?.()
     if (amt <= 0) return setError('Nominal harus lebih dari 0')
     if (!fromId) return setError('Pilih pocket sumber')
     if (!toId) return setError('Pilih pocket tujuan')
@@ -43,8 +43,8 @@ export default function ReallocateForm({ onClose }) {
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
-          <button onClick={onClose} className={btn.neutral}>Batal</button>
-          <button type="submit" form="realloc-form" className={btn.primary}>Pindahkan</button>
+          <button type="button" onClick={onClose} className={btn.neutral}>Batal</button>
+          <button type="submit" form="realloc-form" onClick={submit} className={btn.primary}>Pindahkan</button>
         </div>
       }
     >

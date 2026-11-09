@@ -3,6 +3,7 @@ export function categoryUsed(categoryId, transactions) {
   let refund = 0
   for (const t of transactions) {
     if (t.categoryId !== categoryId) continue
+    if (t.goalType === 'deposit') continue
     if (t.type === 'refund') refund += t.amount || 0
     else if (t.type === 'expense') expense += t.amount || 0
   }
@@ -32,7 +33,7 @@ export function freeMoneySpent(transactions) {
   let expense = 0
   let refund = 0
   for (const t of transactions) {
-    if (t.categoryId != null) continue
+    if (t.categoryId != null && t.goalType !== 'deposit') continue
     if (t.type === 'refund') refund += t.amount || 0
     else if (t.type === 'expense') expense += t.amount || 0
   }
@@ -208,5 +209,195 @@ export function goalPlan(category, transactions, currentMonthId, referenceDate =
     monthsRemaining,
     monthlyAmount: monthsRemaining > 0 ? Math.ceil(needed / monthsRemaining) : needed,
     overdue: monthsRemaining <= 0 && needed > 0,
+  }
+}
+
+// Ringkasan tabungan seluruh pocket bertarget
+export function savingsSummary(months, currentMonthId) {
+  if (!months || !currentMonthId || !months[currentMonthId]) {
+    return { totalSaved: 0, totalTarget: 0, pct: 0, reachedCount: 0, goals: [] }
+  }
+  const m = months[currentMonthId]
+  const cats = m.categories || []
+  const txs = m.transactions || []
+
+  const rawGoals = cats.filter((c) => (c.goalAmount && c.goalAmount > 0) || c.pocketType === 'saving')
+
+  const goals = rawGoals.map((c) => {
+    const progress = goalSaved(c, txs)
+    const plan = goalPlan(c, txs, currentMonthId)
+    return {
+      category: c,
+      key: c.key || c.name || c.id,
+      id: c.id,
+      name: c.name,
+      color: c.color,
+      walletId: c.walletId || null,
+      saved: progress.saved,
+      goal: progress.goal,
+      pct: progress.pct,
+      done: progress.done,
+      deadline: c.goalDeadline || null,
+      plan,
+    }
+  })
+
+  // Urutan: belum tercapai di atas (deadline terdekat dulu), lalu tercapai
+  goals.sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1
+    if (!a.done) {
+      if (a.deadline && b.deadline) {
+        return a.deadline.localeCompare(b.deadline)
+      }
+      if (a.deadline) return -1
+      if (b.deadline) return 1
+      return (b.goal || 0) - (a.goal || 0)
+    }
+    return (b.saved || 0) - (a.saved || 0)
+  })
+
+  const totalSaved = goals.reduce((sum, g) => sum + (g.saved || 0), 0)
+  const totalTarget = goals.reduce((sum, g) => sum + (g.goal || 0), 0)
+  const pct = totalTarget > 0 ? Math.min(100, Math.round((totalSaved / totalTarget) * 100)) : 0
+  const reachedCount = goals.filter((g) => g.done).length
+
+  return { totalSaved, totalTarget, pct, reachedCount, goals }
+}
+
+// Riwayat setor/tarik suatu target lintas bulan
+export function goalHistory(goalKey, months) {
+  if (!goalKey || !months) return []
+  const history = []
+
+  const monthIds = Object.keys(months)
+
+  for (const mId of monthIds) {
+    const m = months[mId]
+    if (!m) continue
+    const txs = m.transactions || []
+    const cats = m.categories || []
+
+    const targetCat = cats.find(
+      (c) => (c.key && c.key === goalKey) || c.name === goalKey || c.id === goalKey,
+    )
+    const catId = targetCat ? targetCat.id : null
+    const catName = targetCat ? targetCat.name : goalKey
+
+    for (const tx of txs) {
+      const matchesGoalId = tx.goalId === goalKey || (catId && tx.goalId === catId)
+      const matchesTag =
+        tx.description &&
+        (tx.description.includes(`[goal:${goalKey}]`) || (catId && tx.description.includes(`[goal:${catId}]`)))
+      const isDepositByText =
+        tx.description &&
+        (tx.description.startsWith(`Menabung ke ${catName}`) ||
+          tx.description.startsWith(`Menabung ke ${goalKey}`))
+      const isWithdrawByText =
+        tx.description &&
+        (tx.description.startsWith(`Pakai tabungan ${catName}`) ||
+          tx.description.startsWith(`Pakai tabungan ${goalKey}`))
+      const isGoalDeposit = tx.goalType === 'deposit' && (tx.categoryId === catId || matchesGoalId)
+      const isGoalWithdraw = tx.goalType === 'withdraw' && (tx.categoryId === catId || matchesGoalId)
+      const isCategoryUsage = catId && tx.categoryId === catId && tx.type === 'expense'
+
+      if (matchesGoalId || matchesTag || isDepositByText || isWithdrawByText || isGoalDeposit || isGoalWithdraw || isCategoryUsage) {
+        let type = 'deposit'
+        if (isGoalDeposit || isDepositByText) {
+          type = 'deposit'
+        } else if (isGoalWithdraw || isWithdrawByText || isCategoryUsage) {
+          type = 'withdraw'
+        }
+
+        const cleanDesc = (tx.description || '').replace(/\[goal:[^\]]+\]\s*/g, '').trim()
+
+        history.push({
+          id: tx.id,
+          date: tx.date,
+          monthId: mId,
+          type,
+          amount: tx.amount,
+          description: cleanDesc || (type === 'deposit' ? `Setoran ke ${catName}` : `Penarikan dari ${catName}`),
+          walletId: tx.walletId || null,
+          categoryId: tx.categoryId || catId || null,
+        })
+      }
+    }
+  }
+
+  history.sort((a, b) => {
+    const diff = (b.date || '').localeCompare(a.date || '')
+    if (diff !== 0) return diff
+    return (b.id || '').localeCompare(a.id || '')
+  })
+
+  return history
+}
+
+// Proyeksi tanggal tercapai berdasarkan rata-rata setoran 3 bulan terakhir
+export function goalProjection(goalKey, months, currentMonthId) {
+  if (!goalKey || !months || !currentMonthId || !months[currentMonthId]) return null
+
+  const m = months[currentMonthId]
+  const cats = m.categories || []
+  const cat = cats.find((c) => (c.key && c.key === goalKey) || c.name === goalKey || c.id === goalKey)
+  if (!cat || !cat.goalAmount) return null
+
+  const savedInfo = goalSaved(cat, m.transactions || [])
+  const needed = Math.max(0, (cat.goalAmount || 0) - (savedInfo.saved || 0))
+  if (needed <= 0) {
+    return {
+      needed: 0,
+      avgMonthlyDeposit: 0,
+      monthsNeeded: 0,
+      estimatedMonthId: currentMonthId,
+      reached: true,
+    }
+  }
+
+  const match = String(currentMonthId).match(/^(\d{4})-(\d{2})$/)
+  if (!match) return null
+
+  const curYear = Number(match[1])
+  const curMonth = Number(match[2])
+
+  const targetMonthIds = []
+  for (let i = 0; i < 3; i++) {
+    const d = new Date(curYear, curMonth - 1 - i, 1)
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    targetMonthIds.push(`${yyyy}-${mm}`)
+  }
+
+  const hist = goalHistory(goalKey, months)
+  const depositsInWindow = hist.filter(
+    (h) => h.type === 'deposit' && targetMonthIds.includes(h.monthId),
+  )
+  const totalDeposited = depositsInWindow.reduce((s, h) => s + (h.amount || 0), 0)
+
+  const existingMonthsCount = targetMonthIds.filter((id) => !!months[id]).length || 1
+  const avgMonthlyDeposit = Math.round(totalDeposited / existingMonthsCount)
+
+  if (avgMonthlyDeposit <= 0) {
+    return {
+      needed,
+      avgMonthlyDeposit: 0,
+      monthsNeeded: null,
+      estimatedMonthId: null,
+      reached: false,
+    }
+  }
+
+  const monthsNeeded = Math.ceil(needed / avgMonthlyDeposit)
+  const targetDate = new Date(curYear, curMonth - 1 + monthsNeeded, 1)
+  const estYear = targetDate.getFullYear()
+  const estMonth = String(targetDate.getMonth() + 1).padStart(2, '0')
+  const estimatedMonthId = `${estYear}-${estMonth}`
+
+  return {
+    needed,
+    avgMonthlyDeposit,
+    monthsNeeded,
+    estimatedMonthId,
+    reached: false,
   }
 }

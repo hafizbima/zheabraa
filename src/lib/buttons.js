@@ -1,5 +1,5 @@
 export const btnBase =
-  'inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/30 disabled:cursor-not-allowed disabled:opacity-50 select-none'
+  'inline-flex items-center justify-center gap-2 rounded-xl border text-sm font-semibold transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-120 ease-out-expo active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/30 disabled:cursor-not-allowed disabled:opacity-50 select-none'
 
 export const btn = {
   primary:

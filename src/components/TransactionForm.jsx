@@ -52,29 +52,32 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const input =
     'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-sans text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
+  const showError = (msg) => {
+    haptic.error()
+    setError(msg)
+  }
+
   const submit = (e) => {
-    e.preventDefault()
+    e?.preventDefault?.()
     const amt = toInt(amount)
-    if (amt <= 0) return setError('Nominal harus lebih dari 0')
-    if (!date) return setError('Tanggal wajib diisi')
+    if (amt <= 0) return showError('Nominal harus lebih dari 0')
+    if (!date) return showError('Tanggal wajib diisi')
     if (wallets.length === 0) {
-      return setError('Belum ada dompet. Tambahkan dompet terlebih dahulu di menu Dompet.')
+      return showError('Belum ada dompet. Tambahkan dompet terlebih dahulu di menu Dompet.')
     }
 
     const activeWalletId = isTransfer ? walletId : walletId || (isSingle ? primary?.id : '')
 
     if (isTransfer) {
-      if (!walletId) return setError('Pilih dompet asal')
-      if (!toWalletId) return setError('Pilih dompet tujuan')
-      if (walletId === toWalletId) return setError('Dompet asal dan tujuan tidak boleh sama')
+      if (!walletId) return showError('Pilih dompet asal')
+      if (!toWalletId) return showError('Pilih dompet tujuan')
+      if (walletId === toWalletId) return showError('Dompet asal dan tujuan tidak boleh sama')
     } else {
       if (!activeWalletId) {
-        return setError(isIncome ? 'Pilih dompet penerima' : 'Pilih dompet')
+        return showError(isIncome ? 'Pilih dompet penerima' : 'Pilih dompet')
       }
       if (isFree && !description.trim()) {
-        return setError('Keterangan wajib diisi untuk Uang Bebas')
-      } else if (isIncome && !description.trim()) {
-        return setError('Keterangan wajib diisi untuk Pemasukan (mis. Gaji, Bonus)')
+        return showError('Keterangan wajib diisi untuk Uang Bebas')
       }
     }
 
@@ -87,7 +90,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
       walletId: activeWalletId,
       toWalletId: isTransfer ? toWalletId : null,
       recurringTemplateId: transaction?.recurringTemplateId || prefill?.recurringTemplateId || null,
-      description: description.trim() || (isIncome ? 'Pemasukan' : ''),
+      description: description.trim() || (isIncome ? 'Pemasukan' : isFree ? 'Uang Bebas' : ''),
     }
 
     if (transaction) updateTransaction(monthId, transaction.id, payload)
@@ -103,7 +106,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         haptic.selection()
         setType(key)
       }}
-      className={`flex min-h-[38px] items-center justify-center rounded-lg py-2 px-2 text-xs font-semibold transition-all active:scale-[0.98] select-none ${
+      className={`flex min-h-[38px] items-center justify-center rounded-lg py-2 px-2 text-xs font-semibold transition-[transform,background-color,color] duration-120 ease-out-expo active:scale-[0.97] select-none ${
         active
           ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
           : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
@@ -119,12 +122,13 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
-          <button onClick={onClose} className={btn.neutral}>
+          <button type="button" onClick={onClose} className={btn.neutral}>
             Batal
           </button>
           <button
             type="submit"
             form="tx-form"
+            onClick={submit}
             disabled={submitting}
             className={btn.primary}
           >
@@ -134,6 +138,11 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
       }
     >
       <form id="tx-form" onSubmit={submit} className="space-y-4">
+        {error && (
+          <div className="animate-shake rounded-xl border border-rose-500/30 bg-rose-50 px-3.5 py-2.5 text-sm text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
+            {error}
+          </div>
+        )}
         <div>
           <DatePicker value={date} onChange={setDate} />
           {monthMismatch && (
@@ -254,30 +263,36 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
             <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
               Belum ada dompet tersimpan. Tambahkan dompet terlebih dahulu sebelum mencatat transaksi.
             </div>
-          ) : isSingle ? (
-            <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
-              Tercatat di <strong>{primary?.name}</strong>{isIncome ? ' (saldo dompet bertambah)' : ': pocket adalah sekat virtual dari rekening ini'}.
-            </p>
           ) : (
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
                 {isIncome ? 'Dompet Penerima' : 'Dompet'} <span className="text-rose-500">*</span>
               </label>
-              <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)} aria-label={isIncome ? 'Dompet Penerima' : 'Dompet'}>
-                <option value="">(Pilih dompet)</option>
+              <select
+                className={input}
+                value={walletId}
+                onChange={(e) => setWalletId(e.target.value)}
+                aria-label={isIncome ? 'Dompet Penerima' : 'Dompet'}
+              >
+                {wallets.length > 1 && <option value="">(Pilih dompet)</option>}
                 {wallets.map((w) => (
                   <option key={w.id} value={w.id}>
                     {w.name}
                   </option>
                 ))}
               </select>
+              {isSingle && (
+                <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                  {isIncome ? 'Saldo dompet ini akan bertambah.' : 'Pocket adalah sekat virtual dari dompet ini.'}
+                </p>
+              )}
             </div>
           )
         )}
 
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-            {isIncome ? 'Keterangan Pemasukan' : 'Keterangan'} {(isFree || isIncome) && <span className="text-rose-500">*</span>}
+            {isIncome ? 'Keterangan Pemasukan' : 'Keterangan'} {isFree && <span className="text-rose-500">*</span>}
           </label>
           <input
             className={input}
@@ -291,13 +306,12 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
                     : 'Contoh: bensin, makan siang'
             }
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value)
+              if (error) setError('')
+            }}
           />
         </div>
-
-        {error && (
-          <div className="rounded-xl border border-rose-500/30 bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">{error}</div>
-        )}
       </form>
     </Modal>
   )

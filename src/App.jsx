@@ -12,6 +12,7 @@ import LegalPage from './components/LegalPage.jsx'
 import NotFound from './components/NotFound.jsx'
 
 // Lazy load non-critical routes and modals to minimize initial bundle size
+const SavingsView = lazy(() => import('./components/SavingsView.jsx'))
 const Stats = lazy(() => import('./components/Stats.jsx'))
 const Report = lazy(() => import('./components/Report.jsx'))
 const CategoryManager = lazy(() => import('./components/CategoryManager.jsx'))
@@ -143,6 +144,8 @@ function Shell() {
               onManageRecurring={() => setRecurrOpen(true)}
               onTransfer={() => setTransferOpen(true)}
             />
+          ) : view === 'savings' ? (
+            <SavingsView />
           ) : view === 'stats' ? (
             <Stats />
           ) : view === 'report' ? (
@@ -156,7 +159,7 @@ function Shell() {
       {/* FAB */}
       <button
         onClick={() => { haptic.tap(); openNewTx(null) }}
-        className="no-print fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-6 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-tactile-md transition-all duration-150 hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95 focus:outline-none focus:ring-2 focus:ring-slate-400/30 dark:bg-teal-600 dark:hover:bg-teal-500"
+        className="no-print fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-6 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-tactile-md transition-[transform,background-color,box-shadow] duration-120 ease-out-expo hover:-translate-y-0.5 hover:bg-slate-800 active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-slate-400/30 dark:bg-teal-600 dark:hover:bg-teal-500"
         aria-label="Tambah transaksi"
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -190,7 +193,7 @@ function Shell() {
         <div
           role="alert"
           onClick={() => notify('')}
-          className={`fixed left-1/2 top-4 z-[70] flex w-max max-w-[90vw] -translate-x-1/2 cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium shadow-tactile-lg transition-transform active:scale-95 ${
+          className={`animate-fade-up fixed left-1/2 top-4 z-[70] flex w-max max-w-[90vw] -translate-x-1/2 cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium shadow-tactile-lg transition-[transform,opacity] duration-120 active:scale-95 ${
             (typeof notice === 'object' ? notice.type : 'error') === 'error'
               ? 'border-rose-500/80 bg-white text-rose-600 dark:border-rose-500/60 dark:bg-slate-900 dark:text-rose-400'
               : 'border-teal-500/80 bg-white text-teal-700 dark:border-teal-500/60 dark:bg-slate-900 dark:text-teal-300'

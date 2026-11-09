@@ -1,4 +1,4 @@
-﻿-- ============================================================
+-- ============================================================
 -- Zheabraa — FULL SETUP SQL (schema + semua migration)
 -- Jalankan SEKALI di: Supabase Dashboard > SQL Editor
 -- ============================================================
@@ -70,6 +70,7 @@ create table if not exists public.categories (
   name text not null,
   budget_amount integer not null default 0,
   goal_amount integer not null default 0,
+  saved_amount integer not null default 0,
   goal_deadline text,
   color text not null default '#8B5CF6',
   sort_order integer not null default 0,
@@ -261,4 +262,16 @@ create policy "budget_templates_update" on public.budget_templates
 drop policy if exists "budget_templates_delete" on public.budget_templates;
 create policy "budget_templates_delete" on public.budget_templates
   for delete using (auth.uid() = user_id);
+
+-- ########## migration-category-savings.sql ##########
+alter table public.categories add column if not exists saved_amount integer not null default 0;
+
+-- ########## migration-recurring-skip.sql ##########
+alter table public.recurring_templates add column if not exists skip_months jsonb not null default '[]'::jsonb;
+
+-- ########## migration-features.sql & carry-over ##########
+alter table public.months add column if not exists note text not null default '';
+alter table public.months add column if not exists carry_over_wallet_id text;
+alter table public.categories add column if not exists goal_amount integer not null default 0;
+alter table public.categories add column if not exists goal_deadline text;
 

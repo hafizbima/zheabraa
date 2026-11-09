@@ -26,6 +26,7 @@ import SaveGoalModal from './SaveGoalModal.jsx'
 import Confirm from './Confirm.jsx'
 import AddPocketModal from './AddPocketModal.jsx'
 import { btn } from '../lib/buttons.js'
+import { useCountUp } from '../hooks/useCountUp.js'
 import { notificationCandidates, notificationsEnabled, sendNotificationOnce } from '../lib/notifications.js'
 
 function Card({ label, value, sub, accent, tint }) {
@@ -65,6 +66,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     useGoal,
     notify,
     addCategory,
+    updateCategory,
     removeCategory,
   } = useStore()
 
@@ -89,6 +91,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     ]
   })
   const [incomeWalletId, setIncomeWalletId] = useState('')
+  const [incomeError, setIncomeError] = useState('')
   const [noteDraft, setNoteDraft] = useState('')
   const [saveModal, setSaveModal] = useState(null) // { cat, mode: 'nabung' | 'pakai' }
   const [deleteConfirmCat, setDeleteConfirmCat] = useState(null)
@@ -137,6 +140,9 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const pool = month ? freePool(month) : 0
   const freeSpent = freeMoneySpent(txs)
   const left = month ? freeLeft(month) : 0
+  const animLeft = useCountUp(left)
+  const animInflow = useCountUp(inflow)
+  const animAllocated = useCountUp(allocated)
   const dailySpend = month ? safeDailySpend(month, templates) : { amount: 0, daysRemaining: 0, plannedBills: 0, discretionaryLeft: 0 }
   const primary = wallets[0] || null
   const primaryBalance = primary
@@ -179,24 +185,36 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
   const saveIncome = () => {
     const amount = toInt(incomeAmount)
-    const walletId = incomeWalletId || wallets[0]?.id || null
+    if (amount <= 0) {
+      haptic.error()
+      setIncomeError('Nominal harus lebih dari 0')
+      return
+    }
+    if (wallets.length > 1 && !incomeWalletId) {
+      haptic.error()
+      setIncomeError('Pemasukan memerlukan dompet. Silakan pilih dompet.')
+      return
+    }
+    const walletId = incomeWalletId || (wallets.length === 1 ? wallets[0]?.id : null)
     if (editingIncome?.id) {
-      updateIncome(currentMonthId, editingIncome.id, { label: incomeLabel || 'Pemasukan', amount, walletId })
+      updateIncome(currentMonthId, editingIncome.id, { label: incomeLabel.trim() || 'Pemasukan', amount, walletId })
     } else {
-      addIncome(currentMonthId, { label: incomeLabel || 'Pemasukan', amount, walletId })
+      addIncome(currentMonthId, { label: incomeLabel.trim() || 'Pemasukan', amount, walletId })
     }
     haptic.success()
     setEditingIncome(null)
     setIncomeLabel('')
     setIncomeAmount('')
     setIncomeWalletId('')
+    setIncomeError('')
   }
 
   const editIncome = (inc) => {
     setEditingIncome(inc)
     setIncomeLabel(inc.description)
     setIncomeAmount(formatNumberInput(inc.amount || ''))
-    setIncomeWalletId(inc.walletId || wallets[0]?.id || '')
+    setIncomeWalletId(inc.walletId || (wallets.length === 1 ? wallets[0]?.id : ''))
+    setIncomeError('')
   }
 
   const commitCarrySources = (sourcesToCommit) => {
@@ -349,7 +367,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
         <div className="mt-4 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
           <div>
             <p className={`font-sans text-3xl sm:text-4xl font-bold tracking-tight tabular-nums ${left < 0 ? 'text-rose-500' : 'text-slate-900 dark:text-white'}`}>
-              {formatRupiah(left)}
+              {formatRupiah(animLeft)}
             </p>
             <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
               Tersedia untuk dibelanjakan bulan ini • Dari total pool {formatRupiah(pool)} (terpakai {formatRupiah(freeSpent)})
@@ -404,7 +422,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
           <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
             <div
-              className={`h-full rounded-full transition-all duration-300 ${
+              className={`h-full rounded-full transition-transform duration-260 ease-out-expo ${
                 left < 0
                   ? 'bg-rose-500'
                   : pool > 0 && left / pool < 0.25
@@ -412,7 +430,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                     : 'bg-teal-500'
               }`}
               style={{
-                width: `${Math.min(100, Math.max(0, pool > 0 ? (freeSpent / pool) * 100 : 0))}%`,
+                transform: `scaleX(${Math.min(100, Math.max(0, pool > 0 ? (freeSpent / pool) * 100 : 0)) / 100})`,
+                transformOrigin: 'left',
               }}
             />
           </div>
@@ -421,8 +440,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
 
       {/* Supporting Metric Cards */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <Card label="Total Pemasukan" value={formatRupiah(inflow)} accent="text-teal-600 dark:text-teal-400" />
-        <Card label="Teralokasi ke Pocket" value={formatRupiah(allocated)} sub={`uang bebas ${formatRupiah(pool)}`} accent="text-slate-800 dark:text-slate-200" />
+        <Card label="Total Pemasukan" value={formatRupiah(animInflow)} accent="text-teal-600 dark:text-teal-400" />
+        <Card label="Teralokasi ke Pocket" value={formatRupiah(animAllocated)} sub={`uang bebas ${formatRupiah(pool)}`} accent="text-slate-800 dark:text-slate-200" />
         <Card label="Saldo Rekening" value={formatRupiah(primaryBalance)} sub={primary ? primary.name : 'Rekening'} accent={primaryBalance < 0 ? 'text-rose-500' : 'text-slate-800 dark:text-slate-200'} />
       </section>
 
@@ -587,7 +606,13 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                   {formatRupiah(used)} / {formatRupiah(budget)}
                 </p>
                 <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200/70 dark:bg-slate-700">
-                  <div className={`h-full rounded-full ${statusStyles(status)} transition-all`} style={{ width: `${pct}%` }} />
+                  <div
+                    className={`h-full rounded-full ${statusStyles(status)} transition-transform duration-260 ease-out-expo`}
+                    style={{
+                      transform: `scaleX(${Math.min(100, Math.max(0, pct)) / 100})`,
+                      transformOrigin: 'left',
+                    }}
+                  />
                 </div>
               </div>
             ))}
@@ -605,7 +630,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
               setEditingIncome(willOpen ? { id: null } : null)
               setIncomeLabel('')
               setIncomeAmount('')
-              setIncomeWalletId(wallets[0]?.id || '')
+              setIncomeWalletId(wallets.length === 1 ? wallets[0]?.id : '')
+              setIncomeError('')
             }}
             className={btn.ghost}
           >
@@ -620,7 +646,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">{inc.description}</p>
                 <div className="flex items-center gap-2">
                   <p className="text-xs font-medium tabular-nums text-slate-500 dark:text-slate-400">{formatRupiah(inc.amount)}</p>
-                  {wallets.length > 1 && inc.walletId && (
+                  {inc.walletId && (
                     <span className="text-[11px] text-slate-400 dark:text-slate-500">
                       • {wallets.find((w) => w.id === inc.walletId)?.name || 'Dompet'}
                     </span>
@@ -737,26 +763,69 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
           {editingIncome && (
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-tactile-sm dark:border-slate-700 dark:bg-slate-800 space-y-2.5">
               <div className="flex flex-col sm:flex-row gap-2">
-                <input className={input + ' flex-1'} value={incomeLabel} onChange={(e) => setIncomeLabel(e.target.value)} placeholder="Label (mis. Gaji, Bonus)" />
-                {wallets.length > 1 && (
-                  <select
-                    className={input + ' w-full sm:w-36'}
-                    value={incomeWalletId}
-                    onChange={(e) => setIncomeWalletId(e.target.value)}
-                    aria-label="Dompet Pemasukan"
-                  >
-                    {wallets.map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {w.name}
-                      </option>
-                    ))}
-                  </select>
-                )}
-                <input className={input + ' w-full sm:w-36 text-right'} type="text" inputMode="numeric" value={incomeAmount} onChange={(e) => setIncomeAmount(formatNumberInput(e.target.value))} placeholder="Nominal" />
+                <input
+                  className={input + ' flex-1'}
+                  value={incomeLabel}
+                  onChange={(e) => {
+                    setIncomeLabel(e.target.value)
+                    if (incomeError) setIncomeError('')
+                  }}
+                  placeholder="Label (mis. Gaji, Bonus)"
+                  autoFocus
+                />
+                <select
+                  className={input + ' w-full sm:w-44'}
+                  value={incomeWalletId}
+                  onChange={(e) => {
+                    setIncomeWalletId(e.target.value)
+                    if (incomeError) setIncomeError('')
+                  }}
+                  aria-label="Dompet Pemasukan"
+                >
+                  {wallets.length > 1 && <option value="">(Pilih dompet)</option>}
+                  {wallets.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  className={input + ' w-full sm:w-36 text-right tabular-nums'}
+                  type="text"
+                  inputMode="numeric"
+                  value={incomeAmount}
+                  onChange={(e) => {
+                    setIncomeAmount(formatNumberInput(e.target.value))
+                    if (incomeError) setIncomeError('')
+                  }}
+                  aria-label="Nominal Pemasukan"
+                  placeholder="Nominal (Rp)"
+                />
               </div>
+
+              {(incomeError || (wallets.length > 1 && !incomeWalletId && toInt(incomeAmount) > 0)) && (
+                <p className="px-1 text-xs text-rose-500">
+                  {incomeError || 'Pemasukan memerlukan dompet. Silakan pilih dompet.'}
+                </p>
+              )}
+
               <div className="flex justify-end gap-2">
-                <button onClick={() => setEditingIncome(null)} className={btn.neutral}>Batal</button>
-                <button onClick={saveIncome} className={btn.primary}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingIncome(null)
+                    setIncomeError('')
+                  }}
+                  className={btn.neutral}
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={saveIncome}
+                  disabled={wallets.length > 1 && !incomeWalletId}
+                  className={btn.primary}
+                >
                   Simpan
                 </button>
               </div>
@@ -885,9 +954,10 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
         mode={saveModal.mode}
         available={goalSaved(saveModal.cat, txs).saved}
         onClose={() => setSaveModal(null)}
-        onSubmit={(amt, desc) => {
-          if (saveModal.mode === 'pakai') useGoal(currentMonthId, saveModal.cat.id, amt, desc || undefined)
-          else saveToGoal(currentMonthId, saveModal.cat.id, amt)
+        onSubmit={(amt, desc, walletId, targetCatId) => {
+          const finalCatId = targetCatId || saveModal.cat.id
+          if (saveModal.mode === 'pakai') useGoal(currentMonthId, finalCatId, amt, desc || undefined, walletId)
+          else saveToGoal(currentMonthId, finalCatId, amt, walletId)
         }}
       />
     )}
@@ -909,7 +979,12 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
     {addPocketOpen && (
       <AddPocketModal
         onClose={() => setAddPocketOpen(false)}
-        onAdd={(data) => addCategory(currentMonthId, data)}
+        onAdd={(data) => {
+          if (data.existingPocketId) {
+            return updateCategory(currentMonthId, data.existingPocketId, data)
+          }
+          return addCategory(currentMonthId, data)
+        }}
       />
     )}
   </>

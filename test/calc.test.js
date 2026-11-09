@@ -19,6 +19,9 @@ import {
   isRecurringBillPaid,
   safeDailySpend,
   goalPlan,
+  savingsSummary,
+  goalHistory,
+  goalProjection,
 } from '../src/lib/calc.js'
 
 const walletA = { id: 'w1', name: 'Cash', openingBalance: 100000 }
@@ -289,6 +292,119 @@ describe('calc', () => {
     expect(plan.monthsRemaining).toBe(3)
     expect(plan.monthlyAmount).toBe(233334)
     expect(plan.overdue).toBe(false)
+  })
+
+  it('savingsSummary merangkum seluruh target tabungan dengan urutan yang tepat', () => {
+    const months = {
+      '2026-11': {
+        categories: [
+          { id: 'c1', key: 'laptop', name: 'Laptop Baru', goalAmount: 10000000, savedAmount: 4000000, budgetAmount: 1000000, goalDeadline: '2027-04-01' },
+          { id: 'c2', key: 'liburan', name: 'Liburan Bali', goalAmount: 3000000, savedAmount: 3000000, budgetAmount: 0 },
+          { id: 'c3', key: 'darurat', name: 'Dana Darurat', goalAmount: 5000000, savedAmount: 1000000, budgetAmount: 500000, goalDeadline: '2026-12-01' },
+          { id: 'c4', key: 'makan', name: 'Makan', budgetAmount: 500000 },
+        ],
+        transactions: [
+          { id: 't1', categoryId: 'c1', type: 'expense', amount: 200000 },
+        ],
+      },
+    }
+
+    const summary = savingsSummary(months, '2026-11')
+    expect(summary.goals.length).toBe(3)
+    // Dana Darurat (deadline 2026-12-01) should come before Laptop Baru (deadline 2027-04-01)
+    expect(summary.goals[0].name).toBe('Dana Darurat')
+    expect(summary.goals[1].name).toBe('Laptop Baru')
+    // Liburan Bali is already reached (3jt / 3jt), so it comes last
+    expect(summary.goals[2].name).toBe('Liburan Bali')
+    expect(summary.reachedCount).toBe(1)
+    // Saved: c1 = 4jt + (1jt - 200rb) = 4.8jt. c2 = 3jt. c3 = 1jt + 500rb = 1.5jt. Total = 9.3jt
+    expect(summary.totalSaved).toBe(9300000)
+    // Target: 10jt + 3jt + 5jt = 18jt
+    expect(summary.totalTarget).toBe(18000000)
+    expect(summary.pct).toBe(52)
+  })
+
+  it('goalHistory melacak riwayat setor dan tarik lintas bulan', () => {
+    const months = {
+      '2026-10': {
+        categories: [{ id: 'c1', key: 'laptop', name: 'Laptop' }],
+        transactions: [
+          { id: 'tx-1', date: '2026-10-15', description: 'Menabung ke Laptop', amount: 500000, type: 'expense', categoryId: null },
+        ],
+      },
+      '2026-11': {
+        categories: [{ id: 'c1', key: 'laptop', name: 'Laptop' }],
+        transactions: [
+          { id: 'tx-2', date: '2026-11-02', description: '[goal:laptop] Setor rutin', amount: 1000000, type: 'expense', categoryId: null, goalType: 'deposit' },
+          { id: 'tx-3', date: '2026-11-05', description: 'Pakai tabungan Laptop', amount: 300000, type: 'expense', categoryId: 'c1' },
+        ],
+      },
+    }
+
+    const hist = goalHistory('laptop', months)
+    expect(hist.length).toBe(3)
+    expect(hist[0].id).toBe('tx-3')
+    expect(hist[0].type).toBe('withdraw')
+    expect(hist[1].id).toBe('tx-2')
+    expect(hist[1].type).toBe('deposit')
+    expect(hist[2].id).toBe('tx-1')
+    expect(hist[2].type).toBe('deposit')
+  })
+
+  it('goalProjection memproyeksikan estimasi bulan tercapai berdasarkan 3 bulan terakhir', () => {
+    const months = {
+      '2026-09': {
+        categories: [{ id: 'c1', key: 'gadget', name: 'Gadget', goalAmount: 3000000, savedAmount: 0 }],
+        transactions: [
+          { id: 't1', date: '2026-09-10', description: 'Menabung ke Gadget', amount: 500000, type: 'expense' },
+        ],
+      },
+      '2026-10': {
+        categories: [{ id: 'c1', key: 'gadget', name: 'Gadget', goalAmount: 3000000, savedAmount: 500000 }],
+        transactions: [
+          { id: 't2', date: '2026-10-10', description: 'Menabung ke Gadget', amount: 500000, type: 'expense' },
+        ],
+      },
+      '2026-11': {
+        categories: [{ id: 'c1', key: 'gadget', name: 'Gadget', goalAmount: 3000000, savedAmount: 1000000, budgetAmount: 0 }],
+        transactions: [
+          { id: 't3', date: '2026-11-05', description: 'Menabung ke Gadget', amount: 500000, type: 'expense' },
+        ],
+      },
+    }
+
+    const proj = goalProjection('gadget', months, '2026-11')
+    expect(proj).not.toBeNull()
+    // Saved is 1000000 (savedAmount). Needed = 3000000 - 1000000 = 2000000.
+    expect(proj.needed).toBe(2000000)
+    // 3 months sum: 500rb + 500rb + 500rb = 1.5jt. Avg: 500rb/bln
+    expect(proj.avgMonthlyDeposit).toBe(500000)
+    // Needed: 2jt / 500rb = 4 months
+    expect(proj.monthsNeeded).toBe(4)
+    // 2026-11 + 4 months = 2027-03
+    expect(proj.estimatedMonthId).toBe('2027-03')
+  })
+
+  it('categoryUsed tidak menganggap goalType deposit sebagai belanja pocket, dan freeMoneySpent menghitungnya', () => {
+    const txs = [
+      { id: 't1', categoryId: 'saving-1', type: 'expense', amount: 200000, goalType: 'deposit', walletId: 'w1' },
+      { id: 't2', categoryId: 'saving-1', type: 'expense', amount: 50000, goalType: 'withdraw', walletId: 'w1' },
+    ]
+    expect(categoryUsed('saving-1', txs)).toBe(50000)
+    expect(freeMoneySpent(txs)).toBe(200000)
+  })
+
+  it('savingsSummary menyertakan walletId pada setiap target tabungan', () => {
+    const months = {
+      '2026-11': {
+        categories: [
+          { id: 's1', name: 'Dana Darurat', goalAmount: 10000000, savedAmount: 2000000, walletId: 'w-mandiri', pocketType: 'saving' },
+        ],
+        transactions: [],
+      },
+    }
+    const res = savingsSummary(months, '2026-11')
+    expect(res.goals[0].walletId).toBe('w-mandiri')
   })
 })
 

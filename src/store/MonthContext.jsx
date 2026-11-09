@@ -161,12 +161,32 @@ export function MonthProvider({ children }) {
   const updateIncome = useCallback(
     (mId, incomeId, patch) => {
       if (!user) return
+      setMonths((prev) => {
+        const m = prev[mId]
+        if (!m) return prev
+        return {
+          ...prev,
+          [mId]: {
+            ...m,
+            transactions: (m.transactions || []).map((t) =>
+              t.id === incomeId
+                ? {
+                    ...t,
+                    ...(patch.label !== undefined ? { description: patch.label } : {}),
+                    ...(patch.amount !== undefined ? { amount: patch.amount } : {}),
+                    ...(patch.walletId !== undefined ? { walletId: patch.walletId } : {}),
+                  }
+                : t,
+            ),
+          },
+        }
+      })
       mutate(
         backend.updateTransaction(user.uid, mId, incomeId, { description: patch.label, amount: patch.amount, ...(patch.walletId ? { walletId: patch.walletId } : {}) }),
         'Gagal mengubah pemasukan',
       )
     },
-    [user, mutate],
+    [user, mutate, setMonths],
   )
 
   const removeIncome = useCallback(
@@ -281,6 +301,8 @@ export function MonthProvider({ children }) {
         goalAmount: data.goalAmount || 0,
         goalDeadline: data.goalDeadline || null,
         savedAmount: data.savedAmount || 0,
+        walletId: data.walletId || null,
+        pocketType: data.pocketType || null,
         color: data.color,
         order: cats.length,
       }
@@ -441,7 +463,7 @@ export function MonthProvider({ children }) {
 
   // tabungan manual: keluarkan dari uang bebas (expense) lalu tambah ke savedAmount
   const saveToGoal = useCallback(
-    (mId, categoryId, amount) => {
+    (mId, categoryId, amount, walletId) => {
       if (!user || amount <= 0) return
       const cat = (months[mId]?.categories || []).find((c) => c.id === categoryId)
       if (!cat) return
@@ -449,8 +471,9 @@ export function MonthProvider({ children }) {
         date: todayISO(),
         type: 'expense',
         amount,
-        categoryId: null,
-        walletId: wallets[0]?.id || null,
+        categoryId,
+        goalType: 'deposit',
+        walletId: walletId || cat.walletId || wallets[0]?.id || null,
         description: `Menabung ke ${cat.name}`,
       })
       updateCategory(mId, categoryId, { savedAmount: (cat.savedAmount || 0) + amount })
@@ -460,7 +483,7 @@ export function MonthProvider({ children }) {
 
   // tarik tabungan: uang keluar dari rekening (expense di pocket tabungan) + savedAmount berkurang
   const useGoal = useCallback(
-    (mId, categoryId, amount, description) => {
+    (mId, categoryId, amount, description, walletId) => {
       if (!user || amount <= 0) return
       const cat = (months[mId]?.categories || []).find((c) => c.id === categoryId)
       if (!cat) return
@@ -469,7 +492,8 @@ export function MonthProvider({ children }) {
         type: 'expense',
         amount,
         categoryId,
-        walletId: wallets[0]?.id || null,
+        goalType: 'withdraw',
+        walletId: walletId || cat.walletId || wallets[0]?.id || null,
         description: description || `Pakai tabungan ${cat.name}`,
       })
       updateCategory(mId, categoryId, { savedAmount: Math.max(0, (cat.savedAmount || 0) - amount) })

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
 import { useTheme } from '../theme.js'
 import { formatRupiah } from '../lib/money.js'
+import { useCountUp } from '../hooks/useCountUp.js'
 import { labelOf } from '../lib/dates.js'
 import {
   totalInflow,
@@ -174,8 +175,13 @@ export default function Stats() {
 
   const insights = useMemo(() => buildSpendingInsights(months, ranged), [months, ranged])
 
+  const animIncome = useCountUp(data?.income || 0)
+  const animAllocated = useCountUp(data?.allocated || 0)
+  const animSpent = useCountUp(data?.spent || 0)
+  const animLeft = useCountUp(data?.left || 0)
+
   const granBtn = (key, label) =>
-    `rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all active:scale-[0.98] select-none ${
+    `rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-[transform,background-color,color] duration-120 ease-out-expo active:scale-[0.97] select-none ${
       gran === key
         ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
         : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
@@ -227,20 +233,20 @@ export default function Stats() {
       <section className="grid grid-cols-2 gap-3.5">
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
           <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Total Pemasukan</p>
-          <p className="mt-1 font-sans text-lg font-bold tabular-nums text-teal-600 dark:text-teal-400">{formatRupiah(data.income)}</p>
+          <p className="mt-1 font-sans text-lg font-bold tabular-nums text-teal-600 dark:text-teal-400">{formatRupiah(animIncome)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
           <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Total Dialokasikan</p>
-          <p className="mt-1 font-sans text-lg font-bold tabular-nums text-slate-900 dark:text-white">{formatRupiah(data.allocated)}</p>
+          <p className="mt-1 font-sans text-lg font-bold tabular-nums text-slate-900 dark:text-white">{formatRupiah(animAllocated)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
           <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Total Belanja (net)</p>
-          <p className="mt-1 font-sans text-lg font-bold tabular-nums text-rose-600 dark:text-rose-400">{formatRupiah(data.spent)}</p>
+          <p className="mt-1 font-sans text-lg font-bold tabular-nums text-rose-600 dark:text-rose-400">{formatRupiah(animSpent)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800 dark:bg-slate-900">
           <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Sisa Akhir Bulan</p>
           <p className={`mt-1 font-sans text-lg font-bold tabular-nums ${data.left < 0 ? 'text-rose-600' : 'text-slate-900 dark:text-white'}`}>
-            {formatRupiah(data.left)}
+            {formatRupiah(animLeft)}
           </p>
         </div>
       </section>

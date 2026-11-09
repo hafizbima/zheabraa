@@ -6,7 +6,17 @@ import { WALLET_COLORS } from '../lib/palette.js'
 import { formatRupiah, toInt, formatNumberInput } from '../lib/money.js'
 import { walletBalance, singleWalletBalance, allTransactions } from '../lib/calc.js'
 import { btn } from '../lib/buttons.js'
+import { useCountUp } from '../hooks/useCountUp.js'
 import EmptyState from './EmptyState.jsx'
+
+function WalletBalanceDisplay({ balance }) {
+  const animated = useCountUp(balance)
+  return (
+    <p className={`text-sm font-semibold tabular-nums ${balance < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>
+      {formatRupiah(animated)}
+    </p>
+  )
+}
 
 export default function WalletManager({ onClose }) {
   const { wallets, months, addWallet, updateWallet, deleteWallet, notify } = useStore()
@@ -255,7 +265,7 @@ export default function WalletManager({ onClose }) {
               </div>
               <div className="ml-auto w-32 shrink-0 text-right sm:ml-0 sm:w-28">
                 <p className="text-xs text-slate-500 dark:text-slate-400">saldo saat ini</p>
-                <p className={`text-sm font-semibold tabular-nums ${bal < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>{formatRupiah(bal)}</p>
+                <WalletBalanceDisplay balance={bal} />
                 <button
                   onClick={() => {
                     setAdjustId(w.id)

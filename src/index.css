@@ -97,6 +97,26 @@ input[type='date']::-webkit-calendar-picker-indicator:hover {
   will-change: transform, opacity;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-fade-up,
+  .animate-fade-out,
+  .animate-shake,
+  .animate-draw-check,
+  .modal-panel,
+  .modal-backdrop {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
 @media print {
   body { background: #fff !important; }
   .no-print { display: none !important; }

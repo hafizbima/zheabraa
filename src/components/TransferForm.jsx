@@ -35,7 +35,7 @@ export default function TransferForm({ monthId, onClose }) {
   }
 
   const submit = (e) => {
-    e.preventDefault()
+    e?.preventDefault?.()
     if (amt <= 0) return setError('Nominal harus lebih dari 0')
     if (!date) return setError('Tanggal wajib diisi')
     if (!fromId) return setError('Pilih dompet asal')
@@ -45,7 +45,7 @@ export default function TransferForm({ monthId, onClose }) {
 
     addTransaction(monthId, {
       date,
-      type: 'transfer',
+      type,
       amount: amt,
       categoryId: null,
       walletId: fromId,
@@ -62,10 +62,10 @@ export default function TransferForm({ monthId, onClose }) {
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
-          <button onClick={onClose} className={btn.neutral}>
+          <button type="button" onClick={onClose} className={btn.neutral}>
             Batal
           </button>
-          <button type="submit" form="transfer-form" className={btn.primary}>
+          <button type="submit" form="transfer-form" onClick={submit} className={btn.primary}>
             Simpan Transfer
           </button>
         </div>

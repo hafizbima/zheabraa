@@ -35,6 +35,40 @@ export default {
       borderRadius: {
         '2.5xl': '1.25rem',
       },
+      transitionTimingFunction: {
+        'out-expo': 'cubic-bezier(0.23, 1, 0.32, 1)',
+      },
+      transitionDuration: {
+        120: '120ms',
+        160: '160ms',
+        200: '200ms',
+        260: '260ms',
+      },
+      keyframes: {
+        'fade-up': {
+          from: { opacity: '0', transform: 'translateY(8px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-out': {
+          from: { opacity: '1' },
+          to: { opacity: '0' },
+        },
+        shake: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '20%, 60%': { transform: 'translateX(-4px)' },
+          '40%, 80%': { transform: 'translateX(4px)' },
+        },
+        'draw-check': {
+          from: { strokeDashoffset: '24' },
+          to: { strokeDashoffset: '0' },
+        },
+      },
+      animation: {
+        'fade-up': 'fade-up 260ms cubic-bezier(0.23, 1, 0.32, 1) forwards',
+        'fade-out': 'fade-out 160ms cubic-bezier(0.23, 1, 0.32, 1) forwards',
+        shake: 'shake 240ms cubic-bezier(0.23, 1, 0.32, 1)',
+        'draw-check': 'draw-check 300ms cubic-bezier(0.23, 1, 0.32, 1) forwards',
+      },
     },
   },
   plugins: [],

@@ -251,8 +251,11 @@ export default function TransactionList({ onEditTx }) {
           <div className="inline-flex rounded-xl border border-slate-200 bg-slate-100 p-0.5 dark:border-slate-700 dark:bg-slate-800">
             <button
               type="button"
-              onClick={() => setSearchScope('month')}
-              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+              onClick={() => {
+                haptic.selection()
+                setSearchScope('month')
+              }}
+              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-[transform,background-color,color] duration-120 ease-out-expo active:scale-[0.97] ${
                 searchScope === 'month'
                   ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
                   : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
@@ -262,8 +265,11 @@ export default function TransactionList({ onEditTx }) {
             </button>
             <button
               type="button"
-              onClick={() => setSearchScope('all')}
-              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+              onClick={() => {
+                haptic.selection()
+                setSearchScope('all')
+              }}
+              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-[transform,background-color,color] duration-120 ease-out-expo active:scale-[0.97] ${
                 searchScope === 'all'
                   ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
                   : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'

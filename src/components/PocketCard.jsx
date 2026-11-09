@@ -17,6 +17,8 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
   const goalDone = goal > 0 && savedAmt >= goal
   const plan = goalPlan(cat, txs, currentMonthId)
 
+  const isFullCard = goal > 0
+
   return (
     <div
       role="button"
@@ -28,19 +30,53 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
           onClick?.(e)
         }
       }}
-      className="group block w-full cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 text-left shadow-tactile-sm transition hover:border-slate-300 hover:shadow-tactile active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 select-none"
+      className="group block w-full cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 text-left shadow-tactile-sm transition-[transform,box-shadow,border-color,background-color] duration-120 ease-out-expo hover:border-slate-300 hover:shadow-tactile active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 select-none"
     >
-      <div className="flex items-center justify-between gap-3">
-        {/* Sisi Kiri: Dot Warna Pocket & Nama */}
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span
-            className="h-3 w-3 shrink-0 rounded-full shadow-sm"
-            style={{ backgroundColor: cat.color }}
-          />
-          <span className="truncate font-sans text-sm sm:text-base font-semibold tracking-tight text-slate-900 dark:text-white">
-            {cat.name}
-          </span>
-          {goal > 0 && (
+      {isFullCard ? (
+        /* Card Penuh (Ber-target): Nama pocket di baris tersendiri di paling atas */
+        <div className="space-y-2.5">
+          {/* Baris 1: Dot Warna + Nama Pocket (lebar penuh) + Tombol Hapus */}
+          <div className="flex items-center justify-between gap-2.5">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span
+                className="h-3.5 w-3.5 shrink-0 rounded-full shadow-sm"
+                style={{ backgroundColor: cat.color }}
+              />
+              <span className="truncate font-sans text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white">
+                {cat.name}
+              </span>
+            </div>
+            {onDelete && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete(cat)
+                }}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 active:scale-95 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                title="Hapus pocket"
+                aria-label={`Hapus pocket ${cat.name}`}
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Baris 2: Badge Status Target di kiri, Pengeluaran & Sisa di kanan */}
+          <div className="flex items-center justify-between gap-2">
             <span
               className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold tabular-nums ${
                 goalDone
@@ -50,68 +86,107 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
             >
               {goalDone ? 'Target Tercapai' : `Target ${formatRupiah(goal)}`}
             </span>
-          )}
-        </div>
 
-        {/* Sisi Kanan: Nominal Terpakai / Budget & Sisa Saldo */}
-        <div className="flex items-center gap-2 shrink-0 text-right">
-          <div>
-            <p className="font-sans text-sm sm:text-base font-bold tabular-nums text-slate-900 dark:text-white">
-              {formatRupiah(used)}
-              {budget > 0 && (
-                <span className="text-xs font-normal tabular-nums text-slate-500 dark:text-slate-400">
-                  {' '}/ {formatRupiah(budget)}
-                </span>
-              )}
-            </p>
-            <p
-              className={`text-xs font-semibold tabular-nums ${
-                status === 'over'
-                  ? 'text-rose-500'
-                  : status === 'warn'
-                    ? 'text-amber-500'
-                    : 'text-slate-500 dark:text-slate-400'
-              }`}
-            >
-              sisa {formatRupiah(left)}
-            </p>
-          </div>
-          {onDelete && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete(cat)
-              }}
-              className="flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 active:scale-95 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
-              title="Hapus pocket"
-              aria-label={`Hapus pocket ${cat.name}`}
-            >
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            <div className="text-right">
+              <p className="font-sans text-xs sm:text-sm font-bold tabular-nums text-slate-900 dark:text-white">
+                {formatRupiah(used)}
+                {budget > 0 && (
+                  <span className="text-[11px] font-normal tabular-nums text-slate-500 dark:text-slate-400">
+                    {' '}/ {formatRupiah(budget)}
+                  </span>
+                )}
+              </p>
+              <p
+                className={`text-[11px] font-semibold tabular-nums ${
+                  status === 'over'
+                    ? 'text-rose-500'
+                    : status === 'warn'
+                      ? 'text-amber-500'
+                      : 'text-slate-500 dark:text-slate-400'
+                }`}
               >
-                <path d="M3 6h18" />
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-              </svg>
-            </button>
-          )}
+                sisa {formatRupiah(left)}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Card Biasa: 1 baris ringkas */
+        <div className="flex items-center justify-between gap-3">
+          {/* Sisi Kiri: Dot Warna Pocket & Nama */}
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span
+              className="h-3 w-3 shrink-0 rounded-full shadow-sm"
+              style={{ backgroundColor: cat.color }}
+            />
+            <span className="truncate font-sans text-sm sm:text-base font-semibold tracking-tight text-slate-900 dark:text-white">
+              {cat.name}
+            </span>
+          </div>
+
+          {/* Sisi Kanan: Nominal Terpakai / Budget & Sisa Saldo */}
+          <div className="flex items-center gap-2 shrink-0 text-right">
+            <div>
+              <p className="font-sans text-sm sm:text-base font-bold tabular-nums text-slate-900 dark:text-white">
+                {formatRupiah(used)}
+                {budget > 0 && (
+                  <span className="text-xs font-normal tabular-nums text-slate-500 dark:text-slate-400">
+                    {' '}/ {formatRupiah(budget)}
+                  </span>
+                )}
+              </p>
+              <p
+                className={`text-xs font-semibold tabular-nums ${
+                  status === 'over'
+                    ? 'text-rose-500'
+                    : status === 'warn'
+                      ? 'text-amber-500'
+                      : 'text-slate-500 dark:text-slate-400'
+                }`}
+              >
+                sisa {formatRupiah(left)}
+              </p>
+            </div>
+            {onDelete && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete(cat)
+                }}
+                className="flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 active:scale-95 dark:hover:bg-rose-950/40 dark:hover:text-rose-400"
+                title="Hapus pocket"
+                aria-label={`Hapus pocket ${cat.name}`}
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Progress Bar Pengeluaran */}
       {budget > 0 && (
         <div className="mt-3.5 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
           <div
-            className={`h-full rounded-full transition-all duration-300 ${statusStyles(status)}`}
-            style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+            className={`h-full rounded-full transition-transform duration-260 ease-out-expo ${statusStyles(status)}`}
+            style={{
+              transform: `scaleX(${Math.min(100, Math.max(0, pct)) / 100})`,
+              transformOrigin: 'left',
+            }}
           />
         </div>
       )}
@@ -120,11 +195,16 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
       {goal > 0 && (
         <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800/80">
           <div className="flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
-            <span className="truncate tabular-nums">
-              Terkumpul {formatRupiah(savedAmt)} / {formatRupiah(goal)}
-            </span>
-            <span className="flex shrink-0 items-center gap-1.5">
-              <span className="font-semibold tabular-nums text-slate-700 dark:text-slate-300">
+            <div className="min-w-0">
+              <span className="font-semibold tabular-nums text-slate-900 dark:text-white">
+                Terkumpul {formatRupiah(savedAmt)}
+              </span>
+              <span className="ml-1 text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
+                / {formatRupiah(goal)}
+              </span>
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5">
+              <span className="font-semibold tabular-nums text-teal-600 dark:text-teal-400">
                 {goalPct}%
               </span>
               <button
@@ -149,12 +229,15 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
                   Pakai
                 </button>
               )}
-            </span>
+            </div>
           </div>
           <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
             <div
-              className={`h-full rounded-full transition-all duration-300 ${goalDone ? 'bg-emerald-500' : 'bg-teal-500'}`}
-              style={{ width: `${goalPct}%` }}
+              className={`h-full rounded-full transition-transform duration-260 ease-out-expo ${goalDone ? 'bg-emerald-500' : 'bg-teal-500'}`}
+              style={{
+                transform: `scaleX(${Math.min(100, Math.max(0, goalPct)) / 100})`,
+                transformOrigin: 'left',
+              }}
             />
           </div>
           {plan && !goalDone && (
