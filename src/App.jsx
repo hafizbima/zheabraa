@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import { StoreProvider, useStore } from './store/StoreContext.jsx'
 import { RouterProvider, useRouter } from './lib/router.jsx'
 import { haptic } from './lib/haptics.js'
+import { useMachine, modalMachine, MODAL_TYPES } from './lib/stateMachines.js'
 import Header from './components/Header.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import TransactionList from './components/TransactionList.jsx'
@@ -96,35 +97,25 @@ function Root() {
 function Shell() {
   const { currentMonthId, notice, notify } = useStore()
   const [view, setView] = useState('dashboard')
-  const [txOpen, setTxOpen] = useState(false)
-  const [editing, setEditing] = useState(null)
-  const [prefill, setPrefill] = useState(null)
-  const [catOpen, setCatOpen] = useState(false)
-  const [budgetTemplateOpen, setBudgetTemplateOpen] = useState(false)
-  const [walletOpen, setWalletOpen] = useState(false)
-  const [recurrOpen, setRecurrOpen] = useState(false)
-  const [transferOpen, setTransferOpen] = useState(false)
-  const [installPromptOpen, setInstallPromptOpen] = useState(false)
+  const [modalState, sendModal] = useMachine(modalMachine)
 
   const openNewTx = (prefillData) => {
-    setEditing(null)
-    setPrefill(prefillData || null)
-    setTxOpen(true)
+    sendModal('OPEN_TRANSACTION', { prefill: prefillData || null })
   }
 
   const openEditTx = (monthId, tx) => {
-    setEditing({ monthId, tx })
-    setPrefill(null)
-    setTxOpen(true)
+    sendModal('OPEN_TRANSACTION', { monthId, tx })
   }
+
+  const closeModal = () => sendModal('CLOSE')
 
   return (
     <div className="min-h-screen bg-[#F4F5F7] text-slate-900 transition-colors duration-200 dark:bg-[#0D1117] dark:text-slate-100">
       <Header
         view={view}
         onViewChange={setView}
-        onOpenWallets={() => setWalletOpen(true)}
-        onOpenInstallPrompt={() => setInstallPromptOpen(true)}
+        onOpenWallets={() => sendModal('OPEN_WALLET')}
+        onOpenInstallPrompt={() => sendModal('OPEN_INSTALL_PROMPT')}
       />
 
       <main className="mx-auto max-w-3xl px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-5">
@@ -139,10 +130,10 @@ function Shell() {
             <Dashboard
               onNewTx={openNewTx}
               onEditTx={openEditTx}
-              onManageCategories={() => setCatOpen(true)}
-              onManageBudgetTemplates={() => setBudgetTemplateOpen(true)}
-              onManageRecurring={() => setRecurrOpen(true)}
-              onTransfer={() => setTransferOpen(true)}
+              onManageCategories={() => sendModal('OPEN_CATEGORY')}
+              onManageBudgetTemplates={() => sendModal('OPEN_BUDGET_TEMPLATE')}
+              onManageRecurring={() => sendModal('OPEN_RECURRING')}
+              onTransfer={() => sendModal('OPEN_TRANSFER')}
             />
           ) : view === 'savings' ? (
             <SavingsView />
@@ -168,24 +159,24 @@ function Shell() {
         </svg>
       </button>
 
-      {txOpen && (
+      {modalState.status === MODAL_TYPES.TRANSACTION && (
         <TransactionForm
-          monthId={editing?.monthId || currentMonthId}
-          transaction={editing?.tx}
-          prefill={prefill}
-          onClose={() => setTxOpen(false)}
+          monthId={modalState.payload?.monthId || currentMonthId}
+          transaction={modalState.payload?.tx}
+          prefill={modalState.payload?.prefill}
+          onClose={closeModal}
         />
       )}
       <Suspense fallback={null}>
-        {catOpen && <CategoryManager onClose={() => setCatOpen(false)} />}
-        {budgetTemplateOpen && <BudgetTemplateManager onClose={() => setBudgetTemplateOpen(false)} />}
-        {walletOpen && <WalletManager onClose={() => setWalletOpen(false)} />}
-        {recurrOpen && <RecurringManager onClose={() => setRecurrOpen(false)} />}
-        {transferOpen && <TransferForm monthId={currentMonthId} onClose={() => setTransferOpen(false)} />}
+        {modalState.status === MODAL_TYPES.CATEGORY && <CategoryManager onClose={closeModal} />}
+        {modalState.status === MODAL_TYPES.BUDGET_TEMPLATE && <BudgetTemplateManager onClose={closeModal} />}
+        {modalState.status === MODAL_TYPES.WALLET && <WalletManager onClose={closeModal} />}
+        {modalState.status === MODAL_TYPES.RECURRING && <RecurringManager onClose={closeModal} />}
+        {modalState.status === MODAL_TYPES.TRANSFER && <TransferForm monthId={currentMonthId} onClose={closeModal} />}
 
         <IosInstallPrompt
-          open={installPromptOpen ? true : undefined}
-          onClose={() => setInstallPromptOpen(false)}
+          open={modalState.status === MODAL_TYPES.INSTALL_PROMPT ? true : undefined}
+          onClose={closeModal}
         />
       </Suspense>
 

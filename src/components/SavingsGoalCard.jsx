@@ -23,7 +23,7 @@ export default function SavingsGoalCard({ goal, onOpenDetail, onDeposit, onWithd
           handleCardClick()
         }
       }}
-      className="group relative cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition-[transform,box-shadow,background-color] duration-120 ease-out-expo active:scale-[0.98] hover:border-slate-300 sm:p-5 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+      className="group relative cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 shadow-tactile-sm transition-[transform,box-shadow,background-color] duration-120 ease-out-expo active:scale-[0.98] hover:border-slate-300 sm:p-5 animate-in fade-in zoom-in-95 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
     >
       {/* Header baris: Dot warna + Nama + Dompet, dan Badge status */}
       <div className="flex items-center justify-between gap-3">

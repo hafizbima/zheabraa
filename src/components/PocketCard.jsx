@@ -30,7 +30,7 @@ export default function PocketCard({ cat, txs, currentMonthId, onClick, onSave, 
           onClick?.(e)
         }
       }}
-      className="group block w-full cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 text-left shadow-tactile-sm transition-[transform,box-shadow,border-color,background-color] duration-120 ease-out-expo hover:border-slate-300 hover:shadow-tactile active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 select-none"
+      className="group block w-full cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 text-left shadow-tactile-sm transition-[transform,box-shadow,border-color,background-color] duration-120 ease-out-expo hover:border-slate-300 hover:shadow-tactile active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 animate-in fade-in zoom-in-95 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 select-none"
     >
       {isFullCard ? (
         /* Card Penuh (Ber-target): Nama pocket di baris tersendiri di paling atas */

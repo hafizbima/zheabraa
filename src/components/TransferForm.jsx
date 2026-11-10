@@ -18,10 +18,11 @@ export default function TransferForm({ monthId, onClose }) {
 
   const [date, setDate] = useState(todayISO())
   const [amount, setAmount] = useState('')
-  const [fromId, setFromId] = useState('')
-  const [toId, setToId] = useState('')
+  const [fromId, setFromId] = useState(() => (wallets.length >= 2 ? wallets[0].id : wallets[0]?.id || ''))
+  const [toId, setToId] = useState(() => (wallets.length >= 2 ? wallets[1].id : ''))
   const [description, setDescription] = useState('')
   const [error, setError] = useState('')
+  const [formStatus, setFormStatus] = useState('idle') // 'idle' | 'submitting' | 'error'
 
   const input =
     'w-full min-h-[44px] rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-sans text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
@@ -29,28 +30,43 @@ export default function TransferForm({ monthId, onClose }) {
   const amt = toInt(amount)
   const fromOver = fromId && amt > 0 && amt > bal(fromId)
 
+  const clearError = () => {
+    if (error || formStatus === 'error') {
+      setError('')
+      setFormStatus('idle')
+    }
+  }
+
+  const showError = (msg) => {
+    haptic.error()
+    setFormStatus('error')
+    setError(msg)
+  }
+
   const swap = () => {
+    haptic.tap()
+    clearError()
     setFromId(toId)
     setToId(fromId)
   }
 
   const submit = (e) => {
     e?.preventDefault?.()
-    if (amt <= 0) return setError('Nominal harus lebih dari 0')
-    if (!date) return setError('Tanggal wajib diisi')
-    if (!fromId) return setError('Pilih dompet asal')
-    if (!toId) return setError('Pilih dompet tujuan')
-    if (fromId === toId) return setError('Dompet asal dan tujuan tidak boleh sama')
-    if (amt > bal(fromId)) return setError(`Melebihi saldo ${formatRupiah(bal(fromId))}, transfer dibatalkan`)
+    if (amt <= 0) return showError('Nominal harus lebih dari 0')
+    if (!date) return showError('Tanggal wajib diisi')
+    if (!fromId) return showError('Pilih dompet asal')
+    if (!toId) return showError('Pilih dompet tujuan')
+    if (fromId === toId) return showError('Dompet asal dan tujuan tidak boleh sama')
 
+    setFormStatus('submitting')
     addTransaction(monthId, {
       date,
-      type,
+      type: 'transfer',
       amount: amt,
       categoryId: null,
       walletId: fromId,
       toWalletId: toId,
-      description: description.trim(),
+      description: description.trim() || 'Transfer Antar Dompet',
     })
     haptic.success()
     onClose()
@@ -65,8 +81,14 @@ export default function TransferForm({ monthId, onClose }) {
           <button type="button" onClick={onClose} className={btn.neutral}>
             Batal
           </button>
-          <button type="submit" form="transfer-form" onClick={submit} className={btn.primary}>
-            Simpan Transfer
+          <button
+            type="submit"
+            form="transfer-form"
+            onClick={submit}
+            disabled={formStatus === 'submitting' || wallets.length < 2}
+            className={btn.primary}
+          >
+            {formStatus === 'submitting' ? 'Menyimpan…' : 'Simpan Transfer'}
           </button>
         </div>
       }
@@ -84,7 +106,10 @@ export default function TransferForm({ monthId, onClose }) {
             className={`${input} tabular-nums`}
             placeholder="0"
             value={amount}
-            onChange={(e) => setAmount(formatNumberInput(e.target.value))}
+            onChange={(e) => {
+              clearError()
+              setAmount(formatNumberInput(e.target.value))
+            }}
             autoFocus
           />
           {amt > 0 && <p className="mt-1 text-xs font-semibold tabular-nums text-teal-600 dark:text-teal-400">{formatRupiah(amt)}</p>}
@@ -97,6 +122,7 @@ export default function TransferForm({ monthId, onClose }) {
               className={input}
               value={fromId}
               onChange={(e) => {
+                clearError()
                 setFromId(e.target.value)
                 if (e.target.value === toId) setToId('')
               }}
@@ -109,9 +135,13 @@ export default function TransferForm({ monthId, onClose }) {
               ))}
             </select>
             {fromId && (
-              <p className={`mt-1 text-xs tabular-nums ${fromOver ? 'font-medium text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                {fromOver ? 'Melebihi saldo: ' : 'Saldo: '}
-                {formatRupiah(bal(fromId))}
+              <p className={`mt-1 text-xs tabular-nums ${fromOver ? 'font-medium text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                Saldo: {formatRupiah(bal(fromId))}
+              </p>
+            )}
+            {fromOver && (
+              <p className="mt-1 rounded-xl border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] text-amber-800 dark:border-amber-700/50 dark:bg-amber-950/30 dark:text-amber-300">
+                Nominal transfer melebihi saldo dompet asal ({formatRupiah(bal(fromId))}). Saldo akan menjadi minus.
               </p>
             )}
           </div>
@@ -137,6 +167,7 @@ export default function TransferForm({ monthId, onClose }) {
               className={input}
               value={toId}
               onChange={(e) => {
+                clearError()
                 setToId(e.target.value)
                 if (e.target.value === fromId) setFromId('')
               }}
@@ -153,7 +184,7 @@ export default function TransferForm({ monthId, onClose }) {
         </div>
 
         <div>
-          <DatePicker value={date} onChange={setDate} />
+          <DatePicker value={date} onChange={(d) => { clearError(); setDate(d) }} />
         </div>
 
         <div>
@@ -162,7 +193,10 @@ export default function TransferForm({ monthId, onClose }) {
             className={input}
             placeholder="mis. Pindah saldo ke rekening"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              clearError()
+              setDescription(e.target.value)
+            }}
           />
         </div>
 
@@ -173,7 +207,7 @@ export default function TransferForm({ monthId, onClose }) {
         )}
 
         {error && (
-          <div className="rounded-xl border border-rose-500/30 bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">{error}</div>
+          <div className="animate-shake rounded-xl border border-rose-500/30 bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">{error}</div>
         )}
       </form>
     </Modal>

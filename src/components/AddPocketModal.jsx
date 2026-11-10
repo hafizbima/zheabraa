@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import Modal from './Modal.jsx'
+import DatePicker from './DatePicker.jsx'
 import { CATEGORY_COLORS } from '../lib/palette.js'
 import { toInt, formatNumberInput, formatRupiah } from '../lib/money.js'
-import { singleWalletBalance } from '../lib/calc.js'
+import { singleWalletBalance, walletBalance, allTransactions } from '../lib/calc.js'
 import { btn } from '../lib/buttons.js'
 import { haptic } from '../lib/haptics.js'
 import { useStore } from '../store/StoreContext.jsx'
@@ -218,7 +219,7 @@ export default function AddPocketModal({ onClose, onAdd, initialType = 'expense'
                 <option value="">Belum ada dompet</option>
               ) : (
                 wallets.map((w) => {
-                  const bal = singleWalletBalance(w.id, wallets, months)
+                  const bal = wallets.length === 1 ? singleWalletBalance(w, months) : walletBalance(w, allTransactions(months))
                   return (
                     <option key={w.id} value={w.id}>
                       {w.name} ({formatRupiah(bal)})
@@ -272,14 +273,12 @@ export default function AddPocketModal({ onClose, onAdd, initialType = 'expense'
               )}
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Target Tercapai Pada
-              </label>
-              <input
-                className={`${inputClass} tabular-nums`}
-                type="date"
+              <DatePicker
+                label="Target Tercapai Pada"
                 value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
+                onChange={setDeadline}
+                presetType="future"
+                placeholder="Pilih batas target (opsional)"
               />
             </div>
           </div>

@@ -39,10 +39,16 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
   const currentPct = goalAmount > 0 ? Math.min(100, Math.round((currentSaved / goalAmount) * 100)) : 0
   const newPct = goalAmount > 0 ? Math.min(100, Math.round((newSaved / goalAmount) * 100)) : 0
 
-  // Validasi
+  // Validasi eksplisit
   const over = isUse && amt > currentSaved
   const freeMoney = freeLeft(currentMonth)
   const exceedsFree = !isUse && amt > freeMoney
+  const validationState =
+    amt <= 0 ? 'EMPTY' : over ? 'OVER_SAVINGS' : exceedsFree ? 'EXCEEDS_FREE' : 'VALID'
+  const canSubmit =
+    (validationState === 'VALID' || validationState === 'EXCEEDS_FREE') &&
+    Boolean(pocketId) &&
+    (wallets.length === 0 || Boolean(walletId))
 
   const handlePocketChange = (newPocketId) => {
     setPocketId(newPocketId)
@@ -65,7 +71,7 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
 
   const handleSubmit = (e) => {
     e?.preventDefault()
-    if (amt <= 0 || over || !pocketId || (wallets.length > 0 && !walletId)) return
+    if (!canSubmit) return
     haptic.success()
     onSubmit(amt, desc.trim(), walletId || undefined, activeCat.id)
     onClose()
@@ -83,7 +89,7 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={!amount || amt <= 0 || over || !pocketId || (wallets.length > 0 && !walletId)}
+            disabled={!canSubmit}
             className={btn.primary}
           >
             {isUse ? 'Tarik' : 'Setor'}

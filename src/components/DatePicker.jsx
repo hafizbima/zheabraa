@@ -33,8 +33,26 @@ function toISOString(year, monthZeroIndexed, day) {
   return `${y}-${m}-${d}`
 }
 
-export default function DatePicker({ value, onChange, label = 'Tanggal', error }) {
-  const [isOpen, setIsOpen] = useState(false)
+function addFutureMonths(isoDate, count) {
+  const d = parseISO(isoDate || todayISO())
+  d.setMonth(d.getMonth() + count)
+  return toISOString(d.getFullYear(), d.getMonth(), d.getDate())
+}
+
+export default function DatePicker({
+  value,
+  onChange,
+  label = 'Tanggal',
+  placeholder = 'Pilih tanggal...',
+  presetType = 'past', // 'past' | 'future' | 'none'
+  error,
+}) {
+  // Explicit popover state machine: 'closed' | 'open'
+  const [popoverState, setPopoverState] = useState('closed')
+  const isOpen = popoverState === 'open'
+  const openPopover = () => setPopoverState('open')
+  const closePopover = () => setPopoverState('closed')
+  const togglePopover = () => setPopoverState((s) => (s === 'open' ? 'closed' : 'open'))
 
   // Current parsed date from value
   const parsed = useMemo(() => parseISO(value), [value])
@@ -131,7 +149,7 @@ export default function DatePicker({ value, onChange, label = 'Tanggal', error }
   const selectDate = (iso) => {
     haptic.selection()
     onChange(iso)
-    setIsOpen(false)
+    closePopover()
   }
 
   const jumpToToday = () => {
@@ -139,7 +157,7 @@ export default function DatePicker({ value, onChange, label = 'Tanggal', error }
     onChange(today)
     setViewYear(parseISO(today).getFullYear())
     setViewMonth(parseISO(today).getMonth())
-    setIsOpen(false)
+    closePopover()
   }
 
   const jumpToYesterday = () => {
@@ -147,7 +165,16 @@ export default function DatePicker({ value, onChange, label = 'Tanggal', error }
     onChange(yesterday)
     setViewYear(parseISO(yesterday).getFullYear())
     setViewMonth(parseISO(yesterday).getMonth())
-    setIsOpen(false)
+    closePopover()
+  }
+
+  const jumpFuture = (monthsToAdd) => {
+    haptic.tap()
+    const target = addFutureMonths(today, monthsToAdd)
+    onChange(target)
+    setViewYear(parseISO(target).getFullYear())
+    setViewMonth(parseISO(target).getMonth())
+    closePopover()
   }
 
   return (
@@ -157,30 +184,70 @@ export default function DatePicker({ value, onChange, label = 'Tanggal', error }
         <label className="text-xs font-medium text-slate-500 dark:text-slate-400">
           {label}
         </label>
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={jumpToToday}
-            className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition active:scale-95 ${
-              isToday
-                ? 'bg-teal-600 text-white shadow-tactile-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-            }`}
-          >
-            Hari Ini
-          </button>
-          <button
-            type="button"
-            onClick={jumpToYesterday}
-            className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition active:scale-95 ${
-              isYesterday
-                ? 'bg-teal-600 text-white shadow-tactile-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-            }`}
-          >
-            Kemarin
-          </button>
-        </div>
+        {presetType === 'future' ? (
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => jumpFuture(3)}
+              className="rounded-lg bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition"
+            >
+              +3 Bln
+            </button>
+            <button
+              type="button"
+              onClick={() => jumpFuture(6)}
+              className="rounded-lg bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition"
+            >
+              +6 Bln
+            </button>
+            <button
+              type="button"
+              onClick={() => jumpFuture(12)}
+              className="rounded-lg bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition"
+            >
+              +1 Thn
+            </button>
+            {value && (
+              <button
+                type="button"
+                onClick={() => {
+                  haptic.tap()
+                  onChange('')
+                  closePopover()
+                }}
+                className="rounded-lg px-1.5 py-0.5 text-[11px] font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 transition"
+                title="Hapus tanggal"
+              >
+                Hapus
+              </button>
+            )}
+          </div>
+        ) : presetType === 'past' ? (
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={jumpToToday}
+              className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition active:scale-95 ${
+                isToday
+                  ? 'bg-teal-600 text-white shadow-tactile-sm'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              }`}
+            >
+              Hari Ini
+            </button>
+            <button
+              type="button"
+              onClick={jumpToYesterday}
+              className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition active:scale-95 ${
+                isYesterday
+                  ? 'bg-teal-600 text-white shadow-tactile-sm'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              }`}
+            >
+              Kemarin
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {/* Main Date Display Trigger */}
@@ -188,10 +255,10 @@ export default function DatePicker({ value, onChange, label = 'Tanggal', error }
         type="button"
         onClick={() => {
           haptic.tap()
-          setIsOpen(!isOpen)
+          togglePopover()
         }}
         aria-expanded={isOpen}
-        aria-label={`${label}: ${formatDateFull(value)}`}
+        aria-label={`${label}: ${value ? formatDateFull(value) : placeholder}`}
         className={`group flex min-h-[44px] w-full items-center justify-between rounded-xl border bg-white px-3.5 py-2.5 text-left font-sans text-sm shadow-tactile-sm transition active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:bg-slate-800 ${
           isOpen
             ? 'border-teal-500 ring-2 ring-teal-500/20 dark:border-teal-400'
@@ -216,8 +283,8 @@ export default function DatePicker({ value, onChange, label = 'Tanggal', error }
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </div>
-          <span className="font-semibold tabular-nums text-slate-900 dark:text-white">
-            {formatDateFull(value)}
+          <span className={`tabular-nums ${value ? 'font-semibold text-slate-900 dark:text-white' : 'font-normal text-slate-400 dark:text-slate-500'}`}>
+            {value ? formatDateFull(value) : placeholder}
           </span>
           {isToday && (
             <span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-[10px] font-bold text-teal-700 dark:bg-teal-500/20 dark:text-teal-300">
@@ -345,16 +412,31 @@ export default function DatePicker({ value, onChange, label = 'Tanggal', error }
 
           {/* Calendar Actions Footer */}
           <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={jumpToToday}
+                className="text-xs font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 transition"
+              >
+                Hari Ini
+              </button>
+              {value && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    haptic.tap()
+                    onChange('')
+                    closePopover()
+                  }}
+                  className="text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 transition"
+                >
+                  Kosongkan
+                </button>
+              )}
+            </div>
             <button
               type="button"
-              onClick={jumpToToday}
-              className="text-xs font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 transition"
-            >
-              Lompat ke Hari Ini
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
+              onClick={closePopover}
               className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition"
             >
               Tutup

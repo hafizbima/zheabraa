@@ -34,11 +34,10 @@ export default function TransactionList({ onEditTx }) {
   const [filterWallet, setFilterWallet] = useState('all')
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
-  const [confirmId, setConfirmId] = useState(null)
-  const [importOpen, setImportOpen] = useState(false)
-  const [importRows, setImportRows] = useState([])
-  const [importErrors, setImportErrors] = useState([])
-  const [importing, setImporting] = useState(false)
+  // Sub-dialog state machine:
+  // null | { type: 'DELETE_CONFIRM', mId, id }
+  //      | { type: 'CSV_IMPORT', stage: 'preview' | 'importing', rows: any[], errors: string[] }
+  const [subDialog, setSubDialog] = useState(null)
   const importRef = useRef(null)
   const [visibleCount, setVisibleCount] = useState(30)
   const sentinelRef = useRef(null)
@@ -93,9 +92,12 @@ export default function TransactionList({ onEditTx }) {
     if (!file) return
     try {
       const result = parseTransactionCSV(await file.text())
-      setImportRows(result.rows)
-      setImportErrors(result.errors)
-      setImportOpen(true)
+      setSubDialog({
+        type: 'CSV_IMPORT',
+        stage: 'preview',
+        rows: result.rows,
+        errors: result.errors,
+      })
     } catch (e) {
       notify(e?.message || 'CSV tidak dapat dibaca')
     }
@@ -107,12 +109,14 @@ export default function TransactionList({ onEditTx }) {
   }
 
   const importTransactions = async () => {
-    setImporting(true)
+    if (!subDialog || subDialog.type !== 'CSV_IMPORT') return
+    const { rows } = subDialog
+    setSubDialog((prev) => (prev ? { ...prev, stage: 'importing' } : null))
     let imported = 0
     let skipped = 0
     const seen = new Set()
     try {
-      for (const row of importRows) {
+      for (const row of rows) {
         const targetId = row.date.slice(0, 7)
         const targetMonth = months[targetId]
         const targetCategories = targetMonth?.categories || []
@@ -139,12 +143,10 @@ export default function TransactionList({ onEditTx }) {
         })
         imported += 1
       }
-      setImportOpen(false)
-      setImportRows([])
-      setImportErrors([])
+      setSubDialog(null)
       notify(`${imported} transaksi diimpor${skipped ? `, ${skipped} duplikat dilewati` : ''}`)
     } finally {
-      setImporting(false)
+      setSubDialog((prev) => (prev && prev.type === 'CSV_IMPORT' && prev.stage === 'importing' ? { ...prev, stage: 'preview' } : prev))
     }
   }
 
@@ -459,7 +461,7 @@ export default function TransactionList({ onEditTx }) {
                           Ubah
                         </button>
                         <button
-                          onClick={() => setConfirmId({ mId: currentMonthId || t.date?.slice(0, 7), id: t.id })}
+                          onClick={() => setSubDialog({ type: 'DELETE_CONFIRM', mId: currentMonthId || t.date?.slice(0, 7), id: t.id })}
                           className={`${btn.subtleDanger} min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 px-2.5 py-1.5`}
                           aria-label={`Hapus transaksi ${t.description || catName(t)}`}
                         >
@@ -487,47 +489,57 @@ export default function TransactionList({ onEditTx }) {
         </div>
       )}
 
-      {confirmId && (
+      {subDialog?.type === 'DELETE_CONFIRM' && (
         <Confirm
           title="Hapus transaksi"
           message="Transaksi ini akan dihapus permanen. Lanjutkan?"
-          onCancel={() => setConfirmId(null)}
+          onCancel={() => setSubDialog(null)}
           onConfirm={() => {
             haptic.warning()
-            removeTransaction(confirmId.mId, confirmId.id)
+            removeTransaction(subDialog.mId, subDialog.id)
             notify('Transaksi berhasil dihapus')
-            setConfirmId(null)
+            setSubDialog(null)
           }}
         />
       )}
     </div>
-    {importOpen && (
+    {subDialog?.type === 'CSV_IMPORT' && (
       <Modal
         title="Import CSV"
-        onClose={() => !importing && setImportOpen(false)}
+        onClose={() => subDialog.stage !== 'importing' && setSubDialog(null)}
         wide
         footer={
           <div className="flex justify-end gap-2">
-            <button onClick={() => setImportOpen(false)} disabled={importing} className={btn.neutral}>Batal</button>
-            <button onClick={importTransactions} disabled={importing || importRows.length === 0} className={btn.primary}>
-              {importing ? 'Mengimpor…' : 'Impor Transaksi'}
+            <button
+              onClick={() => setSubDialog(null)}
+              disabled={subDialog.stage === 'importing'}
+              className={btn.neutral}
+            >
+              Batal
+            </button>
+            <button
+              onClick={importTransactions}
+              disabled={subDialog.stage === 'importing' || subDialog.rows.length === 0}
+              className={btn.primary}
+            >
+              {subDialog.stage === 'importing' ? 'Mengimpor…' : 'Impor Transaksi'}
             </button>
           </div>
         }
       >
         <p className="text-sm text-slate-600 dark:text-slate-300">
-          {importRows.length} transaksi siap diimpor. Kategori dan dompet dicocokkan berdasarkan nama.
+          {subDialog.rows.length} transaksi siap diimpor. Kategori dan dompet dicocokkan berdasarkan nama.
         </p>
-        {importErrors.length > 0 && (
+        {subDialog.errors.length > 0 && (
           <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
-            <p className="font-semibold">{importErrors.length} baris dilewati</p>
+            <p className="font-semibold">{subDialog.errors.length} baris dilewati</p>
             <ul className="mt-1 list-inside list-disc">
-              {importErrors.slice(0, 5).map((error) => <li key={error}>{error}</li>)}
+              {subDialog.errors.slice(0, 5).map((error) => <li key={error}>{error}</li>)}
             </ul>
           </div>
         )}
         <div className="mt-3 max-h-64 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700">
-          {importRows.slice(0, 20).map((row, index) => (
+          {subDialog.rows.slice(0, 20).map((row, index) => (
             <div key={`${row.date}-${row.description}-${index}`} className="flex items-center justify-between gap-3 border-b border-slate-100 px-3.5 py-2.5 text-xs last:border-0 dark:border-slate-800">
               <div className="min-w-0">
                 <p className="truncate font-semibold text-slate-900 dark:text-white">{row.description}</p>
@@ -536,7 +548,7 @@ export default function TransactionList({ onEditTx }) {
               <p className="shrink-0 font-sans font-bold text-slate-900 dark:text-white">{formatRupiah(row.amount)}</p>
             </div>
           ))}
-          {importRows.length > 20 && <p className="px-3.5 py-2 text-xs text-slate-500 dark:text-slate-400">Menampilkan 20 transaksi pertama.</p>}
+          {subDialog.rows.length > 20 && <p className="px-3.5 py-2 text-xs text-slate-500 dark:text-slate-400">Menampilkan 20 transaksi pertama.</p>}
         </div>
       </Modal>
     )}

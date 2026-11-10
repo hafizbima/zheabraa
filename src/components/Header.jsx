@@ -9,6 +9,7 @@ import { haptic } from '../lib/haptics.js'
 import Confirm from './Confirm.jsx'
 import Modal from './Modal.jsx'
 import { btn } from '../lib/buttons.js'
+import { useMachine, dangerResetMachine, RESET_STAGES } from '../lib/stateMachines.js'
 
 export default function Header({ view, onViewChange, onOpenWallets, onOpenInstallPrompt }) {
   const { user, logout, currentMonthId, switchMonth, startNewMonth, months, wallets, templates, budgetTemplates, notify, resetAllData } = useStore()
@@ -16,9 +17,9 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
   const [menuOpen, setMenuOpen] = useState(false)
   const [gearOpen, setGearOpen] = useState(false)
   const [confirmNew, setConfirmNew] = useState(false)
-  const [resetStage, setResetStage] = useState(0)
+  const [resetState, sendReset] = useMachine(dangerResetMachine)
   const [confirmInput, setConfirmInput] = useState('')
-  const [busy, setBusy] = useState(false)
+  const busy = resetState.status === RESET_STAGES.WIPING
   const [hidden, setHidden] = useState(false)
   const [notificationEnabled, setNotificationEnabled] = useState(() => notificationsEnabled(user?.uid))
   const restoreRef = useRef(null)
@@ -255,7 +256,7 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
                     <button
                       onClick={() => {
                         setGearOpen(false)
-                        setResetStage(1)
+                        sendReset('START_RESET')
                       }}
                       disabled={busy}
                       className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-xs sm:text-sm font-medium ${isDark ? 'text-rose-400 hover:bg-slate-800' : 'text-rose-600 hover:bg-rose-50'}`}
@@ -442,22 +443,22 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
         />
       )}
 
-      {resetStage === 1 && (
+      {resetState.status === RESET_STAGES.STAGE_1_WARNING && (
         <Confirm
           title="Reset Semua Data (Tahap 1/2)"
           message="Apakah Anda yakin ingin mereset semua data? Semua transaksi, kategori, dompet, dan riwayat akan dihapus dan dikembalikan ke awal."
           confirmText="Lanjutkan"
           danger={true}
-          onCancel={() => setResetStage(0)}
+          onCancel={() => sendReset('CANCEL')}
           onConfirm={() => {
             setConfirmInput('')
-            setResetStage(2)
+            sendReset('PROCEED')
           }}
         />
       )}
 
-      {resetStage === 2 && (
-        <Modal title="Konfirmasi Terakhir (Tahap 2/2)" onClose={() => setResetStage(0)}>
+      {(resetState.status === RESET_STAGES.STAGE_2_CHALLENGE || resetState.status === RESET_STAGES.WIPING) && (
+        <Modal title="Konfirmasi Terakhir (Tahap 2/2)" onClose={() => !busy && sendReset('CANCEL')}>
           <div className="space-y-4">
             <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
               <p className="font-semibold text-rose-700 dark:text-rose-300">Peringatan Kritis:</p>
@@ -481,7 +482,7 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setResetStage(0)}
+                onClick={() => sendReset('CANCEL')}
                 className={btn.neutral}
                 disabled={busy}
               >
@@ -491,15 +492,14 @@ export default function Header({ view, onViewChange, onOpenWallets, onOpenInstal
                 type="button"
                 disabled={confirmInput.trim().toUpperCase() !== 'RESET' || busy}
                 onClick={async () => {
-                  setBusy(true)
+                  sendReset('EXECUTE_WIPE')
                   try {
                     await resetAllData()
-                    setResetStage(0)
+                    sendReset('RESET_COMPLETE')
                     notify('Semua data berhasil direset ke kondisi awal')
                   } catch (err) {
+                    sendReset('RESET_FAILED')
                     notify(err?.message || 'Gagal mereset data')
-                  } finally {
-                    setBusy(false)
                   }
                 }}
                 className={`${btn.danger} disabled:cursor-not-allowed disabled:opacity-40`}

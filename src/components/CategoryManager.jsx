@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Modal from './Modal.jsx'
 import Confirm from './Confirm.jsx'
+import DatePicker from './DatePicker.jsx'
 import { useStore } from '../store/StoreContext.jsx'
 import { CATEGORY_COLORS } from '../lib/palette.js'
 import { formatRupiah, toInt, formatNumberInput } from '../lib/money.js'
@@ -32,18 +33,21 @@ export default function CategoryManager({ onClose }) {
   const [goal, setGoal] = useState('')
   const [deadline, setDeadline] = useState('')
   const [color, setColor] = useState(CATEGORY_COLORS[0])
-  const [confirmId, setConfirmId] = useState(null)
   const [drafts, setDrafts] = useState({})
   const [orderIds, setOrderIds] = useState(null)
   const [savedOrderIds, setSavedOrderIds] = useState(null)
   const [dragId, setDragId] = useState(null)
   const [overId, setOverId] = useState(null)
-  const [saving, setSaving] = useState(false)
-  const [justSaved, setJustSaved] = useState(false)
-  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false)
+  // Save lifecycle: 'idle' | 'saving' | 'saved_flash'
+  const [saveStatus, setSaveStatus] = useState('idle')
+  // Sub-dialog state machine: null | { type: 'DELETE', id } | { type: 'DISCARD' }
+  const [subDialog, setSubDialog] = useState(null)
+
+  const saving = saveStatus === 'saving'
+  const justSaved = saveStatus === 'saved_flash'
 
   const handleClose = () => {
-    if (dirtyCount > 0) setShowDiscardConfirm(true)
+    if (dirtyCount > 0) setSubDialog({ type: 'DISCARD' })
     else onClose()
   }
 
@@ -99,7 +103,7 @@ export default function CategoryManager({ onClose }) {
 
   const updateDraft = (id, patch) => {
     setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }))
-    setJustSaved(false)
+    if (saveStatus === 'saved_flash') setSaveStatus('idle')
   }
 
   const move = (targetId) => {
@@ -124,7 +128,7 @@ export default function CategoryManager({ onClose }) {
   }
 
   const saveAll = async () => {
-    setSaving(true)
+    setSaveStatus('saving')
     try {
       for (const cat of cats) {
         const d = drafts[cat.id]
@@ -149,10 +153,10 @@ export default function CategoryManager({ onClose }) {
           }
         }
       }
-      setJustSaved(true)
+      setSaveStatus('saved_flash')
       setSavedOrderIds(orderIds)
     } finally {
-      setSaving(false)
+      if (saveStatus === 'saving') setSaveStatus('idle')
     }
   }
 
@@ -208,15 +212,23 @@ export default function CategoryManager({ onClose }) {
             <input className={`${input} tabular-nums`} type="text" min="0" placeholder="Jumlah yang ingin dikumpulkan" value={goal} onChange={(e) => setGoal(formatNumberInput(e.target.value))} />
           </div>
           <div>
-            <p className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-400">Target tercapai pada</p>
-            <input className={`${input} tabular-nums`} type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+            <DatePicker
+              label="Target tercapai pada"
+              value={deadline}
+              onChange={setDeadline}
+              presetType="future"
+              placeholder="Pilih batas target (opsional)"
+            />
           </div>
           <div className="sm:col-span-2">
             <ColorPicker value={color} onChange={setColor} />
           </div>
         </div>
         <div className="mt-3.5 flex justify-end">
-          <button type="submit" className={btn.primary}>
+          <button
+            type="submit"
+            className={`${btn.primary} active:scale-[0.96] transition-[transform,background-color] duration-120 ease-out-expo`}
+          >
             + Tambah Pocket
           </button>
         </div>
@@ -232,7 +244,7 @@ export default function CategoryManager({ onClose }) {
               onDragOver={(e) => { e.preventDefault(); setOverId(cat.id) }}
               onDragLeave={() => setOverId(null)}
               onDrop={() => { setOverId(null); move(cat.id) }}
-              className={`flex flex-wrap items-end gap-x-3 gap-y-2.5 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40 ${overId === cat.id ? 'ring-2 ring-teal-500' : ''}`}
+              className={`flex flex-wrap items-end gap-x-3 gap-y-2.5 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile animate-in fade-in slide-in-from-top-2 duration-200 ease-out-expo dark:border-slate-800/80 dark:bg-slate-800/40 ${overId === cat.id ? 'ring-2 ring-teal-500' : ''}`}
             >
               <div className="flex h-9 shrink-0 flex-col items-center justify-center">
                 <span
@@ -312,7 +324,7 @@ export default function CategoryManager({ onClose }) {
               <div className="shrink-0">
                 <p className="mb-1 text-xs text-slate-400">&nbsp;</p>
                 <button
-                  onClick={() => setConfirmId(cat.id)}
+                  onClick={() => setSubDialog({ type: 'DELETE', id: cat.id })}
                   className={btn.subtleDanger}
                   aria-label={`Hapus pocket ${cat.name}`}
                 >
@@ -327,27 +339,27 @@ export default function CategoryManager({ onClose }) {
         )}
       </div>
 
-      {showDiscardConfirm && (
+      {subDialog?.type === 'DISCARD' && (
         <Confirm
           title="Perubahan Belum Disimpan"
           message={`Ada ${dirtyCount} perubahan pocket yang belum disimpan. Yakin ingin membuang perubahan dan menutup?`}
           confirmText="Buang Perubahan"
           danger={true}
-          onCancel={() => setShowDiscardConfirm(false)}
+          onCancel={() => setSubDialog(null)}
           onConfirm={() => {
-            setShowDiscardConfirm(false)
+            setSubDialog(null)
             onClose()
           }}
         />
       )}
 
-      {confirmId && (
+      {subDialog?.type === 'DELETE' && (
         <Confirm
           title="Hapus Pocket"
           message="Transaksi pada pocket ini akan dipindah ke Uang Bebas agar catatan keuangan kamu tetap aman. Lanjutkan?"
-          onCancel={() => setConfirmId(null)}
+          onCancel={() => setSubDialog(null)}
           onConfirm={() => {
-            const idToRemove = confirmId
+            const idToRemove = subDialog.id
             removeCategory(currentMonthId, idToRemove)
             setDrafts((prev) => {
               const next = { ...prev }
@@ -355,7 +367,7 @@ export default function CategoryManager({ onClose }) {
               return next
             })
             setOrderIds((prev) => (prev ? prev.filter((id) => id !== idToRemove) : null))
-            setConfirmId(null)
+            setSubDialog(null)
           }}
         />
       )}

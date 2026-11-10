@@ -23,20 +23,22 @@ export default function WalletManager({ onClose }) {
   const [name, setName] = useState('')
   const [balance, setBalance] = useState('')
   const [color, setColor] = useState(WALLET_COLORS[0])
-  const [confirmId, setConfirmId] = useState(null)
   const [drafts, setDrafts] = useState({})
   const [orderIds, setOrderIds] = useState(null)
   const [savedOrderIds, setSavedOrderIds] = useState(null)
   const [dragId, setDragId] = useState(null)
   const [overId, setOverId] = useState(null)
-  const [saving, setSaving] = useState(false)
-  const [justSaved, setJustSaved] = useState(false)
-  const [adjustId, setAdjustId] = useState(null)
+  // Save lifecycle state: 'idle' | 'saving' | 'saved_flash'
+  const [saveStatus, setSaveStatus] = useState('idle')
+  // Sub-dialog state machine: null | { type: 'DELETE', id } | { type: 'ADJUST', id } | { type: 'DISCARD' }
+  const [subDialog, setSubDialog] = useState(null)
   const [adjustInput, setAdjustInput] = useState('')
-  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false)
+
+  const saving = saveStatus === 'saving'
+  const justSaved = saveStatus === 'saved_flash'
 
   const handleClose = () => {
-    if (dirtyCount > 0) setShowDiscardConfirm(true)
+    if (dirtyCount > 0) setSubDialog({ type: 'DISCARD' })
     else onClose()
   }
 
@@ -81,7 +83,7 @@ export default function WalletManager({ onClose }) {
 
   const updateDraft = (id, patch) => {
     setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }))
-    setJustSaved(false)
+    if (saveStatus === 'saved_flash') setSaveStatus('idle')
   }
 
   const move = (targetId) => {
@@ -106,7 +108,7 @@ export default function WalletManager({ onClose }) {
   }
 
   const saveAll = async () => {
-    setSaving(true)
+    setSaveStatus('saving')
     try {
       for (const w of wallets) {
         const d = drafts[w.id]
@@ -122,10 +124,10 @@ export default function WalletManager({ onClose }) {
           }
         }
       }
-      setJustSaved(true)
+      setSaveStatus('saved_flash')
       setSavedOrderIds(orderIds)
     } finally {
-      setSaving(false)
+      if (saveStatus === 'saving') setSaveStatus('idle')
     }
   }
 
@@ -177,7 +179,12 @@ export default function WalletManager({ onClose }) {
               </div>
             </div>
             <div className="mt-3.5 flex justify-end">
-              <button type="submit" className={btn.primary}>+ Tambah</button>
+              <button
+                type="submit"
+                className={`${btn.primary} active:scale-[0.96] transition-[transform,background-color] duration-120 ease-out-expo`}
+              >
+                + Tambah
+              </button>
             </div>
           </form>
         </div>
@@ -201,7 +208,10 @@ export default function WalletManager({ onClose }) {
             </div>
           </div>
           <div className="mt-3.5 flex justify-end">
-            <button type="submit" className={btn.primary}>
+            <button
+              type="submit"
+              className={`${btn.primary} active:scale-[0.96] transition-[transform,background-color] duration-120 ease-out-expo`}
+            >
               + Tambah
             </button>
           </div>
@@ -222,7 +232,7 @@ export default function WalletManager({ onClose }) {
               onDragOver={(e) => { e.preventDefault(); setOverId(w.id) }}
               onDragLeave={() => setOverId(null)}
               onDrop={() => { setOverId(null); move(w.id) }}
-              className={`flex flex-wrap items-center gap-x-3 gap-y-2.5 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile dark:border-slate-800/80 dark:bg-slate-800/40 ${overId === w.id ? 'ring-2 ring-teal-500' : ''}`}
+              className={`flex flex-wrap items-center gap-x-3 gap-y-2.5 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-tactile-sm transition hover:shadow-tactile animate-in fade-in slide-in-from-top-2 duration-200 ease-out-expo dark:border-slate-800/80 dark:bg-slate-800/40 ${overId === w.id ? 'ring-2 ring-teal-500' : ''}`}
             >
               <div className="flex h-9 shrink-0 flex-col items-center justify-center">
                 <span
@@ -268,7 +278,7 @@ export default function WalletManager({ onClose }) {
                 <WalletBalanceDisplay balance={bal} />
                 <button
                   onClick={() => {
-                    setAdjustId(w.id)
+                    setSubDialog({ type: 'ADJUST', id: w.id })
                     setAdjustInput(bal ? formatNumberInput(bal) : '')
                   }}
                   className="mt-1 text-[11px] font-medium text-teal-600 underline underline-offset-2 hover:text-teal-700 dark:text-teal-400"
@@ -277,7 +287,7 @@ export default function WalletManager({ onClose }) {
                 </button>
               </div>
               <button
-                onClick={() => setConfirmId(w.id)}
+                onClick={() => setSubDialog({ type: 'DELETE', id: w.id })}
                 className={btn.subtleDanger + ' shrink-0'}
               >
                 Hapus
@@ -295,35 +305,35 @@ export default function WalletManager({ onClose }) {
         )}
       </div>
 
-      {confirmId && (
+      {subDialog?.type === 'DELETE' && (
         <Confirm
           title="Hapus dompet"
           message="Transaksi yang memakai dompet ini akan dipindah ke 'tidak dilacak'. Lanjutkan?"
-          onCancel={() => setConfirmId(null)}
+          onCancel={() => setSubDialog(null)}
           onConfirm={() => {
-            deleteWallet(confirmId)
-            setConfirmId(null)
+            deleteWallet(subDialog.id)
+            setSubDialog(null)
           }}
         />
       )}
 
-      {showDiscardConfirm && (
+      {subDialog?.type === 'DISCARD' && (
         <Confirm
           title="Perubahan Belum Disimpan"
           message={`Ada ${dirtyCount} perubahan dompet yang belum disimpan. Yakin ingin membuang perubahan dan menutup?`}
           confirmText="Buang Perubahan"
           danger={true}
-          onCancel={() => setShowDiscardConfirm(false)}
+          onCancel={() => setSubDialog(null)}
           onConfirm={() => {
-            setShowDiscardConfirm(false)
+            setSubDialog(null)
             onClose()
           }}
         />
       )}
 
-      {adjustId &&
+      {subDialog?.type === 'ADJUST' &&
         (() => {
-          const w = wallets.find((x) => x.id === adjustId)
+          const w = wallets.find((x) => x.id === subDialog.id)
           if (!w) return null
           const d = drafts[w.id] || w
           const bal =
@@ -336,10 +346,10 @@ export default function WalletManager({ onClose }) {
           return (
             <Modal
               title={`Sesuaikan Saldo (${w.name})`}
-              onClose={() => setAdjustId(null)}
+              onClose={() => setSubDialog(null)}
               footer={
                 <div className="flex justify-end gap-2">
-                  <button onClick={() => setAdjustId(null)} className={btn.neutral}>
+                  <button onClick={() => setSubDialog(null)} className={btn.neutral}>
                     Batal
                   </button>
                   <button
@@ -349,7 +359,7 @@ export default function WalletManager({ onClose }) {
                       updateDraft(w.id, { openingBalance: newOpening })
                       await updateWallet(w.id, { openingBalance: toInt(newOpening) })
                       notify(`Saldo ${w.name} berhasil disesuaikan`)
-                      setAdjustId(null)
+                      setSubDialog(null)
                     }}
                     className={btn.primary}
                   >

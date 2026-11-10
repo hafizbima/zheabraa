@@ -93,9 +93,8 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
   const [incomeWalletId, setIncomeWalletId] = useState('')
   const [incomeError, setIncomeError] = useState('')
   const [noteDraft, setNoteDraft] = useState('')
-  const [saveModal, setSaveModal] = useState(null) // { cat, mode: 'nabung' | 'pakai' }
-  const [deleteConfirmCat, setDeleteConfirmCat] = useState(null)
-  const [addPocketOpen, setAddPocketOpen] = useState(false)
+  // Dashboard Modal Orchestrator (Single source of truth, mutually exclusive)
+  const [activeModal, setActiveModal] = useState(null)
   const notifiedOver = useRef(new Set())
   const [notificationVersion, setNotificationVersion] = useState(0)
   const lastLoadedMonthId = useRef(null)
@@ -482,7 +481,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
             <button
               onClick={() => {
                 haptic.tap()
-                setAddPocketOpen(true)
+                setActiveModal({ type: 'ADD_POCKET' })
               }}
               className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white shadow-tactile-sm transition hover:bg-teal-500 active:scale-95 dark:bg-teal-600 dark:hover:bg-teal-500"
             >
@@ -496,7 +495,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
               Kelola Pocket
             </button>
             {(month.categories || []).length > 0 && (
-              <button onClick={() => setReallocOpen(true)} className={btn.subtle}>
+              <button onClick={() => setActiveModal({ type: 'REALLOCATE' })} className={btn.subtle}>
                 Re-alokasi
               </button>
             )}
@@ -519,9 +518,9 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
                  txs={txs}
                  currentMonthId={currentMonthId}
                 onClick={() => onNewTx({ categoryId: cat.id })}
-                onSave={(c) => setSaveModal({ cat: c, mode: 'nabung' })}
-                onUse={(c) => setSaveModal({ cat: c, mode: 'pakai' })}
-                onDelete={(c) => setDeleteConfirmCat(c)}
+                onSave={(c) => setActiveModal({ type: 'SAVE_GOAL', cat: c, mode: 'nabung' })}
+                onUse={(c) => setActiveModal({ type: 'SAVE_GOAL', cat: c, mode: 'pakai' })}
+                onDelete={(c) => setActiveModal({ type: 'DELETE_POCKET', cat: c })}
               />
             ))}
           </div>
@@ -534,7 +533,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
               <button
                 onClick={() => {
                   haptic.tap()
-                  setAddPocketOpen(true)
+                  setActiveModal({ type: 'ADD_POCKET' })
                 }}
                 className={btn.primary}
               >
@@ -946,39 +945,39 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
       <div className="h-4" />
     </div>
 
-    {reallocOpen && <ReallocateForm onClose={() => setReallocOpen(false)} />}
+    {activeModal?.type === 'REALLOCATE' && <ReallocateForm onClose={() => setActiveModal(null)} />}
 
-    {saveModal && (
+    {activeModal?.type === 'SAVE_GOAL' && (
       <SaveGoalModal
-        cat={saveModal.cat}
-        mode={saveModal.mode}
-        available={goalSaved(saveModal.cat, txs).saved}
-        onClose={() => setSaveModal(null)}
+        cat={activeModal.cat}
+        mode={activeModal.mode}
+        available={goalSaved(activeModal.cat, txs).saved}
+        onClose={() => setActiveModal(null)}
         onSubmit={(amt, desc, walletId, targetCatId) => {
-          const finalCatId = targetCatId || saveModal.cat.id
-          if (saveModal.mode === 'pakai') useGoal(currentMonthId, finalCatId, amt, desc || undefined, walletId)
+          const finalCatId = targetCatId || activeModal.cat.id
+          if (activeModal.mode === 'pakai') useGoal(currentMonthId, finalCatId, amt, desc || undefined, walletId)
           else saveToGoal(currentMonthId, finalCatId, amt, walletId)
         }}
       />
     )}
 
-    {deleteConfirmCat && (
+    {activeModal?.type === 'DELETE_POCKET' && (
       <Confirm
-        title={`Hapus Pocket "${deleteConfirmCat.name}"?`}
+        title={`Hapus Pocket "${activeModal.cat.name}"?`}
         message="Transaksi pada pocket ini akan dialihkan ke Uang Bebas agar catatan keuangan kamu tetap aman."
         confirmText="Hapus Pocket"
-        onCancel={() => setDeleteConfirmCat(null)}
+        onCancel={() => setActiveModal(null)}
         onConfirm={() => {
-          removeCategory(currentMonthId, deleteConfirmCat.id)
+          removeCategory(currentMonthId, activeModal.cat.id)
           haptic.tap()
-          setDeleteConfirmCat(null)
+          setActiveModal(null)
         }}
       />
     )}
 
-    {addPocketOpen && (
+    {activeModal?.type === 'ADD_POCKET' && (
       <AddPocketModal
-        onClose={() => setAddPocketOpen(false)}
+        onClose={() => setActiveModal(null)}
         onAdd={(data) => {
           if (data.existingPocketId) {
             return updateCategory(currentMonthId, data.existingPocketId, data)

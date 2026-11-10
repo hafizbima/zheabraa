@@ -23,7 +23,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const [toWalletId, setToWalletId] = useState(transaction?.toWalletId || '')
   const [description, setDescription] = useState(transaction?.description || prefill?.description || '')
   const [error, setError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  const [formStatus, setFormStatus] = useState('idle') // 'idle' | 'submitting' | 'error'
   const isSingle = wallets.length === 1
   const primary = wallets[0] || null
 
@@ -52,9 +52,26 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const input =
     'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-sans text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white'
 
+  const clearError = () => {
+    if (error || formStatus === 'error') {
+      setError('')
+      setFormStatus('idle')
+    }
+  }
+
   const showError = (msg) => {
     haptic.error()
+    setFormStatus('error')
     setError(msg)
+  }
+
+  const handleTypeSelect = (nextType) => {
+    haptic.selection()
+    clearError()
+    setType(nextType)
+    if (nextType !== 'transfer') {
+      setToWalletId('')
+    }
   }
 
   const submit = (e) => {
@@ -81,7 +98,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
       }
     }
 
-    setSubmitting(true)
+    setFormStatus('submitting')
     const payload = {
       date,
       type,
@@ -102,10 +119,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
   const typeButton = (key, label, active) => (
     <button
       type="button"
-      onClick={() => {
-        haptic.selection()
-        setType(key)
-      }}
+      onClick={() => handleTypeSelect(key)}
       className={`flex min-h-[38px] items-center justify-center rounded-lg py-2 px-2 text-xs font-semibold transition-[transform,background-color,color] duration-120 ease-out-expo active:scale-[0.97] select-none ${
         active
           ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
@@ -129,10 +143,10 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
             type="submit"
             form="tx-form"
             onClick={submit}
-            disabled={submitting}
+            disabled={formStatus === 'submitting'}
             className={btn.primary}
           >
-            {submitting ? 'Menyimpan…' : transaction ? 'Simpan Perubahan' : 'Simpan'}
+            {formStatus === 'submitting' ? 'Menyimpan…' : transaction ? 'Simpan Perubahan' : 'Simpan'}
           </button>
         </div>
       }
@@ -144,7 +158,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
           </div>
         )}
         <div>
-          <DatePicker value={date} onChange={setDate} />
+          <DatePicker value={date} onChange={(d) => { clearError(); setDate(d) }} />
           {monthMismatch && (
             <p className="mt-1 text-xs text-amber-600 dark:text-amber-300">
               Tanggal ini akan tercatat di <strong>{targetMonth}</strong>, bukan di bulan yang sedang dibuka. Pocket yang kepotong adalah pocket bulan {targetMonth}.
@@ -184,7 +198,10 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
             className={input + ' tabular-nums'}
             placeholder="0"
             value={amount}
-            onChange={(e) => setAmount(formatNumberInput(e.target.value))}
+            onChange={(e) => {
+              clearError()
+              setAmount(formatNumberInput(e.target.value))
+            }}
             autoFocus
           />
           {amount && toInt(amount) > 0 && (
@@ -196,7 +213,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
           <>
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dompet asal</label>
-              <select className={input} value={walletId} onChange={(e) => setWalletId(e.target.value)}>
+              <select className={input} value={walletId} onChange={(e) => { clearError(); setWalletId(e.target.value) }}>
                 <option value="">(Pilih dompet)</option>
                 {wallets.map((w) => (
                   <option key={w.id} value={w.id}>
@@ -207,7 +224,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Dompet tujuan</label>
-              <select className={input} value={toWalletId} onChange={(e) => setToWalletId(e.target.value)}>
+              <select className={input} value={toWalletId} onChange={(e) => { clearError(); setToWalletId(e.target.value) }}>
                 <option value="">(Pilih dompet)</option>
                 {wallets.map((w) => (
                   <option key={w.id} value={w.id}>
@@ -226,7 +243,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
         ) : (
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Kategori / Pocket {monthMismatch && `(pocket bulan ${targetMonth})`}</label>
-            <select className={input} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+            <select className={input} value={categoryId} onChange={(e) => { clearError(); setCategoryId(e.target.value) }}>
               <option value="free">Uang Bebas (tidak dari pocket)</option>
               {(categorySourceMonth?.categories || []).map((c) => {
                 const sisa = c.goalAmount > 0
@@ -271,7 +288,7 @@ export default function TransactionForm({ monthId, transaction, prefill, onClose
               <select
                 className={input}
                 value={walletId}
-                onChange={(e) => setWalletId(e.target.value)}
+                onChange={(e) => { clearError(); setWalletId(e.target.value) }}
                 aria-label={isIncome ? 'Dompet Penerima' : 'Dompet'}
               >
                 {wallets.length > 1 && <option value="">(Pilih dompet)</option>}

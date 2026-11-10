@@ -607,4 +607,44 @@ describe('Gimme Money smoke', () => {
     expect(await findByText('Gaji Kantor')).toBeInTheDocument()
     expect(getAllByText(/BCA Gaji/).length).toBeGreaterThan(0)
   }, 20000)
+
+  it('supports transferring money between two wallets via Transfer modal', async () => {
+    const user = userEvent.setup()
+    const { getByPlaceholderText, getByRole, findByText, findByRole, queryByRole } = render(<App />)
+
+    // Login
+    await user.type(getByPlaceholderText('kamu@email.com'), 'test@user.com')
+    await user.type(getByPlaceholderText('Masukkan kata sandi'), 'abcdef')
+    await user.click(getByRole('button', { name: 'Masuk' }))
+    await findByText('Total Pemasukan')
+
+    // Add second wallet: "Dompet Tabungan" with opening balance 50.000
+    await user.click(getByRole('button', { name: 'Dompet' }))
+    const walletDialog = await findByRole('dialog', { name: 'Rekening Utama' })
+    await user.type(getByPlaceholderText('Nama (mis. GoPay)'), 'Dompet Tabungan')
+    await user.type(getByPlaceholderText('Saldo awal (Rp)'), '50000')
+    const addWalletBtn = walletDialog.querySelector('button[type="submit"]')
+    await user.click(addWalletBtn)
+    await waitFor(() => expect(within(walletDialog).getByDisplayValue('Dompet Tabungan')).toBeInTheDocument())
+    const closeBtn = walletDialog.querySelector('button[aria-label="Tutup"]')
+    await user.click(closeBtn)
+    await waitFor(() => expect(queryByRole('dialog')).not.toBeInTheDocument())
+
+    // Click "Transfer" button in dashboard
+    await user.click(getByRole('button', { name: 'Transfer' }))
+    const transferDialog = await findByRole('dialog', { name: 'Transfer Antar Dompet' })
+    expect(transferDialog).toBeInTheDocument()
+
+    // Type transfer amount 30.000
+    const amtInput = within(transferDialog).getByPlaceholderText('0')
+    await user.type(amtInput, '30000')
+
+    // Submit transfer
+    const saveTransferBtn = within(transferDialog).getByRole('button', { name: 'Simpan Transfer' })
+    await user.click(saveTransferBtn)
+    await waitFor(() => expect(queryByRole('dialog')).not.toBeInTheDocument())
+
+    // Verify Dompet Tabungan balance updated on dashboard (50.000 + 30.000 = 80.000)
+    expect(await findByText('Rp 80.000')).toBeInTheDocument()
+  }, 25000)
 })
