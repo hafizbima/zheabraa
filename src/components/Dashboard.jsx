@@ -851,7 +851,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
               <span className="rounded-full bg-slate-200/70 px-2.5 py-0.5 text-[10px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">sekat virtual</span>
             </div>
             <p className="mt-3 font-sans text-3xl font-extrabold tracking-tight tabular-nums text-slate-900 dark:text-white">{formatRupiah(primaryBalance)}</p>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Total uang di rekening (gabungan Uang Bebas & seluruh Pocket)</p>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Saldo operasional di rekening (di luar tabungan yang disisihkan)</p>
             <div className="mt-4 grid grid-cols-2 gap-2.5 text-xs">
               <div className="rounded-xl border border-slate-200/60 bg-white/80 p-3 shadow-tactile-sm dark:border-slate-700/60 dark:bg-slate-800/60">
                 <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Teralokasi</p>
@@ -956,7 +956,7 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
         onSubmit={(amt, desc, walletId, targetCatId) => {
           const finalCatId = targetCatId || activeModal.cat.id
           if (activeModal.mode === 'pakai') useGoal(currentMonthId, finalCatId, amt, desc || undefined, walletId)
-          else saveToGoal(currentMonthId, finalCatId, amt, walletId)
+          else saveToGoal(currentMonthId, finalCatId, amt, walletId, desc || undefined)
         }}
       />
     )}

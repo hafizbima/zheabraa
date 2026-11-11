@@ -463,10 +463,11 @@ export function MonthProvider({ children }) {
 
   // tabungan manual: keluarkan dari uang bebas (expense) lalu tambah ke savedAmount
   const saveToGoal = useCallback(
-    (mId, categoryId, amount, walletId) => {
+    (mId, categoryId, amount, walletId, description) => {
       if (!user || amount <= 0) return
       const cat = (months[mId]?.categories || []).find((c) => c.id === categoryId)
       if (!cat) return
+      const desc = description?.trim() ? `${description.trim()} [goal-deposit]` : `Menabung ke ${cat.name}`
       addTransaction(mId, {
         date: todayISO(),
         type: 'expense',
@@ -474,19 +475,20 @@ export function MonthProvider({ children }) {
         categoryId,
         goalType: 'deposit',
         walletId: walletId || cat.walletId || wallets[0]?.id || null,
-        description: `Menabung ke ${cat.name}`,
+        description: desc,
       })
       updateCategory(mId, categoryId, { savedAmount: (cat.savedAmount || 0) + amount })
     },
     [user, months, wallets, addTransaction, updateCategory],
   )
 
-  // tarik tabungan: uang keluar dari rekening (expense di pocket tabungan) + savedAmount berkurang
+  // tarik tabungan: uang keluar dari pocket tabungan masuk ke dompet + savedAmount berkurang
   const useGoal = useCallback(
     (mId, categoryId, amount, description, walletId) => {
       if (!user || amount <= 0) return
       const cat = (months[mId]?.categories || []).find((c) => c.id === categoryId)
       if (!cat) return
+      const desc = description?.trim() ? `${description.trim()} [goal-withdraw]` : `Pakai tabungan ${cat.name}`
       addTransaction(mId, {
         date: todayISO(),
         type: 'expense',
@@ -494,7 +496,7 @@ export function MonthProvider({ children }) {
         categoryId,
         goalType: 'withdraw',
         walletId: walletId || cat.walletId || wallets[0]?.id || null,
-        description: description || `Pakai tabungan ${cat.name}`,
+        description: desc,
       })
       updateCategory(mId, categoryId, { savedAmount: Math.max(0, (cat.savedAmount || 0) - amount) })
     },

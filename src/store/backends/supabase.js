@@ -39,6 +39,22 @@ function mapCategory(r) {
   return { id: r.id, name: r.name, budgetAmount: r.budget_amount, goalAmount: Number(r.goal_amount) || 0, savedAmount: Number(r.saved_amount) || 0, goalDeadline: r.goal_deadline || '', color: r.color, key: r.key || null, order: r.sort_order }
 }
 function mapTransaction(r) {
+  let goalType = undefined
+  if (r.description) {
+    if (
+      r.description.includes('[goal-deposit]') ||
+      r.description.startsWith('Menabung ke ') ||
+      r.description.startsWith('Setor ke ')
+    ) {
+      goalType = 'deposit'
+    } else if (
+      r.description.includes('[goal-withdraw]') ||
+      r.description.startsWith('Pakai tabungan ') ||
+      r.description.startsWith('Tarik tabungan ')
+    ) {
+      goalType = 'withdraw'
+    }
+  }
   return {
     id: r.id,
     date: r.date,
@@ -49,6 +65,7 @@ function mapTransaction(r) {
     toWalletId: r.to_wallet_id,
     recurringTemplateId: r.recurring_template_id || null,
     description: r.description,
+    goalType,
     createdAt: Number(r.created_at) || 0,
   }
 }

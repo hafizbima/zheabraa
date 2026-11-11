@@ -406,6 +406,32 @@ describe('calc', () => {
     const res = savingsSummary(months, '2026-11')
     expect(res.goals[0].walletId).toBe('w-mandiri')
   })
+  it('freeMoneySpent tetap menghitung setoran tabungan meskipun goalType hilang (setelah sync DB)', () => {
+    const txs = [
+      { id: 't1', categoryId: 'saving-1', type: 'expense', amount: 300000, description: 'Menabung ke Dana Darurat' },
+      { id: 't2', categoryId: 'saving-2', type: 'expense', amount: 200000, description: 'Setor bulanan [goal-deposit]' },
+      { id: 't3', categoryId: 'belanja-1', type: 'expense', amount: 150000, description: 'Beli baju' },
+    ]
+    // t1 dan t2 adalah setoran tabungan (mengurangi uang bebas), t3 belanja pocket biasa
+    expect(freeMoneySpent(txs)).toBe(500000)
+    expect(categoryUsed('saving-1', txs)).toBe(0)
+    expect(categoryUsed('belanja-1', txs)).toBe(150000)
+  })
+
+  it('walletBalance dan singleWalletBalance menambah saldo dompet saat penarikan tabungan (withdraw)', () => {
+    const wallet = { id: 'w1', openingBalance: 1000000 }
+    const txs = [
+      { id: 't1', walletId: 'w1', type: 'expense', amount: 400000, description: 'Menabung ke Laptop [goal-deposit]' },
+      { id: 't2', walletId: 'w1', type: 'expense', amount: 100000, description: 'Tarik tabungan Laptop [goal-withdraw]' },
+    ]
+    // Opening: 1jt. Setor: -400rb. Tarik: +100rb. Saldo akhir = 700rb
+    expect(walletBalance(wallet, txs)).toBe(700000)
+
+    const months = {
+      '2026-11': { transactions: txs }
+    }
+    expect(singleWalletBalance(wallet, months)).toBe(700000)
+  })
 })
 
 function referenceDate() {

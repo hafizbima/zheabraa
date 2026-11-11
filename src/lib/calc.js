@@ -1,9 +1,31 @@
+export function isGoalDeposit(tx) {
+  if (!tx) return false
+  if (tx.goalType === 'deposit') return true
+  const desc = tx.description || ''
+  return (
+    desc.includes('[goal-deposit]') ||
+    desc.startsWith('Menabung ke ') ||
+    desc.startsWith('Setor ke ')
+  )
+}
+
+export function isGoalWithdraw(tx) {
+  if (!tx) return false
+  if (tx.goalType === 'withdraw') return true
+  const desc = tx.description || ''
+  return (
+    desc.includes('[goal-withdraw]') ||
+    desc.startsWith('Pakai tabungan ') ||
+    desc.startsWith('Tarik tabungan ')
+  )
+}
+
 export function categoryUsed(categoryId, transactions) {
   let expense = 0
   let refund = 0
   for (const t of transactions) {
     if (t.categoryId !== categoryId) continue
-    if (t.goalType === 'deposit') continue
+    if (isGoalDeposit(t)) continue
     if (t.type === 'refund') refund += t.amount || 0
     else if (t.type === 'expense') expense += t.amount || 0
   }
@@ -33,7 +55,7 @@ export function freeMoneySpent(transactions) {
   let expense = 0
   let refund = 0
   for (const t of transactions) {
-    if (t.categoryId != null && t.goalType !== 'deposit') continue
+    if (t.categoryId != null && !isGoalDeposit(t)) continue
     if (t.type === 'refund') refund += t.amount || 0
     else if (t.type === 'expense') expense += t.amount || 0
   }
@@ -144,7 +166,7 @@ export function walletBalance(wallet, allTransactions) {
       continue
     }
     if (tx.walletId !== wallet.id) continue
-    if (tx.type === 'refund' || tx.type === 'income') inflow += tx.amount || 0
+    if (tx.type === 'refund' || tx.type === 'income' || isGoalWithdraw(tx)) inflow += tx.amount || 0
     else outflow += tx.amount || 0
   }
   return (wallet.openingBalance || 0) + inflow - outflow
@@ -165,7 +187,7 @@ export function singleWalletBalance(wallet, months) {
     }
     const wid = tx.walletId ?? wallet.id
     if (wid !== wallet.id) continue
-    if (tx.type === 'refund' || tx.type === 'income') inflow += tx.amount || 0
+    if (tx.type === 'refund' || tx.type === 'income' || isGoalWithdraw(tx)) inflow += tx.amount || 0
     else outflow += tx.amount || 0
   }
   return (wallet.openingBalance || 0) + inflow - outflow

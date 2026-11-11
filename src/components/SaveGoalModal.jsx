@@ -4,7 +4,7 @@ import { formatRupiah, toInt, formatNumberInput } from '../lib/money.js'
 import { btn } from '../lib/buttons.js'
 import { haptic } from '../lib/haptics.js'
 import { useStore } from '../store/StoreContext.jsx'
-import { singleWalletBalance, freeLeft, goalSaved } from '../lib/calc.js'
+import { singleWalletBalance, walletBalance, allTransactions, freeLeft, goalSaved } from '../lib/calc.js'
 
 // mode: 'nabung' (uang bebas / dompet → tabungan) | 'pakai' (tabungan → belanja / dompet)
 export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onSubmit, onClose }) {
@@ -24,6 +24,16 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
 
   const isUse = mode === 'pakai'
   const amt = toInt(amount)
+
+  const getWalletBal = (w) => {
+    return wallets.length === 1
+      ? singleWalletBalance(w, months)
+      : walletBalance(w, allTransactions(months))
+  }
+
+  const selectedWallet = wallets.find((w) => w.id === walletId) || wallets[0] || null
+  const selectedBal = selectedWallet ? getWalletBal(selectedWallet) : 0
+  const projectedBal = isUse ? selectedBal + amt : selectedBal - amt
 
   // Saldo tabungan saat ini dan target nominal
   const currentProgress = goalSaved(activeCat, txs)
@@ -138,15 +148,54 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
               <option value="">Belum ada dompet</option>
             ) : (
               wallets.map((w) => {
-                const bal = singleWalletBalance(w.id, wallets, months)
+                const bal = getWalletBal(w)
+                const projected = isUse ? bal + amt : bal - amt
+                const label =
+                  amt > 0
+                    ? `${w.name} (${formatRupiah(bal)} → ${formatRupiah(projected)})`
+                    : `${w.name} (${formatRupiah(bal)})`
                 return (
                   <option key={w.id} value={w.id}>
-                    {w.name} ({formatRupiah(bal)})
+                    {label}
                   </option>
                 )
               })
             )}
           </select>
+
+          {/* Pratinjau Saldo Dompet */}
+          {selectedWallet && (
+            <div className="mt-2 rounded-xl border border-slate-200/80 bg-slate-50/80 p-2.5 text-xs dark:border-slate-800 dark:bg-slate-900/60">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">
+                  {isUse ? 'Saldo Dompet Tujuan:' : 'Saldo Dompet Asal:'}
+                </span>
+                <span className="tabular-nums font-semibold text-slate-800 dark:text-slate-200">
+                  {formatRupiah(selectedBal)}
+                  {amt > 0 && (
+                    <>
+                      {' '}
+                      <span className="text-slate-400 dark:text-slate-600">→</span>{' '}
+                      <span
+                        className={
+                          !isUse && projectedBal < 0
+                            ? 'font-bold text-rose-500'
+                            : 'font-bold text-teal-600 dark:text-teal-400'
+                        }
+                      >
+                        {formatRupiah(projectedBal)}
+                      </span>
+                    </>
+                  )}
+                </span>
+              </div>
+              {amt > 0 && !isUse && projectedBal < 0 && (
+                <p className="mt-1 text-[11px] font-medium text-rose-500">
+                  Saldo dompet tidak mencukupi untuk setoran ini.
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <div>

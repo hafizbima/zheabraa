@@ -271,7 +271,7 @@ export default function SavingsView() {
             if (saveModal.mode === 'pakai') {
               useGoal(currentMonthId, finalCatId, amt, desc || undefined, walletId)
             } else {
-              saveToGoal(currentMonthId, finalCatId, amt, walletId)
+              saveToGoal(currentMonthId, finalCatId, amt, walletId, desc || undefined)
             }
           }}
         />
