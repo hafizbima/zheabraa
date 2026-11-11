@@ -25,7 +25,7 @@ export function categoryUsed(categoryId, transactions) {
   let refund = 0
   for (const t of transactions) {
     if (t.categoryId !== categoryId) continue
-    if (isGoalDeposit(t)) continue
+    if (isGoalDeposit(t) || isGoalWithdraw(t)) continue
     if (t.type === 'refund') refund += t.amount || 0
     else if (t.type === 'expense') expense += t.amount || 0
   }
@@ -55,6 +55,11 @@ export function freeMoneySpent(transactions) {
   let expense = 0
   let refund = 0
   for (const t of transactions) {
+    if (isGoalWithdraw(t)) {
+      const refundAmt = typeof t.fromSavedAmount === 'number' ? t.fromSavedAmount : (t.amount || 0)
+      refund += refundAmt
+      continue
+    }
     if (t.categoryId != null && !isGoalDeposit(t)) continue
     if (t.type === 'refund') refund += t.amount || 0
     else if (t.type === 'expense') expense += t.amount || 0
@@ -131,7 +136,7 @@ export function safeDailySpend(month, templates = [], referenceDate = new Date()
 
 export function categorySpentTotal(transactions) {
   return transactions
-    .filter((t) => t.categoryId != null && t.type === 'expense')
+    .filter((t) => t.categoryId != null && t.type === 'expense' && !isGoalDeposit(t) && !isGoalWithdraw(t))
     .reduce((a, t) => a + (t.amount || 0), 0)
 }
 
@@ -318,15 +323,15 @@ export function goalHistory(goalKey, months) {
         tx.description &&
         (tx.description.startsWith(`Pakai tabungan ${catName}`) ||
           tx.description.startsWith(`Pakai tabungan ${goalKey}`))
-      const isGoalDeposit = tx.goalType === 'deposit' && (tx.categoryId === catId || matchesGoalId)
-      const isGoalWithdraw = tx.goalType === 'withdraw' && (tx.categoryId === catId || matchesGoalId)
+      const isGoalDep = (tx.goalType === 'deposit' || isGoalDeposit(tx)) && (tx.categoryId === catId || matchesGoalId)
+      const isGoalWdr = (tx.goalType === 'withdraw' || isGoalWithdraw(tx)) && (tx.categoryId === catId || matchesGoalId)
       const isCategoryUsage = catId && tx.categoryId === catId && tx.type === 'expense'
 
-      if (matchesGoalId || matchesTag || isDepositByText || isWithdrawByText || isGoalDeposit || isGoalWithdraw || isCategoryUsage) {
+      if (matchesGoalId || matchesTag || isDepositByText || isWithdrawByText || isGoalDep || isGoalWdr || isCategoryUsage) {
         let type = 'deposit'
-        if (isGoalDeposit || isDepositByText) {
+        if (isGoalDep || isDepositByText) {
           type = 'deposit'
-        } else if (isGoalWithdraw || isWithdrawByText || isCategoryUsage) {
+        } else if (isGoalWdr || isWithdrawByText || isCategoryUsage) {
           type = 'withdraw'
         }
 

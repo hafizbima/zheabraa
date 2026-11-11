@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../store/StoreContext.jsx'
 import { formatRupiah } from '../lib/money.js'
+import { isGoalDeposit, isGoalWithdraw } from '../lib/calc.js'
 import { formatDate, labelOf, todayISO } from '../lib/dates.js'
 import { haptic } from '../lib/haptics.js'
 import Confirm from './Confirm.jsx'
@@ -193,10 +194,10 @@ export default function TransactionList({ onEditTx }) {
   }, [txs, filterCategory, filterWallet, fromDate, toDate, search])
 
   const spent = filtered
-    .filter((t) => t.type === 'expense')
+    .filter((t) => t.type === 'expense' && !isGoalWithdraw(t))
     .reduce((a, t) => a + t.amount, 0)
   const refunded = filtered
-    .filter((t) => t.type === 'refund')
+    .filter((t) => t.type === 'refund' || isGoalWithdraw(t))
     .reduce((a, t) => a + t.amount, 0)
 
   const input =
@@ -353,7 +354,7 @@ export default function TransactionList({ onEditTx }) {
               for (const t of filtered) {
                 rows.push([
                   t.date,
-                  t.type === 'transfer' ? 'Transfer' : t.type === 'refund' ? 'Refund' : t.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+                  t.type === 'transfer' ? 'Transfer' : isGoalWithdraw(t) ? 'Tarik Tabungan' : isGoalDeposit(t) ? 'Setor Tabungan' : t.type === 'refund' ? 'Refund' : t.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
                   catName(t),
                   t.type === 'transfer'
                     ? `${walletName(t.walletId) || '-'} → ${walletName(t.toWalletId) || '-'}`
@@ -381,6 +382,7 @@ export default function TransactionList({ onEditTx }) {
             <div className="mt-3.5 space-y-2">
               {globalResults.map(({ mId, tx }) => {
                 const isTransfer = tx.type === 'transfer'
+                const isInflow = tx.type === 'refund' || tx.type === 'income' || isGoalWithdraw(tx)
                 return (
                   <div key={tx.id} className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 shadow-tactile-sm dark:border-slate-800/80 dark:bg-slate-800/40">
                     <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: catColor(tx) }} />
@@ -394,8 +396,8 @@ export default function TransactionList({ onEditTx }) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`font-sans text-sm font-bold tabular-nums ${isTransfer ? 'text-indigo-600 dark:text-indigo-400' : tx.type === 'refund' || tx.type === 'income' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-900 dark:text-white'}`}>
-                        {isTransfer ? '⇄ ' : tx.type === 'refund' || tx.type === 'income' ? '+' : '−'}{formatRupiah(tx.amount)}
+                      <p className={`font-sans text-sm font-bold tabular-nums ${isTransfer ? 'text-indigo-600 dark:text-indigo-400' : isInflow ? 'text-teal-600 dark:text-teal-400' : 'text-slate-900 dark:text-white'}`}>
+                        {isTransfer ? '⇄ ' : isInflow ? '+' : '−'}{formatRupiah(tx.amount)}
                       </p>
                       <div className="mt-1 flex justify-end gap-1">
                         <button onClick={() => onEditTx(mId, tx)} className={btn.subtle}>Ubah</button>
@@ -434,6 +436,7 @@ export default function TransactionList({ onEditTx }) {
             <div className="space-y-2">
               {items.map((t) => {
                 const isTransfer = t.type === 'transfer'
+                const isInflow = t.type === 'refund' || t.type === 'income' || isGoalWithdraw(t)
                 return (
                   <div
                     key={t.id}
@@ -449,8 +452,8 @@ export default function TransactionList({ onEditTx }) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`font-sans text-sm font-bold tabular-nums ${isTransfer ? 'text-indigo-600 dark:text-indigo-400' : t.type === 'refund' || t.type === 'income' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-900 dark:text-white'}`}>
-                        {isTransfer ? '⇄ ' : t.type === 'refund' || t.type === 'income' ? '+' : '−'}{formatRupiah(t.amount)}
+                      <p className={`font-sans text-sm font-bold tabular-nums ${isTransfer ? 'text-indigo-600 dark:text-indigo-400' : isInflow ? 'text-teal-600 dark:text-teal-400' : 'text-slate-900 dark:text-white'}`}>
+                        {isTransfer ? '⇄ ' : isInflow ? '+' : '−'}{formatRupiah(t.amount)}
                       </p>
                       <div className="mt-1 flex justify-end gap-1">
                         <button

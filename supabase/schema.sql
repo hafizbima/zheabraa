@@ -63,6 +63,7 @@ create table if not exists public.categories (
   name text not null,
   budget_amount integer not null default 0,
   goal_amount integer not null default 0,
+  saved_amount integer not null default 0,
   goal_deadline text,
   color text not null default '#8B5CF6',
   sort_order integer not null default 0,

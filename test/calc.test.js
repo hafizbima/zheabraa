@@ -385,13 +385,15 @@ describe('calc', () => {
     expect(proj.estimatedMonthId).toBe('2027-03')
   })
 
-  it('categoryUsed tidak menganggap goalType deposit sebagai belanja pocket, dan freeMoneySpent menghitungnya', () => {
+  it('categoryUsed tidak menganggap goalType deposit/withdraw sebagai belanja pocket, dan freeMoneySpent memperhitungkannya', () => {
     const txs = [
       { id: 't1', categoryId: 'saving-1', type: 'expense', amount: 200000, goalType: 'deposit', walletId: 'w1' },
       { id: 't2', categoryId: 'saving-1', type: 'expense', amount: 50000, goalType: 'withdraw', walletId: 'w1' },
     ]
-    expect(categoryUsed('saving-1', txs)).toBe(50000)
-    expect(freeMoneySpent(txs)).toBe(200000)
+    // Setor tabungan (200rb) mengurangi uang bebas. Tarik tabungan (50rb) mengembalikannya ke dompet/uang bebas.
+    // Keduanya bukan belanja belanja pocket fisik (categoryUsed = 0)
+    expect(categoryUsed('saving-1', txs)).toBe(0)
+    expect(freeMoneySpent(txs)).toBe(150000)
   })
 
   it('savingsSummary menyertakan walletId pada setiap target tabungan', () => {
@@ -416,6 +418,103 @@ describe('calc', () => {
     expect(freeMoneySpent(txs)).toBe(500000)
     expect(categoryUsed('saving-1', txs)).toBe(0)
     expect(categoryUsed('belanja-1', txs)).toBe(150000)
+  })
+
+  it('freeMoneySpent berkurang (sisa uang bebas bertambah) saat penarikan tabungan (withdraw)', () => {
+    const txs = [
+      { id: 't1', categoryId: 'saving-1', type: 'expense', amount: 500000, description: 'Menabung ke Laptop [goal-deposit]' },
+      { id: 't2', categoryId: 'saving-1', type: 'expense', amount: 200000, description: 'Tarik tabungan Laptop [goal-withdraw]' },
+    ]
+    // Setor 500rb mengurangi uang bebas (+500rb expense), Tarik 200rb mengembalikan ke uang bebas (-200rb)
+    // Net freeMoneySpent = 300rb
+    expect(freeMoneySpent(txs)).toBe(300000)
+    expect(categoryUsed('saving-1', txs)).toBe(0)
+  })
+
+  it('invarian monthLeftTotal tetap terjaga saat setor dan tarik tabungan', () => {
+    const month = {
+      id: '2026-11',
+      carryOver: 0,
+      categories: [
+        { id: 'saving-1', name: 'Laptop', goalAmount: 10000000, savedAmount: 0 },
+      ],
+      transactions: [
+        { id: 'in-1', type: 'income', amount: 10000000 },
+      ],
+    }
+    // Awal: Total 10jt (freeLeft 10jt, tabungan 0)
+    expect(monthLeftTotal(month)).toBe(10000000)
+
+    // Setor 3jt ke tabungan
+    month.categories[0].savedAmount = 3000000
+    month.transactions.push({
+      id: 'tx-setor',
+      type: 'expense',
+      amount: 3000000,
+      categoryId: 'saving-1',
+      description: 'Menabung ke Laptop [goal-deposit]',
+    })
+    // freeLeft jadi 7jt, tabungan 3jt -> total tetap 10jt
+    expect(freeLeft(month)).toBe(7000000)
+    expect(monthLeftTotal(month)).toBe(10000000)
+
+    // Tarik 1jt dari tabungan kembali ke dompet/uang bebas
+    month.categories[0].savedAmount = 2000000
+    month.transactions.push({
+      id: 'tx-tarik',
+      type: 'expense',
+      amount: 1000000,
+      categoryId: 'saving-1',
+      description: 'Tarik tabungan Laptop [goal-withdraw]',
+    })
+    // freeLeft pulih jadi 8jt, tabungan 2jt -> total tetap 10jt
+    expect(freeLeft(month)).toBe(8000000)
+    expect(monthLeftTotal(month)).toBe(10000000)
+  })
+
+  it('penarikan tabungan yang tercapai via budgetAmount mengurangi nominal tabungan dan memulihkan uang bebas', () => {
+    const month = {
+      id: '2026-11',
+      carryOver: 0,
+      categories: [
+        { id: 'saving-1', name: 'Rumah', budgetAmount: 10000000, goalAmount: 10000000, savedAmount: 0 },
+      ],
+      transactions: [
+        { id: 'in-1', type: 'income', amount: 10000000 },
+      ],
+    }
+    // Awal: 10jt tabungan tercapai via budgetAmount
+    expect(goalSaved(month.categories[0], month.transactions)).toEqual({
+      saved: 10000000,
+      goal: 10000000,
+      pct: 100,
+      done: true,
+    })
+    expect(freeLeft(month)).toBe(0)
+    expect(monthLeftTotal(month)).toBe(10000000)
+
+    // Tarik 2jt (useGoal mengupdate budgetAmount karena savedAmount = 0)
+    month.categories[0].budgetAmount = 8000000
+    month.transactions.push({
+      id: 'tx-tarik',
+      type: 'expense',
+      amount: 2000000,
+      categoryId: 'saving-1',
+      goalType: 'withdraw',
+      fromSavedAmount: 0,
+      description: 'Tarik tabungan Rumah [goal-withdraw]',
+    })
+
+    // Saldo tabungan harus turun ke 8jt dan status done menjadi false (80%)
+    expect(goalSaved(month.categories[0], month.transactions)).toEqual({
+      saved: 8000000,
+      goal: 10000000,
+      pct: 80,
+      done: false,
+    })
+    // freeLeft bertambah 2jt (kembali ke uang bebas), total tetap 10jt
+    expect(freeLeft(month)).toBe(2000000)
+    expect(monthLeftTotal(month)).toBe(10000000)
   })
 
   it('walletBalance dan singleWalletBalance menambah saldo dompet saat penarikan tabungan (withdraw)', () => {

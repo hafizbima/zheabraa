@@ -12,6 +12,7 @@ import {
   walletBalance,
   singleWalletBalance,
   allTransactions,
+  isGoalWithdraw,
 } from '../lib/calc.js'
 
 export default function Report() {
@@ -24,7 +25,7 @@ export default function Report() {
   const allocated = totalAllocated(month)
   const pool = freePool(month)
   const left = freeLeft(month)
-  const spent = txs.filter((t) => t.type === 'expense').reduce((a, t) => a + (t.amount || 0), 0)
+  const spent = txs.filter((t) => t.type === 'expense' && !isGoalWithdraw(t)).reduce((a, t) => a + (t.amount || 0), 0)
   const refunded = txs.filter((t) => t.type === 'refund').reduce((a, t) => a + (t.amount || 0), 0)
   const saved = (month.categories || [])
     .filter((c) => c.goalAmount > 0)

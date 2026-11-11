@@ -482,12 +482,22 @@ export function MonthProvider({ children }) {
     [user, months, wallets, addTransaction, updateCategory],
   )
 
-  // tarik tabungan: uang keluar dari pocket tabungan masuk ke dompet + savedAmount berkurang
+  // tarik tabungan: uang keluar dari pocket tabungan masuk ke dompet + saldo tabungan berkurang
   const useGoal = useCallback(
     (mId, categoryId, amount, description, walletId) => {
       if (!user || amount <= 0) return
       const cat = (months[mId]?.categories || []).find((c) => c.id === categoryId)
       if (!cat) return
+
+      const curSaved = cat.savedAmount || 0
+      const curBudget = cat.budgetAmount || 0
+
+      const fromSaved = Math.min(curSaved, amount)
+      const fromBudget = Math.min(curBudget, amount - fromSaved)
+
+      const newSaved = Math.max(0, curSaved - fromSaved)
+      const newBudget = Math.max(0, curBudget - fromBudget)
+
       const desc = description?.trim() ? `${description.trim()} [goal-withdraw]` : `Pakai tabungan ${cat.name}`
       addTransaction(mId, {
         date: todayISO(),
@@ -495,10 +505,11 @@ export function MonthProvider({ children }) {
         amount,
         categoryId,
         goalType: 'withdraw',
+        fromSavedAmount: fromSaved,
         walletId: walletId || cat.walletId || wallets[0]?.id || null,
         description: desc,
       })
-      updateCategory(mId, categoryId, { savedAmount: Math.max(0, (cat.savedAmount || 0) - amount) })
+      updateCategory(mId, categoryId, { savedAmount: newSaved, budgetAmount: newBudget })
     },
     [user, months, wallets, addTransaction, updateCategory],
   )
