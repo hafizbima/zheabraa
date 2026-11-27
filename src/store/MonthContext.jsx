@@ -477,7 +477,11 @@ export function MonthProvider({ children }) {
         walletId: walletId || cat.walletId || wallets[0]?.id || null,
         description: desc,
       })
-      updateCategory(mId, categoryId, { savedAmount: (cat.savedAmount || 0) + amount })
+      updateCategory(mId, categoryId, {
+        savedAmount: (cat.savedAmount || 0) + amount,
+        pocketType: 'saving',
+        ...(walletId && !cat.walletId ? { walletId } : {}),
+      })
     },
     [user, months, wallets, addTransaction, updateCategory],
   )

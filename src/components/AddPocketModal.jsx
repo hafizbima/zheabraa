@@ -29,20 +29,23 @@ function ColorPicker({ value, onChange }) {
   )
 }
 
-export default function AddPocketModal({ onClose, onAdd, initialType = 'expense' }) {
+export default function AddPocketModal({ onClose, onAdd, initialType = 'expense', initialExistingPocketId = '' }) {
   const { wallets = [], months = {}, currentMonthId } = useStore()
   const currentMonth = months[currentMonthId] || {}
   const categories = currentMonth.categories || []
+  const initialExisting = initialExistingPocketId
+    ? categories.find((c) => c.id === initialExistingPocketId) || null
+    : null
 
   const [pocketType, setPocketType] = useState(initialType) // 'expense' | 'saving'
-  const [targetMode, setTargetMode] = useState('new') // 'new' | 'existing'
-  const [existingPocketId, setExistingPocketId] = useState('')
-  const [walletId, setWalletId] = useState(() => wallets[0]?.id || '')
-  const [name, setName] = useState('')
+  const [targetMode, setTargetMode] = useState(() => (initialExisting ? 'existing' : 'new')) // 'new' | 'existing'
+  const [existingPocketId, setExistingPocketId] = useState(() => (initialExisting ? initialExisting.id : ''))
+  const [walletId, setWalletId] = useState(() => initialExisting?.walletId || wallets[0]?.id || '')
+  const [name, setName] = useState(() => initialExisting?.name || '')
   const [budget, setBudget] = useState('')
-  const [goal, setGoal] = useState('')
-  const [deadline, setDeadline] = useState('')
-  const [color, setColor] = useState(CATEGORY_COLORS[0])
+  const [goal, setGoal] = useState(() => (initialExisting?.goalAmount ? formatNumberInput(String(initialExisting.goalAmount)) : ''))
+  const [deadline, setDeadline] = useState(() => initialExisting?.goalDeadline || '')
+  const [color, setColor] = useState(() => initialExisting?.color || CATEGORY_COLORS[0])
   const [submitting, setSubmitting] = useState(false)
 
   const inputClass =
@@ -54,8 +57,8 @@ export default function AddPocketModal({ onClose, onAdd, initialType = 'expense'
     if (chosen) {
       setName(chosen.name)
       setColor(chosen.color || CATEGORY_COLORS[0])
-      if (chosen.goalAmount) setGoal(String(chosen.goalAmount))
-      if (chosen.goalDeadline) setDeadline(chosen.goalDeadline)
+      setGoal(chosen.goalAmount ? formatNumberInput(String(chosen.goalAmount)) : '')
+      setDeadline(chosen.goalDeadline || '')
       if (chosen.walletId) setWalletId(chosen.walletId)
     }
   }
@@ -157,8 +160,8 @@ export default function AddPocketModal({ onClose, onAdd, initialType = 'expense'
                 type="button"
                 onClick={() => {
                   setTargetMode('existing')
-                  const first = categories[0]
-                  if (first) handleSelectExistingPocket(first.id)
+                  const target = existingPocketId ? categories.find((c) => c.id === existingPocketId) || categories[0] : categories[0]
+                  if (target) handleSelectExistingPocket(target.id)
                 }}
                 className={`min-h-[36px] rounded-lg py-1.5 text-xs font-semibold transition active:scale-[0.98] ${
                   targetMode === 'existing'
@@ -166,11 +169,11 @@ export default function AddPocketModal({ onClose, onAdd, initialType = 'expense'
                     : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                 }`}
               >
-                Pilih Pocket Yang Ada
+                Pilih Pocket Tersedia ({categories.length})
               </button>
             </div>
             {targetMode === 'existing' && (
-              <div className="mt-2.5">
+              <div className="mt-2.5 space-y-2">
                 <select
                   aria-label="Pilih Pocket Tabungan"
                   value={existingPocketId}
@@ -179,10 +182,44 @@ export default function AddPocketModal({ onClose, onAdd, initialType = 'expense'
                 >
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.name} {c.goalAmount ? `(Target: ${formatRupiah(c.goalAmount)})` : ''}
+                      {c.name}{' '}
+                      {c.goalAmount
+                        ? `(Target: ${formatRupiah(c.goalAmount)})`
+                        : c.budgetAmount
+                        ? `(Budget: ${formatRupiah(c.budgetAmount)})`
+                        : '(Pocket Tersedia)'}
                     </option>
                   ))}
                 </select>
+                {categories.length > 1 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {categories.map((c) => {
+                      const selected = c.id === existingPocketId
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          aria-label={`Pilih pocket tersedia ${c.name}`}
+                          onClick={() => {
+                            haptic.selection()
+                            handleSelectExistingPocket(c.id)
+                          }}
+                          className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition active:scale-[0.97] ${
+                            selected
+                              ? 'border-teal-500 bg-teal-50 text-teal-800 dark:border-teal-500 dark:bg-teal-950/50 dark:text-teal-200'
+                              : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                          }`}
+                        >
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ backgroundColor: c.color || '#0D9488' }}
+                          />
+                          <span className="truncate max-w-[140px]">{c.name}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>

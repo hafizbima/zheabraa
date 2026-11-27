@@ -125,12 +125,71 @@ export default function SaveGoalModal({ cat, mode = 'nabung', available = 0, onS
             onChange={(e) => handlePocketChange(e.target.value)}
             className="w-full min-h-[44px] rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-tactile-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
           >
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} {c.goalAmount ? `(Target: ${formatRupiah(c.goalAmount)})` : ''}
-              </option>
-            ))}
+            {categories.map((c) => {
+              const catSaved = goalSaved(c, txs).saved
+              const projectedCat = isUse ? Math.max(0, catSaved - amt) : catSaved + amt
+              const targetInfo = c.goalAmount > 0 ? ` • Target: ${formatRupiah(c.goalAmount)}` : ''
+              const label =
+                amt > 0
+                  ? `${c.name} (${formatRupiah(catSaved)} → ${formatRupiah(projectedCat)}${targetInfo})`
+                  : `${c.name} (Terkumpul: ${formatRupiah(catSaved)}${targetInfo})`
+              return (
+                <option key={c.id} value={c.id}>
+                  {label}
+                </option>
+              )
+            })}
           </select>
+
+          {categories.length > 1 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {categories.map((c) => {
+                const selected = c.id === pocketId
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    aria-label={`Pilih pocket ${c.name}`}
+                    onClick={() => {
+                      haptic.selection()
+                      handlePocketChange(c.id)
+                    }}
+                    className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition active:scale-[0.97] ${
+                      selected
+                        ? 'border-teal-500 bg-teal-50 text-teal-800 dark:border-teal-500 dark:bg-teal-950/50 dark:text-teal-200'
+                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <span
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{ backgroundColor: c.color || '#0D9488' }}
+                    />
+                    <span className="truncate max-w-[140px]">{c.name}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {activeCat?.id && goalAmount === 0 && (
+            <div className="mt-2 rounded-xl border border-slate-200/80 bg-slate-50/80 p-2.5 text-xs dark:border-slate-800 dark:bg-slate-900/60">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">Saldo Tabungan Pocket:</span>
+                <span className="tabular-nums font-semibold text-slate-800 dark:text-slate-200">
+                  {formatRupiah(currentSaved)}
+                  {amt > 0 && (
+                    <>
+                      {' '}
+                      <span className="text-slate-400 dark:text-slate-600">→</span>{' '}
+                      <span className="font-bold text-teal-600 dark:text-teal-400">
+                        {formatRupiah(newSaved)}
+                      </span>
+                    </>
+                  )}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Pilihan Dompet */}

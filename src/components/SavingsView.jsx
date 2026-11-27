@@ -15,10 +15,18 @@ export default function SavingsView() {
   const [selectedGoal, setSelectedGoal] = useState(null)
   const [saveModal, setSaveModal] = useState(null) // { cat, mode: 'nabung' | 'pakai', available }
   const [addGoalOpen, setAddGoalOpen] = useState(false)
+  const [initialExistingId, setInitialExistingId] = useState('')
+
+  const allCategories = months[currentMonthId]?.categories || []
 
   const summary = useMemo(() => {
     return savingsSummary(months, currentMonthId)
   }, [months, currentMonthId])
+
+  const availablePockets = useMemo(
+    () => allCategories.filter((c) => !summary.goals.some((g) => g.id === c.id)),
+    [allCategories, summary.goals],
+  )
 
   const animatedTotalSaved = useCountUp(summary.totalSaved)
 
@@ -30,8 +38,9 @@ export default function SavingsView() {
   }, [summary.goals, filter])
 
   const handleDeposit = (category) => {
-    const targetCat = category || summary.goals[0]?.category
+    const targetCat = category || summary.goals[0]?.category || allCategories[0]
     if (!targetCat) {
+      setInitialExistingId('')
       setAddGoalOpen(true)
       return
     }
@@ -39,7 +48,7 @@ export default function SavingsView() {
     setSaveModal({
       cat: targetCat,
       mode: 'nabung',
-      available: goalItem ? goalItem.saved : 0,
+      available: goalItem ? goalItem.saved : (targetCat.savedAmount || 0),
     })
   }
 
@@ -80,12 +89,12 @@ export default function SavingsView() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {summary.goals.length > 0 && (
+            {(summary.goals.length > 0 || allCategories.length > 0) && (
               <button
                 type="button"
                 onClick={() => {
                   haptic.tap()
-                  handleDeposit(summary.goals[0]?.category)
+                  handleDeposit(summary.goals[0]?.category || allCategories[0])
                 }}
                 className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 shadow-tactile-sm transition-[transform,background-color] duration-120 ease-out-expo active:scale-[0.97] hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
@@ -100,6 +109,7 @@ export default function SavingsView() {
               type="button"
               onClick={() => {
                 haptic.tap()
+                setInitialExistingId('')
                 setAddGoalOpen(true)
               }}
               className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-transparent bg-slate-900 px-4 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-tactile-sm transition-[transform,background-color] duration-120 ease-out-expo active:scale-[0.97] hover:bg-slate-800 dark:bg-teal-600 dark:hover:bg-teal-500"
@@ -206,6 +216,7 @@ export default function SavingsView() {
               type="button"
               onClick={() => {
                 haptic.tap()
+                setInitialExistingId('')
                 setAddGoalOpen(true)
               }}
               className="mt-4 inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-transparent bg-slate-900 px-4 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-tactile-sm transition-[transform,background-color] duration-120 ease-out-expo active:scale-[0.97] hover:bg-slate-800 dark:bg-teal-600 dark:hover:bg-teal-500"
@@ -228,17 +239,89 @@ export default function SavingsView() {
         </div>
       )}
 
+      {/* Pocket Tersedia dari Dashboard */}
+      {availablePockets.length > 0 && (
+        <section className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-tactile-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <div>
+              <h3 className="font-sans text-sm font-bold text-slate-900 dark:text-white">
+                Pocket Tersedia dari Dashboard
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Langsung menabung atau pasang target pada pocket yang sudah ada.
+              </p>
+            </div>
+            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              {availablePockets.length}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            {availablePockets.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-800/40"
+              >
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <span
+                    className="h-3 w-3 shrink-0 rounded-full"
+                    style={{ backgroundColor: c.color || '#0D9488' }}
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate font-sans text-sm font-semibold text-slate-900 dark:text-white">
+                      {c.name}
+                    </p>
+                    <p className="text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
+                      {c.budgetAmount > 0 ? `Budget ${formatRupiah(c.budgetAmount)}` : 'Siap ditabung'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <button
+                    type="button"
+                    aria-label={`Atur target ${c.name}`}
+                    onClick={() => {
+                      haptic.tap()
+                      setInitialExistingId(c.id)
+                      setAddGoalOpen(true)
+                    }}
+                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-tactile-sm transition active:scale-[0.97] hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  >
+                    Atur Target
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Nabung ke ${c.name}`}
+                    onClick={() => {
+                      haptic.tap()
+                      handleDeposit(c)
+                    }}
+                    className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 shadow-tactile-sm transition active:scale-[0.97] hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-300 dark:hover:bg-teal-900/50"
+                  >
+                    Nabung
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Add Pocket Modal (Tabungan Mode) */}
       {addGoalOpen && (
         <AddPocketModal
           initialType="saving"
-          onClose={() => setAddGoalOpen(false)}
+          initialExistingPocketId={initialExistingId}
+          onClose={() => {
+            setAddGoalOpen(false)
+            setInitialExistingId('')
+          }}
           onAdd={async (catData) => {
             if (catData.existingPocketId) {
               await updateCategory(currentMonthId, catData.existingPocketId, {
                 goalAmount: catData.goalAmount,
                 ...(catData.goalDeadline ? { goalDeadline: catData.goalDeadline } : {}),
                 ...(catData.walletId ? { walletId: catData.walletId } : {}),
+                ...(catData.color ? { color: catData.color } : {}),
                 pocketType: 'saving',
               })
             } else {

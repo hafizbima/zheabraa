@@ -531,6 +531,22 @@ describe('calc', () => {
     }
     expect(singleWalletBalance(wallet, months)).toBe(700000)
   })
+
+  it('savingsSummary tetap menyertakan pocket yang sudah ada (goalAmount 0) ketika sudah memiliki savedAmount > 0', () => {
+    const months = {
+      '2026-11': {
+        categories: [
+          { id: 'c-existing', name: 'Makan & Harian', budgetAmount: 0, goalAmount: 0, savedAmount: 250000 },
+        ],
+        transactions: [],
+      },
+    }
+    const res = savingsSummary(months, '2026-11')
+    expect(res.goals.length).toBe(1)
+    expect(res.goals[0].name).toBe('Makan & Harian')
+    expect(res.goals[0].saved).toBe(250000)
+    expect(res.totalSaved).toBe(250000)
+  })
 })
 
 function referenceDate() {

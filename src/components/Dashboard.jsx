@@ -980,7 +980,13 @@ export default function Dashboard({ onNewTx, onEditTx, onManageCategories, onMan
         onClose={() => setActiveModal(null)}
         onAdd={(data) => {
           if (data.existingPocketId) {
-            return updateCategory(currentMonthId, data.existingPocketId, data)
+            return updateCategory(currentMonthId, data.existingPocketId, {
+              goalAmount: data.goalAmount,
+              ...(data.goalDeadline ? { goalDeadline: data.goalDeadline } : {}),
+              ...(data.walletId ? { walletId: data.walletId } : {}),
+              ...(data.color ? { color: data.color } : {}),
+              pocketType: 'saving',
+            })
           }
           return addCategory(currentMonthId, data)
         }}

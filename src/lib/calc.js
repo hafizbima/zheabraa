@@ -248,7 +248,9 @@ export function savingsSummary(months, currentMonthId) {
   const cats = m.categories || []
   const txs = m.transactions || []
 
-  const rawGoals = cats.filter((c) => (c.goalAmount && c.goalAmount > 0) || c.pocketType === 'saving')
+  const rawGoals = cats.filter(
+    (c) => (c.goalAmount && c.goalAmount > 0) || (c.savedAmount && c.savedAmount > 0) || c.pocketType === 'saving',
+  )
 
   const goals = rawGoals.map((c) => {
     const progress = goalSaved(c, txs)
